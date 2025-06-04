@@ -45,7 +45,7 @@ As a solo developer on an MVP, focus on high-value integration tests that verify
 ### Core Test Suite (Quick & Practical)
 1. **ServiceNow Flow Visualization**
    - Can connect to ServiceNow instance
-   - Can fetch and display flow data
+   - Can fetch and display flow data 
    - Can expand/collapse nodes
    - Layout changes work (LR/TB)
 
