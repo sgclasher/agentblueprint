@@ -1,5 +1,7 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
+import AuthProvider from './components/auth/AuthProvider';
+import { EnvDebugger } from './lib/env-check';
 
 // Initialize the Inter font with the weights we need
 const inter = Inter({
@@ -17,7 +19,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <EnvDebugger />
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 } 
