@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import useAgenticStore from './store/useAgenticStore';
 import ServiceNowConnector from './components/ServiceNowConnector';
 import FlowVisualizer from './components/FlowVisualizer';
+import Header from './components/Header';
 import { ReactFlowProvider } from 'reactflow';
 import { Users, TrendingUp, Info } from 'lucide-react';
 
@@ -56,16 +57,24 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-0" style={{ 
-      backgroundColor: '#f5f5f5', 
+    <div className="min-h-screen bg-gray-900" style={{ 
       minHeight: '100vh',
       width: '100vw',
       margin: 0,
       padding: 0,
-      overflow: 'hidden'
     }}>
-      {agenticData && (
-        <header className="app-header">
+      <Header />
+      <main className="flex flex-col items-center" style={{ 
+        minHeight: 'calc(100vh - 64px)', // Subtract header height
+        width: '100vw',
+        margin: 0,
+        padding: 0,
+        overflow: 'hidden'
+      }}>
+        {agenticData && (
+          <header className="app-header w-full" style={{
+            backgroundColor: '#f5f5f5'
+          }}>
           <div className="header-top">
             <div className="logo-and-title">
               <h1 className="app-title">Agentic AI Flow Manager</h1>
@@ -183,6 +192,7 @@ export default function Home() {
           </div>
         )}
       </div>
-    </main>
+      </main>
+    </div>
   );
 } 

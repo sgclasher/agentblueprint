@@ -486,6 +486,31 @@ body {
   position: relative;
 }
 
+/* Auth header specific styles */
+.auth-header {
+  font-family: var(--font-inter, system-ui, -apple-system, sans-serif);
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Mobile navigation classes */
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+  .mobile-nav {
+    display: block !important;
+  }
+}
+
 /* Node condition styles */
 .node .node-condition {
   font-size: 0.85rem;
