@@ -6,6 +6,7 @@ import { markdownService } from '../../services/markdownService';
 import { demoDataService } from '../../services/demoDataService';
 import StrategicInitiativesForm from './StrategicInitiativesForm';
 import ProblemsOpportunitiesForm from './ProblemsOpportunitiesForm';
+import styles from './ProfileWizard.module.css';
 
 const WIZARD_STEPS = [
   { id: 'company', title: 'Company Overview', icon: '🏢' },
@@ -516,35 +517,13 @@ function CompanyOverviewStep({ data, updateData }) {
   ];
 
   return (
-    <div style={{
-      color: 'var(--text-primary)'
-    }}>
-      <h2 style={{
-        margin: '0 0 var(--spacing-sm) 0',
-        fontSize: '1.75rem',
-        fontWeight: 'var(--font-weight-bold)',
-        color: 'var(--text-primary)'
-      }}>Company Overview</h2>
-      <p style={{
-        margin: '0 0 var(--spacing-xl) 0',
-        fontSize: '1rem',
-        color: 'var(--text-secondary)',
-        lineHeight: 'var(--line-height)',
-        opacity: 0.9
-      }}>Let's start with basic information about your client.</p>
+    <div className={styles.wizardStep}>
+      <h2>Company Overview</h2>
+      <p>Let's start with basic information about your client.</p>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: 'var(--spacing-lg)'
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          <label htmlFor="companyName" style={{
-            fontSize: '0.9rem',
-            fontWeight: 'var(--font-weight-medium)',
-            color: 'var(--text-primary)',
-            opacity: 0.9
-          }}>Company Name *</label>
+      <div className={styles.formGrid}>
+        <div className={styles.formGroup}>
+          <label htmlFor="companyName">Company Name *</label>
           <input
             id="companyName"
             type="text"
@@ -552,39 +531,18 @@ function CompanyOverviewStep({ data, updateData }) {
             onChange={(e) => updateData('companyName', e.target.value)}
             placeholder="Enter company name"
             required
-            style={{
-              padding: 'var(--spacing-md)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--border-radius)',
-              background: 'var(--btn-secondary-bg)',
-              color: 'var(--text-primary)',
-              fontSize: '1rem',
-              fontFamily: 'var(--font-family)'
-            }}
+            className={styles.formInput}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          <label htmlFor="industry" style={{
-            fontSize: '0.9rem',
-            fontWeight: 'var(--font-weight-medium)',
-            color: 'var(--text-primary)',
-            opacity: 0.9
-          }}>Industry *</label>
+        <div className={styles.formGroup}>
+          <label htmlFor="industry">Industry *</label>
           <select
             id="industry"
             value={data.industry || ''}
             onChange={(e) => updateData('industry', e.target.value)}
             required
-            style={{
-              padding: 'var(--spacing-md)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--border-radius)',
-              background: 'var(--btn-secondary-bg)',
-              color: 'var(--text-primary)',
-              fontSize: '1rem',
-              fontFamily: 'var(--font-family)'
-            }}
+            className={styles.formSelect}
           >
             <option value="">Select industry</option>
             {industries.map(industry => (
@@ -593,120 +551,58 @@ function CompanyOverviewStep({ data, updateData }) {
           </select>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          <label style={{
-            fontSize: '0.9rem',
-            fontWeight: 'var(--font-weight-medium)',
-            color: 'var(--text-primary)',
-            opacity: 0.9
-          }}>Company Size *</label>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--spacing-sm)'
-          }}>
+        <div className={styles.formGroup}>
+          <label>Company Size *</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
             {companySizes.map(size => (
-              <label key={size} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--spacing-sm)',
-                padding: 'var(--spacing-md)',
-                border: `1px solid ${data.size === size ? 'var(--accent-blue)' : 'var(--border-primary)'}`,
-                borderRadius: 'var(--border-radius)',
-                background: data.size === size ? 'rgba(59, 130, 246, 0.1)' : 'var(--btn-secondary-bg)',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast) ease'
-              }}>
+              <label key={size} className={`${styles.radioLabel} ${data.size === size ? styles.radioLabelSelected : ''}`}>
                 <input
                   type="radio"
                   name="companySize"
                   value={size}
                   checked={data.size === size}
                   onChange={(e) => updateData('size', e.target.value)}
-                  style={{ margin: 0 }}
+                  className={styles.radioInput}
                 />
-                <span style={{
-                  color: 'var(--text-primary)',
-                  fontSize: '1rem',
-                  fontWeight: 'var(--font-weight-medium)'
-                }}>{size}</span>
+                <span className={styles.radioText}>{size}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          <label htmlFor="annualRevenue" style={{
-            fontSize: '0.9rem',
-            fontWeight: 'var(--font-weight-medium)',
-            color: 'var(--text-primary)',
-            opacity: 0.9
-          }}>Annual Revenue</label>
+        <div className={styles.formGroup}>
+          <label htmlFor="annualRevenue">Annual Revenue</label>
           <input
             id="annualRevenue"
             type="text"
             value={data.annualRevenue || ''}
             onChange={(e) => updateData('annualRevenue', e.target.value)}
             placeholder="e.g., 50M, 1.2B"
-            style={{
-              padding: 'var(--spacing-md)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--border-radius)',
-              background: 'var(--btn-secondary-bg)',
-              color: 'var(--text-primary)',
-              fontSize: '1rem',
-              fontFamily: 'var(--font-family)'
-            }}
+            className={styles.formInput}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          <label htmlFor="employeeCount" style={{
-            fontSize: '0.9rem',
-            fontWeight: 'var(--font-weight-medium)',
-            color: 'var(--text-primary)',
-            opacity: 0.9
-          }}>Employee Count</label>
+        <div className={styles.formGroup}>
+          <label htmlFor="employeeCount">Employee Count</label>
           <input
             id="employeeCount"
             type="number"
             value={data.employeeCount || ''}
             onChange={(e) => updateData('employeeCount', e.target.value)}
             placeholder="Number of employees"
-            style={{
-              padding: 'var(--spacing-md)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--border-radius)',
-              background: 'var(--btn-secondary-bg)',
-              color: 'var(--text-primary)',
-              fontSize: '1rem',
-              fontFamily: 'var(--font-family)'
-            }}
+            className={styles.formInput}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-          <label htmlFor="primaryLocation" style={{
-            fontSize: '0.9rem',
-            fontWeight: 'var(--font-weight-medium)',
-            color: 'var(--text-primary)',
-            opacity: 0.9
-          }}>Primary Location</label>
+        <div className={styles.formGroup}>
+          <label htmlFor="primaryLocation">Primary Location</label>
           <input
             id="primaryLocation"
             type="text"
             value={data.primaryLocation || ''}
             onChange={(e) => updateData('primaryLocation', e.target.value)}
             placeholder="City, State/Country"
-            style={{
-              padding: 'var(--spacing-md)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: 'var(--border-radius)',
-              background: 'var(--btn-secondary-bg)',
-              color: 'var(--text-primary)',
-              fontSize: '1rem',
-              fontFamily: 'var(--font-family)'
-            }}
+            className={styles.formInput}
           />
         </div>
       </div>
@@ -959,14 +855,14 @@ function ProblemsStep({ data, updateData }) {
 
 function ImpactStep({ data, updateData }) {
   return (
-    <div className="wizard-step">
+    <div className={styles.wizardStep}>
       <h2>Impact Analysis</h2>
       <p>Quantify the cost of current challenges.</p>
       
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Hard Costs (Annual)</h3>
-        <div className="form-grid">
-          <div className="form-group">
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
             <label htmlFor="laborCosts">Labor costs from manual processes ($)</label>
             <input
               id="laborCosts"
@@ -974,10 +870,11 @@ function ImpactStep({ data, updateData }) {
               value={data.valueSellingFramework?.impact?.laborCosts || ''}
               onChange={(e) => updateData('valueSellingFramework.impact.laborCosts', e.target.value)}
               placeholder="450000"
+              className={styles.formInput}
             />
           </div>
           
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="errorCosts">Error correction costs ($)</label>
             <input
               id="errorCosts"
@@ -985,10 +882,11 @@ function ImpactStep({ data, updateData }) {
               value={data.valueSellingFramework?.impact?.errorCosts || ''}
               onChange={(e) => updateData('valueSellingFramework.impact.errorCosts', e.target.value)}
               placeholder="75000"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="downtimeCosts">System downtime costs ($)</label>
             <input
               id="downtimeCosts"
@@ -996,10 +894,11 @@ function ImpactStep({ data, updateData }) {
               value={data.valueSellingFramework?.impact?.downtimeCosts || ''}
               onChange={(e) => updateData('valueSellingFramework.impact.downtimeCosts', e.target.value)}
               placeholder="120000"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="complianceCosts">Compliance penalties/risk ($)</label>
             <input
               id="complianceCosts"
@@ -1007,25 +906,27 @@ function ImpactStep({ data, updateData }) {
               value={data.valueSellingFramework?.impact?.complianceCosts || ''}
               onChange={(e) => updateData('valueSellingFramework.impact.complianceCosts', e.target.value)}
               placeholder="25000"
+              className={styles.formInput}
             />
           </div>
         </div>
       </div>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Soft Costs</h3>
-        <div className="form-grid">
+        <div className={styles.formGrid}>
           {[
             { key: 'employeeImpact', label: 'Employee frustration/turnover impact' },
             { key: 'customerImpact', label: 'Customer satisfaction impact' },
             { key: 'competitiveImpact', label: 'Competitive disadvantage' },
             { key: 'reputationRisk', label: 'Brand/reputation risk' }
           ].map(({ key, label }) => (
-            <div key={key} className="form-group">
+            <div key={key} className={styles.formGroup}>
               <label>{label}</label>
               <select
                 value={data.valueSellingFramework?.impact?.[key] || ''}
                 onChange={(e) => updateData(`valueSellingFramework.impact.${key}`, e.target.value)}
+                className={styles.formSelect}
               >
                 <option value="">Select impact level</option>
                 <option value="High">High</option>
@@ -1037,7 +938,7 @@ function ImpactStep({ data, updateData }) {
         </div>
       </div>
       
-      <div className="form-group">
+      <div className={styles.formGroup}>
         <label htmlFor="totalAnnualImpact">Total Estimated Annual Impact ($) *</label>
         <input
           id="totalAnnualImpact"
@@ -1046,6 +947,7 @@ function ImpactStep({ data, updateData }) {
           onChange={(e) => updateData('valueSellingFramework.impact.totalAnnualImpact', e.target.value)}
           placeholder="850000"
           required
+          className={styles.formInput}
         />
       </div>
     </div>
@@ -1076,25 +978,25 @@ function SolutionStep({ data, updateData, onToggle }) {
   const selectedDifferentiators = data.valueSellingFramework?.differentiationRequirements || [];
 
   return (
-    <div className="wizard-step">
+    <div className={styles.wizardStep}>
       <h2>Solution Requirements</h2>
       <p>What capabilities are needed to solve these challenges?</p>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Solution Capabilities Needed</h3>
-        <div className="checkbox-grid">
+        <div className={styles.checkboxGrid}>
           {capabilities.map(capability => (
-            <label key={capability} className={`checkbox-card ${selectedCapabilities.includes(capability) ? 'selected' : ''}`}>
+            <label key={capability} className={`${styles.checkboxCard} ${selectedCapabilities.includes(capability) ? styles.checkboxCardSelected : ''}`}>
               <input
                 type="checkbox"
                 checked={selectedCapabilities.includes(capability)}
                 onChange={() => onToggle('valueSellingFramework.solutionCapabilities', capability)}
               />
-              <span className="checkbox-text">{capability}</span>
+              <span className={styles.checkboxText}>{capability}</span>
             </label>
           ))}
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="solutionCapabilitiesOther">Other capabilities needed</label>
           <input
             id="solutionCapabilitiesOther"
@@ -1102,26 +1004,27 @@ function SolutionStep({ data, updateData, onToggle }) {
             value={data.valueSellingFramework?.solutionCapabilitiesOther || ''}
             onChange={(e) => updateData('valueSellingFramework.solutionCapabilitiesOther', e.target.value)}
             placeholder="Specify other capabilities"
+            className={styles.formInput}
           />
         </div>
       </div>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Differentiation Requirements</h3>
         <p>What makes a solution uniquely qualified?</p>
-        <div className="checkbox-grid">
+        <div className={styles.checkboxGrid}>
           {differentiationRequirements.map(requirement => (
-            <label key={requirement} className={`checkbox-card ${selectedDifferentiators.includes(requirement) ? 'selected' : ''}`}>
+            <label key={requirement} className={`${styles.checkboxCard} ${selectedDifferentiators.includes(requirement) ? styles.checkboxCardSelected : ''}`}>
               <input
                 type="checkbox"
                 checked={selectedDifferentiators.includes(requirement)}
                 onChange={() => onToggle('valueSellingFramework.differentiationRequirements', requirement)}
               />
-              <span className="checkbox-text">{requirement}</span>
+              <span className={styles.checkboxText}>{requirement}</span>
             </label>
           ))}
         </div>
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="differentiationOther">Other differentiators</label>
           <input
             id="differentiationOther"
@@ -1129,14 +1032,15 @@ function SolutionStep({ data, updateData, onToggle }) {
             value={data.valueSellingFramework?.differentiationOther || ''}
             onChange={(e) => updateData('valueSellingFramework.differentiationOther', e.target.value)}
             placeholder="Specify other differentiation requirements"
+            className={styles.formInput}
           />
         </div>
       </div>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Value / ROI Expectations</h3>
-        <div className="form-grid">
-          <div className="form-group">
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
             <label htmlFor="costReduction">Target cost reduction</label>
             <input
               id="costReduction"
@@ -1144,9 +1048,10 @@ function SolutionStep({ data, updateData, onToggle }) {
               value={data.valueSellingFramework?.roiExpectations?.costReduction || ''}
               onChange={(e) => updateData('valueSellingFramework.roiExpectations.costReduction', e.target.value)}
               placeholder="25% or $500K"
+              className={styles.formInput}
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="efficiencyImprovement">Target efficiency improvement</label>
             <input
               id="efficiencyImprovement"
@@ -1154,9 +1059,10 @@ function SolutionStep({ data, updateData, onToggle }) {
               value={data.valueSellingFramework?.roiExpectations?.efficiencyImprovement || ''}
               onChange={(e) => updateData('valueSellingFramework.roiExpectations.efficiencyImprovement', e.target.value)}
               placeholder="40%"
+              className={styles.formInput}
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="paybackPeriod">Expected payback period</label>
             <input
               id="paybackPeriod"
@@ -1164,9 +1070,10 @@ function SolutionStep({ data, updateData, onToggle }) {
               value={data.valueSellingFramework?.roiExpectations?.paybackPeriod || ''}
               onChange={(e) => updateData('valueSellingFramework.roiExpectations.paybackPeriod', e.target.value)}
               placeholder="12 months"
+              className={styles.formInput}
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="targetROI">Target ROI</label>
             <input
               id="targetROI"
@@ -1174,9 +1081,10 @@ function SolutionStep({ data, updateData, onToggle }) {
               value={data.valueSellingFramework?.roiExpectations?.targetROI || ''}
               onChange={(e) => updateData('valueSellingFramework.roiExpectations.targetROI', e.target.value)}
               placeholder="300%"
+              className={styles.formInput}
             />
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="timeToFirstValue">Time to first value</label>
             <input
               id="timeToFirstValue"
@@ -1184,27 +1092,30 @@ function SolutionStep({ data, updateData, onToggle }) {
               value={data.valueSellingFramework?.roiExpectations?.timeToFirstValue || ''}
               onChange={(e) => updateData('valueSellingFramework.roiExpectations.timeToFirstValue', e.target.value)}
               placeholder="3 months"
+              className={styles.formInput}
             />
           </div>
         </div>
       </div>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Success Metrics</h3>
         <p>How will success be measured?</p>
-        {['Process cycle time reduction', 'Error rate improvement', 'Cost per transaction reduction', 'Employee productivity increase', 'Customer satisfaction improvement', 'Revenue impact'].map(metric => (
-          <label key={metric} className={`checkbox-card ${
-            data.valueSellingFramework?.successMetrics?.includes(metric) ? 'selected' : ''
-          }`}>
-            <input
-              type="checkbox"
-              checked={data.valueSellingFramework?.successMetrics?.includes(metric) || false}
-              onChange={() => onToggle('valueSellingFramework.successMetrics', metric)}
-            />
-            <span className="checkbox-text">{metric}</span>
-          </label>
-        ))}
-        <div className="form-group">
+        <div className={styles.checkboxGrid}>
+            {['Process cycle time reduction', 'Error rate improvement', 'Cost per transaction reduction', 'Employee productivity increase', 'Customer satisfaction improvement', 'Revenue impact'].map(metric => (
+            <label key={metric} className={`${styles.checkboxCard} ${
+                data.valueSellingFramework?.successMetrics?.includes(metric) ? styles.checkboxCardSelected : ''
+            }`}>
+                <input
+                type="checkbox"
+                checked={data.valueSellingFramework?.successMetrics?.includes(metric) || false}
+                onChange={() => onToggle('valueSellingFramework.successMetrics', metric)}
+                />
+                <span className={styles.checkboxText}>{metric}</span>
+            </label>
+            ))}
+        </div>
+        <div className={styles.formGroup}>
           <label htmlFor="successMetricsTargets">Specific targets</label>
           <textarea
             id="successMetricsTargets"
@@ -1212,6 +1123,7 @@ function SolutionStep({ data, updateData, onToggle }) {
             onChange={(e) => updateData('valueSellingFramework.successMetricsTargets', e.target.value)}
             placeholder="Detail the numerical targets (e.g., Reduce processing time from 5 days to 1 day)"
             rows={3}
+            className={styles.formTextarea}
           />
         </div>
       </div>
@@ -1229,14 +1141,14 @@ function DecisionStep({ data, updateData }) {
   ];
 
   return (
-    <div className="wizard-step">
+    <div className={styles.wizardStep}>
       <h2>Decision Process</h2>
       <p>Who are the key stakeholders and decision makers?</p>
       
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Key Decision Makers</h3>
-        <div className="form-grid">
-          <div className="form-group">
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
             <label htmlFor="economicBuyerName">Economic Buyer Name *</label>
             <input
               id="economicBuyerName"
@@ -1245,10 +1157,11 @@ function DecisionStep({ data, updateData }) {
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.economicBuyer.name', e.target.value)}
               placeholder="Sarah Chen"
               required
+              className={styles.formInput}
             />
           </div>
           
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="economicBuyerTitle">Economic Buyer Title</label>
             <input
               id="economicBuyerTitle"
@@ -1256,10 +1169,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.economicBuyer?.title || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.economicBuyer.title', e.target.value)}
               placeholder="CEO"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="economicBuyerBudget">Budget Authority ($)</label>
             <input
               id="economicBuyerBudget"
@@ -1267,10 +1181,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.economicBuyer?.budget || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.economicBuyer.budget', e.target.value)}
               placeholder="1000000"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="technicalBuyerName">Technical Buyer Name</label>
             <input
               id="technicalBuyerName"
@@ -1278,10 +1193,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.technicalBuyer?.name || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.technicalBuyer.name', e.target.value)}
               placeholder="Mike Rodriguez"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="technicalBuyerTitle">Technical Buyer Title</label>
             <input
               id="technicalBuyerTitle"
@@ -1289,10 +1205,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.technicalBuyer?.title || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.technicalBuyer.title', e.target.value)}
               placeholder="CTO"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="championName">Champion Name</label>
             <input
               id="championName"
@@ -1300,10 +1217,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.champion?.name || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.champion.name', e.target.value)}
               placeholder="Lisa Park"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="championTitle">Champion Title</label>
             <input
               id="championTitle"
@@ -1311,10 +1229,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.champion?.title || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.champion.title', e.target.value)}
               placeholder="VP Operations"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="influencers">Influencers</label>
             <input
               id="influencers"
@@ -1322,15 +1241,16 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.decisionMakers?.influencers || ''}
               onChange={(e) => updateData('valueSellingFramework.decisionMakers.influencers', e.target.value)}
               placeholder="Head of Customer Success, Engineering Manager"
+              className={styles.formInput}
             />
           </div>
         </div>
       </div>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Buying Process</h3>
-        <div className="form-grid">
-          <div className="form-group">
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
             <label htmlFor="timeline">Decision timeline</label>
             <input
               id="timeline"
@@ -1338,10 +1258,11 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.buyingProcess?.timeline || ''}
               onChange={(e) => updateData('valueSellingFramework.buyingProcess.timeline', e.target.value)}
               placeholder="6 months"
+              className={styles.formInput}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="budgetCycle">Budget cycle</label>
             <input
               id="budgetCycle"
@@ -1349,16 +1270,17 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.buyingProcess?.budgetCycle || ''}
               onChange={(e) => updateData('valueSellingFramework.buyingProcess.budgetCycle', e.target.value)}
               placeholder="Q1 planning cycle"
+              className={styles.formInput}
             />
           </div>
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label>Evaluation criteria</label>
-          <div className="checkbox-grid">
+          <div className={styles.checkboxGrid}>
             {evaluationCriteria.map(criteria => (
-              <label key={criteria} className={`checkbox-card ${
-                data.valueSellingFramework?.buyingProcess?.evaluationCriteria?.includes(criteria) ? 'selected' : ''
+              <label key={criteria} className={`${styles.checkboxCard} ${
+                data.valueSellingFramework?.buyingProcess?.evaluationCriteria?.includes(criteria) ? styles.checkboxCardSelected : ''
               }`}>
                 <input
                   type="checkbox"
@@ -1371,11 +1293,11 @@ function DecisionStep({ data, updateData }) {
                     updateData('valueSellingFramework.buyingProcess.evaluationCriteria', updated);
                   }}
                 />
-                <span className="checkbox-text">{criteria}</span>
+                <span className={styles.checkboxText}>{criteria}</span>
               </label>
             ))}
           </div>
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="evaluationOther">Other evaluation criteria</label>
             <input
               id="evaluationOther"
@@ -1383,16 +1305,17 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.buyingProcess?.evaluationOther || ''}
               onChange={(e) => updateData('valueSellingFramework.buyingProcess.evaluationOther', e.target.value)}
               placeholder="Specify other criteria"
+              className={styles.formInput}
             />
           </div>
         </div>
       </div>
 
-      <div className="form-section">
+      <div className={styles.formSection}>
         <h3>Risks of Inaction</h3>
         <p>Consequences of doing nothing:</p>
-        <div className="form-grid">
-          <div className="form-group">
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
             <label htmlFor="costEscalation">Continued cost escalation (annually) ($)</label>
             <input
               id="costEscalation"
@@ -1400,15 +1323,17 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.risksOfInaction?.costEscalation || ''}
               onChange={(e) => updateData('valueSellingFramework.risksOfInaction.costEscalation', e.target.value)}
               placeholder="1200000"
+              className={styles.formInput}
             />
           </div>
           
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="employeeAttrition">Employee attrition risk</label>
             <select
               id="employeeAttrition"
               value={data.valueSellingFramework?.risksOfInaction?.employeeAttrition || ''}
               onChange={(e) => updateData('valueSellingFramework.risksOfInaction.employeeAttrition', e.target.value)}
+              className={styles.formSelect}
             >
               <option value="">Select risk level</option>
               <option value="High">High</option>
@@ -1417,7 +1342,7 @@ function DecisionStep({ data, updateData }) {
             </select>
           </div>
 
-          <div className="form-group">
+          <div className={styles.formGroup}>
             <label htmlFor="threeYearCost">Estimated cost of inaction (3 years) ($)</label>
             <input
               id="threeYearCost"
@@ -1425,11 +1350,12 @@ function DecisionStep({ data, updateData }) {
               value={data.valueSellingFramework?.risksOfInaction?.threeYearCost || ''}
               onChange={(e) => updateData('valueSellingFramework.risksOfInaction.threeYearCost', e.target.value)}
               placeholder="3600000"
+              className={styles.formInput}
             />
           </div>
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="competitiveDisadvantage">Competitive disadvantage</label>
           <textarea
             id="competitiveDisadvantage"
@@ -1437,10 +1363,11 @@ function DecisionStep({ data, updateData }) {
             onChange={(e) => updateData('valueSellingFramework.risksOfInaction.competitiveDisadvantage', e.target.value)}
             placeholder="Describe the competitive impact of inaction"
             rows={2}
+            className={styles.formTextarea}
           />
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="customerSatisfaction">Customer satisfaction decline</label>
           <textarea
             id="customerSatisfaction"
@@ -1448,10 +1375,11 @@ function DecisionStep({ data, updateData }) {
             onChange={(e) => updateData('valueSellingFramework.risksOfInaction.customerSatisfaction', e.target.value)}
             placeholder="Describe the customer impact"
             rows={2}
+            className={styles.formTextarea}
           />
         </div>
 
-        <div className="form-group">
+        <div className={styles.formGroup}>
           <label htmlFor="complianceRisk">Regulatory compliance risk</label>
           <textarea
             id="complianceRisk"
@@ -1459,6 +1387,7 @@ function DecisionStep({ data, updateData }) {
             onChange={(e) => updateData('valueSellingFramework.risksOfInaction.complianceRisk', e.target.value)}
             placeholder="Describe compliance risks"
             rows={2}
+            className={styles.formTextarea}
           />
         </div>
       </div>
@@ -1508,6 +1437,12 @@ function AIAssessmentStep({ data, updateData }) {
   const addQuickWin = () => {
     const quickWins = [...(data.aiOpportunityAssessment?.quickWins || [])];
     quickWins.push({ name: '', impact: '', timeline: '' });
+    updateData('aiOpportunityAssessment.quickWins', quickWins);
+  };
+
+  const removeQuickWin = (index) => {
+    const quickWins = [...(data.aiOpportunityAssessment?.quickWins || [])];
+    quickWins.splice(index, 1);
     updateData('aiOpportunityAssessment.quickWins', quickWins);
   };
 
@@ -1777,251 +1712,4 @@ function AIAssessmentStep({ data, updateData }) {
       </div>
     </div>
   );
-}
-
-// Add custom styles for the enhanced form elements
-const styles = `
-  .ai-readiness-scoring {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 1rem 0;
-  }
-
-  .scoring-criteria {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .scoring-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.5rem;
-    background: white;
-    border-radius: 4px;
-    border: 1px solid #e0e0e0;
-  }
-
-  .scoring-item label {
-    flex: 1;
-    font-weight: 500;
-    margin: 0;
-  }
-
-  .score-input {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 120px;
-  }
-
-  .score-input input[type="range"] {
-    flex: 1;
-    min-width: 80px;
-  }
-
-  .score-value {
-    font-weight: bold;
-    color: #2563eb;
-    min-width: 30px;
-    text-align: center;
-  }
-
-  .total-score {
-    text-align: center;
-    margin-top: 1rem;
-    padding: 0.75rem;
-    background: #e0f2fe;
-    border-radius: 6px;
-    color: #0277bd;
-    font-size: 1.1rem;
-  }
-
-  .opportunity-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin: 1rem 0;
-    background: #fafafa;
-  }
-
-  .opportunity-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  .opportunity-header h4 {
-    margin: 0;
-    color: #1565c0;
-  }
-
-  .btn-danger {
-    background: #ef4444;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .btn-danger:hover {
-    background: #dc2626;
-  }
-
-  .btn-small {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-  }
-
-  .btn-secondary {
-    background: #6b7280;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin: 0.5rem 0;
-  }
-
-  .btn-secondary:hover {
-    background: #4b5563;
-  }
-
-  .quick-win-item {
-    background: #f0f9ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 6px;
-    padding: 1rem;
-    margin: 0.5rem 0;
-  }
-
-  .score-display {
-    text-align: center;
-    font-weight: bold;
-    color: #2563eb;
-    margin-top: 0.25rem;
-  }
-
-  .checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 0.5rem;
-    margin: 1rem 0;
-  }
-
-  .checkbox-card {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: white;
-  }
-
-  .checkbox-card:hover {
-    border-color: #2563eb;
-    background: #f8fafc;
-  }
-
-  .checkbox-card.selected {
-    border-color: #2563eb;
-    background: #eff6ff;
-  }
-
-  .checkbox-card input[type="checkbox"] {
-    margin: 0;
-  }
-
-  .checkbox-text {
-    flex: 1;
-    font-size: 0.9rem;
-  }
-
-  .form-section {
-    margin: 2rem 0;
-    padding: 1.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fafafa;
-  }
-
-  .form-section h3 {
-    margin-top: 0;
-    color: #1f2937;
-    border-bottom: 2px solid #e5e7eb;
-    padding-bottom: 0.5rem;
-  }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .form-group label {
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 0.25rem;
-  }
-
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-  }
-
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  }
-
-  @media (max-width: 768px) {
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .checkbox-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .opportunity-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = styles;
-  document.head.appendChild(styleSheet);
 } 

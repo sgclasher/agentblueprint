@@ -70,6 +70,8 @@ npm test             # Full test suite
 - **Complete Page Consistency**: All pages (ServiceNow, Profiles, Timeline, Auth) now use consistent theming
 - **ServiceNow Connector Styling**: Fixed login/connector page to use dark theme and display logo properly
 - **Profile Detail Page Updates**: Removed hardcoded colors, added GlobalHeader, uses CSS variables
+- **Profile Page Refactoring**: Fully refactored `profile-detail.css` and the `ProfileWizard` component to use the global design system. Replaced all inline styles and hardcoded values with theme-aware CSS Modules, ensuring consistent, maintainable styling across light and dark modes.
+- **Next.js Configuration**: Set `experimental.cssChunking` to `'strict'` to prevent inconsistent CSS resolution order between development and production builds.
 - **Button System Standardization**: All buttons now use CSS variables instead of hardcoded colors
 - **Light/Dark Mode Support**: Global theme toggle works across entire application with persistence
 - **App Rebranding**: Updated from "Agentic AI Flow Visualizer" to "Agent Blueprint" throughout
@@ -217,6 +219,7 @@ Phase 5 is now **COMPLETE**. The application has consistent, professional themin
 
 #### ✅ **Technical Implementation**
 - **CSS Variables Integration**: Converted ProfileWizard to use global CSS variable system
+- **Architectural Refactor**: Fully refactored the component to use CSS Modules (`ProfileWizard.module.css`), eliminating all inline styles. This ensures that the component is fully theme-aware and aligns with modern, scalable CSS best practices.
 - **Professional Styling**: Consistent glass morphism effects and theme support
 - **Hover Effects**: Step circles scale and highlight on hover for better interaction feedback
 - **Validation Framework**: New `getStepValidationStatus()` function for visual indicators
@@ -230,7 +233,10 @@ Phase 5 is now **COMPLETE**. The application has consistent, professional themin
 - **Edit capability** - finally can modify existing profiles easily
 
 ### **Files Modified:**
-- `app/profiles/components/ProfileWizard.js` - Major UX overhaul
+- `app/profiles/components/ProfileWizard.js` - Complete architectural refactor to CSS Modules
+- `app/profiles/components/ProfileWizard.module.css` - New stylesheet for the wizard (created)
+- `app/profiles/profile-detail.css` - Refactored to use global CSS variables
+- `next.config.js` - Added experimental flag for CSS chunking
 - `app/profiles/[id]/edit/page.js` - New edit route (created)
 - `app/profiles/[id]/page.js` - Fixed edit button navigation
 

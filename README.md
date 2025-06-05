@@ -2,7 +2,7 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional four-feature platform with consistent UI theming across all pages. Recent major addition: **Phase 5 UI Consistency & Design System** with global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) now have consistent professional theming with working light/dark mode toggle. **Latest enhancements include working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system with full edit capability, complete user authentication, and seamless database migration. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional four-feature platform with consistent UI theming across all pages. Recent major addition: **Phase 5 UI Consistency & Design System** with global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) now have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system with full edit capability, complete user authentication, and seamless database migration. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
 
 **🚀 Next Steps:** AI-powered timeline generation using ChatGPT 4o, PDF export capabilities, and multi-platform connectors. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
 
@@ -146,7 +146,7 @@ npm test
 ## Technical Stack
 
 ### **Frontend**
-- Next.js 15 with App Router
+- Next.js 15 with App Router (configured for strict CSS chunking)
 - React 19 with functional components
 - ReactFlow for interactive diagrams
 - Zustand for state management
@@ -170,6 +170,7 @@ npm test
 - Jest testing framework with Supabase mocking
 - ESLint for code quality
 - GitHub Actions for CI/CD
+- CSS Modules for component-level styling, ensuring a scalable and conflict-free architecture
 
 ## Testing
 
