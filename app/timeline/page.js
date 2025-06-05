@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import useBusinessProfileStore from '../store/useBusinessProfileStore';
 import { ProfileService } from '../services/profileService';
+import GlobalHeader from '../components/GlobalHeader';
 import TimelineSidebar from './components/TimelineSidebar';
 import TimelineContent from './components/TimelineContent';
 import MetricsWidget from './components/MetricsWidget';
@@ -203,17 +204,22 @@ export default function TimelinePage() {
   
   if (profileIdFromUrl && isLoadingProfileAndTimeline) {
     return (
-      <div className="timeline-container">
-        <div className="timeline-empty" style={{height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
-          <div className="loading-spinner"></div>
-          <p style={{marginTop: '20px', fontSize: '1.2rem'}}>Loading Profile and Timeline...</p>
+      <div style={{ minHeight: '100vh' }}>
+        <GlobalHeader />
+        <div className="timeline-container" style={{ height: 'calc(100vh - 80px)' }}>
+          <div className="timeline-empty" style={{height: '100%', width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+            <div className="loading-spinner"></div>
+            <p style={{marginTop: '20px', fontSize: '1.2rem'}}>Loading Profile and Timeline...</p>
+          </div>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="timeline-container" data-timeline-theme={theme}>
+    <div style={{ minHeight: '100vh' }}>
+      <GlobalHeader />
+      <div className="timeline-container" data-timeline-theme={theme} style={{ height: 'calc(100vh - 80px)' }}>
       {/* Left Sidebar - Timeline Navigation */}
       <TimelineSidebar 
         sections={timelineSections}
@@ -288,6 +294,7 @@ export default function TimelinePage() {
         />
       )}
 
+      </div>
     </div>
   );
 } 

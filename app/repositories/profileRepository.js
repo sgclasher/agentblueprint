@@ -23,6 +23,12 @@ export class ProfileRepository {
         return this.createProfileLocalStorage(profileData);
       }
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn('⚠️ Supabase not configured, falling back to localStorage');
+        return this.createProfileLocalStorage(profileData);
+      }
+
       // Save to Supabase
       const { data, error } = await supabase
         .from('client_profiles')
@@ -39,14 +45,30 @@ export class ProfileRepository {
         .single();
 
       if (error) {
-        console.error('Supabase error, falling back to localStorage:', error);
+        console.error('❌ Supabase create error:', {
+          error: error,
+          code: error?.code,
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
+          userId,
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
+          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing'
+        });
+        console.warn('🔄 Falling back to localStorage due to Supabase error');
         return this.createProfileLocalStorage(profileData);
       }
 
       // Transform database record to expected format
       return this.transformFromDatabase(data);
     } catch (error) {
-      console.error('Error creating profile, falling back to localStorage:', error);
+      console.error('❌ Exception in createProfile:', {
+        error: error,
+        message: error?.message,
+        stack: error?.stack,
+        userId
+      });
+      console.warn('🔄 Falling back to localStorage due to exception');
       return this.createProfileLocalStorage(profileData);
     }
   }
@@ -63,6 +85,12 @@ export class ProfileRepository {
         return this.getProfilesLocalStorage();
       }
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn('⚠️ Supabase not configured, falling back to localStorage');
+        return this.getProfilesLocalStorage();
+      }
+
       // Get from Supabase
       const { data, error } = await supabase
         .from('client_profiles')
@@ -71,7 +99,17 @@ export class ProfileRepository {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase error, falling back to localStorage:', error);
+        console.error('❌ Supabase getProfiles error:', {
+          error: error,
+          code: error?.code,
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
+          userId,
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
+          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing'
+        });
+        console.warn('🔄 Falling back to localStorage due to Supabase error');
         return this.getProfilesLocalStorage();
       }
 
@@ -83,12 +121,18 @@ export class ProfileRepository {
       // If no Supabase profiles, check for migration opportunity
       const localProfiles = this.getProfilesLocalStorage();
       if (localProfiles.length > 0) {
-        console.log('Found localStorage profiles, consider migration');
+        console.log('📋 Found localStorage profiles, consider migration');
       }
 
       return data ? data.map(this.transformFromDatabase) : [];
     } catch (error) {
-      console.error('Error getting profiles, falling back to localStorage:', error);
+      console.error('❌ Exception in getProfiles:', {
+        error: error,
+        message: error?.message,
+        stack: error?.stack,
+        userId
+      });
+      console.warn('🔄 Falling back to localStorage due to exception');
       return this.getProfilesLocalStorage();
     }
   }
@@ -106,6 +150,12 @@ export class ProfileRepository {
         return this.getProfileLocalStorage(profileId);
       }
 
+      // Check if Supabase is properly configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.warn('⚠️ Supabase not configured, falling back to localStorage');
+        return this.getProfileLocalStorage(profileId);
+      }
+
       // Try Supabase first
       const { data, error } = await supabase
         .from('client_profiles')
@@ -115,15 +165,20 @@ export class ProfileRepository {
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        console.error('Supabase error, falling back to localStorage:', {
-          error,
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
+        console.error('❌ Supabase error details:', {
+          error: error,
+          errorType: typeof error,
+          errorKeys: error ? Object.keys(error) : [],
+          code: error?.code,
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
           profileId,
-          userId
+          userId,
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
+          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing'
         });
+        console.warn('🔄 Falling back to localStorage due to Supabase error');
         return this.getProfileLocalStorage(profileId);
       }
 
@@ -134,7 +189,14 @@ export class ProfileRepository {
       // If not found in Supabase, check localStorage
       return this.getProfileLocalStorage(profileId);
     } catch (error) {
-      console.error('Error getting profile, falling back to localStorage:', error);
+      console.error('❌ Exception in getProfile:', {
+        error: error,
+        message: error?.message,
+        stack: error?.stack,
+        profileId,
+        userId
+      });
+      console.warn('🔄 Falling back to localStorage due to exception');
       return this.getProfileLocalStorage(profileId);
     }
   }
@@ -382,15 +444,20 @@ export class ProfileRepository {
    * Transform database record to expected profile format
    */
   static transformFromDatabase(dbRecord) {
+    // Extract profile data and ensure Supabase ID takes precedence
+    const { id: oldId, ...profileDataWithoutId } = dbRecord.profile_data || {};
+    
     return {
-      id: dbRecord.id,
-      ...dbRecord.profile_data,
+      id: dbRecord.id, // Always use the Supabase UUID as the primary ID
+      ...profileDataWithoutId, // Spread profile data but exclude any old ID
       markdown: dbRecord.markdown_content,
       createdAt: dbRecord.created_at,
       updatedAt: dbRecord.updated_at,
       // Add database-specific fields
       _supabaseRecord: true,
-      _userId: dbRecord.user_id
+      _userId: dbRecord.user_id,
+      // Store the original localStorage ID for reference if needed
+      _originalId: oldId || null
     };
   }
 

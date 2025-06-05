@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle, XCircle, Database, ArrowRight, X } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, X, Loader2, Database } from 'lucide-react';
 import { ProfileService } from '../../services/profileService';
 import useAuthStore from '../../store/useAuthStore';
 
@@ -9,19 +9,17 @@ export default function MigrationBanner() {
   const { user, isAuthenticated } = useAuthStore();
   const [migrationStatus, setMigrationStatus] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [isMigrating, setIsMigrating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [migrationResult, setMigrationResult] = useState(null);
 
+  // Check migration status when user authenticates
   useEffect(() => {
-    checkMigrationStatus();
+    if (isAuthenticated && user) {
+      checkMigrationNeeded();
+    }
   }, [isAuthenticated, user]);
 
-  const checkMigrationStatus = async () => {
-    if (!isAuthenticated || !user) {
-      setIsVisible(false);
-      return;
-    }
-
+  const checkMigrationNeeded = async () => {
     try {
       const status = await ProfileService.checkMigrationStatus();
       setMigrationStatus(status);
@@ -36,248 +34,252 @@ export default function MigrationBanner() {
   };
 
   const handleMigrate = async () => {
-    setIsMigrating(true);
     try {
+      setIsLoading(true);
+      setMigrationResult(null);
+      
       const result = await ProfileService.migrateLocalStorageProfiles();
       setMigrationResult(result);
       
       if (result.success) {
-        setIsVisible(false);
-        // Refresh the page or emit an event to update profile lists
-        window.dispatchEvent(new CustomEvent('profilesMigrated'));
+        // Hide banner after successful migration
+        setTimeout(() => {
+          setIsVisible(false);
+          // Refresh the page to show migrated profiles
+          window.location.reload();
+        }, 3000);
       }
     } catch (error) {
       console.error('Migration error:', error);
-      setMigrationResult({
-        success: false,
-        error: 'Migration failed. Please try again.'
+      setMigrationResult({ 
+        success: false, 
+        error: 'Migration failed. Please try again.' 
       });
     } finally {
-      setIsMigrating(false);
+      setIsLoading(false);
     }
   };
 
   const handleDismiss = () => {
     setIsVisible(false);
-    // Store dismissal in localStorage to avoid showing again this session
+    // Store dismissal in localStorage to not show again
     localStorage.setItem('migrationBannerDismissed', 'true');
   };
 
-  const handleSkip = () => {
-    setIsVisible(false);
-    // Store permanent skip preference
-    localStorage.setItem('migrationSkipped', 'true');
-  };
-
-  // Don't show if not authenticated, no migration needed, or previously dismissed
-  if (!isVisible || !migrationStatus?.needsMigration) {
+  // Don't show if user is not authenticated or no migration needed
+  if (!isAuthenticated || !isVisible || !migrationStatus?.needsMigration) {
     return null;
   }
 
-  // Check if user has dismissed or skipped migration
-  if (localStorage.getItem('migrationBannerDismissed') === 'true' || 
-      localStorage.getItem('migrationSkipped') === 'true') {
+  // Check if user previously dismissed
+  if (localStorage.getItem('migrationBannerDismissed') === 'true') {
     return null;
   }
 
   return (
     <div className="migration-banner">
-      <div className="migration-banner-content">
+      <div className="migration-content">
         <div className="migration-icon">
           <Database size={24} className="text-blue-400" />
         </div>
         
-        <div className="migration-text">
+        <div className="migration-info">
           <h3 className="migration-title">
-            Welcome back! Migrate your profiles to cloud storage
+            Welcome back! Secure your profiles in the cloud
           </h3>
           <p className="migration-description">
-            We found {migrationStatus.localCount} profile{migrationStatus.localCount !== 1 ? 's' : ''} 
-            stored locally. Migrate them to your secure cloud account for access across devices.
+            We found {migrationStatus.localCount} profile{migrationStatus.localCount !== 1 ? 's' : ''} stored locally. 
+            Migrate them to your secure cloud account for access across devices and backup protection.
           </p>
           
           {migrationResult && (
             <div className={`migration-result ${migrationResult.success ? 'success' : 'error'}`}>
               {migrationResult.success ? (
-                <CheckCircle size={16} className="text-green-400" />
+                <div className="result-success">
+                  <CheckCircle size={16} />
+                  <span>Successfully migrated {migrationResult.migrated} profile{migrationResult.migrated !== 1 ? 's' : ''}!</span>
+                </div>
               ) : (
-                <XCircle size={16} className="text-red-400" />
+                <div className="result-error">
+                  <AlertCircle size={16} />
+                  <span>{migrationResult.error}</span>
+                </div>
               )}
-              <span>{migrationResult.message || migrationResult.error}</span>
             </div>
           )}
         </div>
-
+        
         <div className="migration-actions">
-          <button
+          <button 
+            className="btn btn-primary"
             onClick={handleMigrate}
-            disabled={isMigrating}
-            className="btn btn-primary btn-sm migration-btn-migrate"
+            disabled={isLoading}
           >
-            {isMigrating ? (
+            {isLoading ? (
               <>
-                <div className="loading-spinner-sm"></div>
+                <Loader2 size={16} className="animate-spin" />
                 Migrating...
               </>
             ) : (
               <>
-                <ArrowRight size={16} />
+                <Upload size={16} />
                 Migrate Now
               </>
             )}
           </button>
           
-          <button
-            onClick={handleSkip}
-            className="btn btn-ghost btn-sm migration-btn-skip"
-          >
-            Skip
-          </button>
-          
-          <button
+          <button 
+            className="btn btn-ghost"
             onClick={handleDismiss}
-            className="migration-btn-close"
+            disabled={isLoading}
           >
             <X size={16} />
+            Later
           </button>
         </div>
       </div>
-
+      
       <style jsx>{`
         .migration-banner {
-          background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+          background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
           border: 1px solid rgba(59, 130, 246, 0.2);
           border-radius: 12px;
-          margin: 1rem 0;
-          padding: 1rem 1.5rem;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
           backdrop-filter: blur(10px);
-          animation: slideDown 0.3s ease-out;
         }
-
-        .migration-banner-content {
+        
+        .migration-content {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 1rem;
         }
-
+        
         .migration-icon {
           flex-shrink: 0;
-          padding: 0.5rem;
+          width: 48px;
+          height: 48px;
           background: rgba(59, 130, 246, 0.1);
-          border-radius: 8px;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-
-        .migration-text {
+        
+        .migration-info {
           flex: 1;
         }
-
+        
         .migration-title {
-          font-size: 1rem;
+          font-size: 1.1rem;
           font-weight: 600;
           color: #f1f5f9;
-          margin: 0 0 0.25rem 0;
+          margin: 0 0 0.5rem 0;
         }
-
+        
         .migration-description {
-          font-size: 0.875rem;
           color: #cbd5e1;
-          margin: 0;
-          line-height: 1.4;
+          margin: 0 0 1rem 0;
+          line-height: 1.5;
         }
-
+        
         .migration-result {
+          padding: 0.75rem;
+          border-radius: 8px;
+          margin-top: 1rem;
+        }
+        
+        .migration-result.success {
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        
+        .migration-result.error {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .result-success,
+        .result-error {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          margin-top: 0.5rem;
-          font-size: 0.875rem;
+          font-size: 0.9rem;
         }
-
-        .migration-result.success {
+        
+        .result-success {
           color: #10b981;
         }
-
-        .migration-result.error {
-          color: #f87171;
+        
+        .result-error {
+          color: #ef4444;
         }
-
+        
         .migration-actions {
           display: flex;
-          align-items: center;
+          flex-direction: column;
           gap: 0.5rem;
           flex-shrink: 0;
         }
-
-        .migration-btn-migrate {
+        
+        .btn {
           display: flex;
           align-items: center;
-          gap: 0.25rem;
-        }
-
-        .migration-btn-skip {
-          color: #94a3b8;
-        }
-
-        .migration-btn-skip:hover {
-          color: #cbd5e1;
-        }
-
-        .migration-btn-close {
-          background: none;
+          justify-content: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
           border: none;
-          color: #94a3b8;
+          font-size: 0.9rem;
+          font-weight: 500;
           cursor: pointer;
-          padding: 0.25rem;
-          border-radius: 4px;
-          transition: all 0.2s;
+          transition: all 0.2s ease;
+          white-space: nowrap;
         }
-
-        .migration-btn-close:hover {
+        
+        .btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .btn-primary {
+          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-ghost {
+          background: transparent;
+          color: #94a3b8;
+          border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+        
+        .btn-ghost:hover:not(:disabled) {
+          background: rgba(148, 163, 184, 0.1);
           color: #cbd5e1;
-          background: rgba(255, 255, 255, 0.1);
         }
-
-        .loading-spinner-sm {
-          width: 16px;
-          height: 16px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top: 2px solid #ffffff;
-          border-radius: 50%;
+        
+        .animate-spin {
           animation: spin 1s linear infinite;
         }
-
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
+        
         @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
-
+        
         @media (max-width: 768px) {
-          .migration-banner {
-            margin: 0.5rem 0;
-            padding: 1rem;
-          }
-
-          .migration-banner-content {
+          .migration-content {
             flex-direction: column;
-            align-items: flex-start;
-            gap: 0.75rem;
           }
-
+          
           .migration-actions {
-            align-self: flex-end;
-            width: 100%;
-            justify-content: flex-end;
+            flex-direction: row;
           }
         }
       `}</style>

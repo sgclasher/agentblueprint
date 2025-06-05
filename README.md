@@ -1,19 +1,20 @@
-# Agentic AI Flow Visualizer & Business AI Advisory Platform
+# Agent Blueprint & Business AI Advisory Platform
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional four-feature platform with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system, and complete user authentication. Recent major additions include modular form architecture with independent components, professional enterprise-grade dark theme with glass morphism design, smart demo data management, and complete visual overhaul. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers (ProfileService, MarkdownService, DemoDataService) and secure multi-user authentication. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional four-feature platform with consistent UI theming across all pages. Recent major addition: **Phase 5 UI Consistency & Design System** with global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) now have consistent professional theming with working light/dark mode toggle. Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system, complete user authentication, and seamless database migration. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
 
-**🚀 Next Steps:** Database migration to connect client profiles with authenticated users, AI-powered timeline generation using ChatGPT 4o, PDF export capabilities, and multi-platform connectors. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
+**🚀 Next Steps:** AI-powered timeline generation using ChatGPT 4o, PDF export capabilities, and multi-platform connectors. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
 
 ## Project Overview
 
-A Next.js application that serves four primary functions:
+A Next.js application that serves five primary functions:
 
 1. **ServiceNow Agentic AI Visualizer**: Transform ServiceNow agentic AI data into interactive flow diagrams
 2. **AI Transformation Timeline**: Business advisory tool that generates personalized AI adoption roadmaps  
 3. **Client Profile Management**: Comprehensive business intelligence system using structured methodology to create client "digital twins"
-4. **User Authentication & Management**: Secure multi-user system with encrypted credential storage and profile management
+4. **User Authentication & Database Management**: Secure multi-user system with encrypted credential storage, profile management, and seamless localStorage/Supabase migration
+5. **User Profile Management**: Complete user account management with profile editing, preferences, and account information
 
 The platform positions itself as a sophisticated enterprise tool for AI transformation planning, providing immediate value through visualization and analysis while capturing comprehensive business intelligence for strategic decision-making.
 
@@ -38,19 +39,28 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **ProfileWizard**: 8-step guided form implementing structured business intelligence methodology
 - **Business Intelligence Capture**: Company overview, strategic issues, quantified impact analysis
 - **Structured Framework**: Expected Outcomes → Problems & Opportunities → Solutions & Value → Architecture Assessment
-- **Structured Markdown Storage**: Prevents AI hallucinations while maintaining human readability
+- **Database Integration**: Seamless localStorage/Supabase storage based on user authentication
 - **Demo Data System**: 4 realistic industry profiles (Technology, Manufacturing, Healthcare, Finance)
-- **Automatic Timeline Generation**: Client profiles automatically populate personalized AI roadmaps
-- **Opportunity Assessment**: AI readiness scoring and automation opportunity identification
+- **Migration Tools**: One-click migration from localStorage to cloud storage
+- **Visual Indicators**: Cloud tags for Supabase-stored profiles
 
-### 🔐 **User Authentication & Management**
+### 🔐 **User Authentication & Database Management**
 - **Supabase Authentication**: Email/password and magic link authentication flows
 - **User Management**: Complete signup, signin, signout with email verification
 - **Secure Credential Storage**: AES-256 encrypted ServiceNow credentials per user
-- **Multi-User Support**: Individual user profiles with row-level security
+- **Row-Level Security**: Individual user profiles with database-level protection
 - **Professional UI**: Dark-themed auth forms integrated with existing design system
 - **Session Management**: Persistent auth state with automatic token refresh
-- **Security Features**: Audit logging, encrypted data storage, and secure key management
+- **Migration System**: Automatic detection and migration of localStorage profiles to Supabase
+- **Database Verification**: Built-in tools to verify Supabase configuration and connectivity
+
+### 👤 **User Profile Management**
+- **Personal Profile Page**: Dedicated `/profile` page for user account management
+- **Profile Editing**: Editable display name, notification preferences, and account settings
+- **Account Information**: View account type, data storage details, and membership information
+- **Clickable User Header**: Navigate to profile page by clicking user info in the global header
+- **Theme-Aware Design**: Consistent styling with the global design system
+- **Account Actions**: Secure sign-out functionality and account management options
 
 ### 🎨 **Design System (ai-2027.com Inspired)**
 - **Professional Dark Theme**: Enterprise-grade #0a0e27 background with sophisticated color palette
@@ -59,8 +69,9 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Smart Animations**: Hover effects with lift/glow, smooth transitions, and interactive feedback
 - **Modular Component Design**: Independent form components with consistent styling patterns
 - **Enterprise Color Scheme**: Professional slate colors (#f1f5f9, #e2e8f0, #cbd5e1, #94a3b8)
+- **Theme-Aware Components**: Profile tags with optimized contrast for both light and dark modes
 - **Responsive Excellence**: Mobile-optimized layouts with professional spacing and hierarchy
-- **Demo Data Management**: Smart detection and easy clearing functionality
+- **Migration UI**: User-friendly banners and setup verification tools
 
 ## Getting Started
 
@@ -107,10 +118,11 @@ npm test
 
 #### **Option 3: Client Profile Management**
 1. Click "Client Profiles" button or go to `/profiles`
-2. Create new profile or load demo data (4 industry scenarios available)
-3. Complete 8-step business intelligence assessment
-4. Generate automatic AI timeline from profile data
-5. View comprehensive business intelligence and opportunity analysis
+2. Sign up/sign in for cloud storage (optional - localStorage works without auth)
+3. Create new profile or load demo data (4 industry scenarios available)
+4. Complete 8-step business intelligence assessment
+5. Migrate localStorage profiles to cloud with one-click migration
+6. Generate automatic AI timeline from profile data
 
 ## Business Value & Enterprise Use Cases
 
@@ -122,9 +134,10 @@ npm test
 
 ### **Enterprise Integration Ready**
 - **Authentication**: ✅ Complete Supabase Auth integration with secure multi-user access
-- **Database**: Migration from localStorage to Supabase for enterprise-grade persistence
-- **AI Integration**: ChatGPT 4o integration for intelligent timeline generation
-- **Export Capabilities**: PDF generation for executive reporting
+- **Database Migration**: ✅ Seamless localStorage to Supabase migration with user-friendly tools
+- **Row-Level Security**: ✅ Database-level security ensuring user data isolation
+- **AI Integration**: Ready for ChatGPT 4o integration for intelligent timeline generation
+- **Export Capabilities**: Ready for PDF generation for executive reporting
 
 ## Technical Stack
 
@@ -143,13 +156,14 @@ npm test
 ### **Authentication & Data Management**
 - Supabase Authentication with email verification
 - User profiles with encrypted credential storage
+- ProfileService with automatic localStorage/Supabase routing
+- ProfileRepository with fallback mechanisms
+- Migration tools with progress tracking
 - Structured markdown for profile storage
-- localStorage (migrating to Supabase for client profiles)
-- Demo data service with 4 industry profiles
 
 ### **Development**
 - TypeScript-ready architecture
-- Jest testing framework
+- Jest testing framework with Supabase mocking
 - ESLint for code quality
 - GitHub Actions for CI/CD
 
@@ -181,8 +195,12 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 ---
 
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, and secure user authentication, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of the structured business intelligence profile system and complete authentication infrastructure, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through automated timeline generation and opportunity analysis.
+**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, seamless database migration, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of the structured business intelligence profile system, complete authentication infrastructure, automatic database migration tools, and global design system, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through automated timeline generation and opportunity analysis.
+
+**🎨 UI Consistency Status**: Complete global design system with CSS variables, theme provider, and professional theming across all pages. Light/dark mode toggle works globally with localStorage persistence.
 
 **🔐 Authentication Status**: Complete Supabase integration with user management, encrypted credential storage, and enterprise-grade security features.
 
-**🧪 Testing Status**: Simple MVP testing approach with 9 passing smoke tests. All tests continue to pass with authentication integration. See `MVP_TESTING_SUMMARY.md` for details.
+**🗄️ Database Migration Status**: Completed with ProfileService using ProfileRepository for automatic localStorage/Supabase routing, one-click migration tools, and database setup verification.
+
+**🧪 Testing Status**: Simple MVP testing approach with 9 passing smoke tests including Supabase mocking. All tests continue to pass with UI consistency updates. See `MVP_TESTING_SUMMARY.md` for details.

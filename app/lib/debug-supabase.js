@@ -25,16 +25,30 @@ export async function debugSupabaseConnection() {
   try {
     console.log('🔍 Testing Supabase connection...');
     
-    // Test 1: Basic connection
+    // Test 1: Check if client_profiles table exists
     const { data: connectionTest, error: connectionError } = await supabase
       .from('client_profiles')
-      .select('count(*)')
-      .limit(0);
+      .select('id')
+      .limit(1);
 
     if (connectionError) {
+      // Check if it's a table not found error
+      if (connectionError.code === 'PGRST106' || connectionError.message?.includes('does not exist')) {
+        console.warn('⚠️ Database table "client_profiles" does not exist');
+        console.log('📋 You need to run the database schema from app/database/schema.sql');
+        return { 
+          success: false, 
+          error: connectionError,
+          needsSchema: true,
+          message: 'Database tables not found. Run the schema from app/database/schema.sql in your Supabase SQL Editor.'
+        };
+      }
+      
       console.error('❌ Connection test failed:', connectionError);
       return { success: false, error: connectionError };
     }
+
+    console.log('✅ Database connection and table access successful');
 
     // Test 2: Check current user
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -61,7 +75,7 @@ export async function debugSupabaseConnection() {
       }
     }
 
-    console.log('✅ Supabase connection successful');
+    console.log('✅ Supabase connection fully successful');
     return { success: true, user, hasProfiles: user ? true : false };
     
   } catch (error) {

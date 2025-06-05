@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import useAgenticStore from '../store/useAgenticStore';
+import { useTheme } from './theme/ThemeProvider';
 import Image from 'next/image';
 
 // Helper to safely get nested properties
@@ -18,6 +19,8 @@ const get = (obj, path, defaultValue = undefined) => {
 };
 
 export default function ServiceNowConnector() {
+  const { theme } = useTheme();
+  
   // Fetch non-sensitive connection details from API on mount
   const [instanceUrl, setInstanceUrl] = useState('');
   const [scopeId, setScopeId] = useState('');
@@ -107,11 +110,42 @@ export default function ServiceNowConnector() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1.5rem' }}>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '60vh',
+      width: '100%',
+      padding: 'var(--spacing-lg)'
+    }}>
+      <div style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(var(--backdrop-blur))',
+        border: '1px solid var(--border-primary)',
+        borderRadius: 'var(--border-radius-xl)',
+        padding: 'var(--spacing-xxl)',
+        width: '100%',
+        maxWidth: '500px',
+        boxShadow: 'var(--shadow-xl)'
+      }}>
+        <div style={{ 
+          textAlign: 'center', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          marginBottom: 'var(--spacing-xl)'
+        }}>
           {/* Cube icon at the top */}
-          <div className="cube-icon" style={{ backgroundColor: '#2196f3', width: '56px', height: '56px', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1rem' }}>
+          <div style={{ 
+            backgroundColor: 'var(--accent-blue)', 
+            width: '56px', 
+            height: '56px', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            marginBottom: 'var(--spacing-md)'
+          }}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="32" height="32">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
               <polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="white" fill="none" strokeWidth="1"></polyline>
@@ -119,30 +153,47 @@ export default function ServiceNowConnector() {
             </svg>
           </div>
           
-          <h2 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', fontWeight: '600' }}>Agentic AI Visualizer</h2>
+          <h2 style={{ 
+            fontSize: '1.5rem', 
+            margin: '0 0 var(--spacing-sm) 0', 
+            fontWeight: 'var(--font-weight-semibold)',
+            color: 'var(--text-primary)'
+          }}>Agentic AI Visualizer</h2>
           
-          <div className="login-branding" style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-            <div className="nowgentic-logo">
-              {/* Using the SVG file from public directory with correct filename */}
-              <img 
-                src="/images/nowgenticLogo.svg" 
-                alt="NOWGENTIC Logo" 
-                width={120} 
-                height={30} 
-                style={{ display: 'block' }}
-              />
-            </div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            marginBottom: 'var(--spacing-md)'
+          }}>
+            <img 
+              src={theme === 'dark' ? "/images/Full Logo Dark.png" : "/images/Full Logo Light.png"}
+              alt="NOWGENTIC Logo" 
+              width={120} 
+              height={30} 
+              style={{ display: 'block' }}
+            />
           </div>
           
-          <p className="login-subtitle" style={{ fontSize: '0.9rem', color: '#666', margin: '0' }}>
+          <p style={{ 
+            fontSize: '0.9rem', 
+            color: 'var(--text-secondary)', 
+            margin: '0'
+          }}>
             Connect to your ServiceNow instance to visualize Agentic AI flows
           </p>
         </div>
         
-        <div className="login-form" style={{ padding: '0 1.5rem' }}>
-          <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label htmlFor="instanceUrl" style={{ display: 'flex', alignItems: 'center', fontWeight: '500', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}>
+        <div style={{ marginBottom: 'var(--spacing-xl)' }}>
+          <div style={{ marginBottom: 'var(--spacing-md)' }}>
+            <label htmlFor="instanceUrl" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              fontWeight: 'var(--font-weight-medium)', 
+              fontSize: '0.9rem', 
+              marginBottom: 'var(--spacing-sm)',
+              color: 'var(--text-primary)'
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: 'var(--spacing-sm)' }}>
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                 <line x1="8" y1="21" x2="16" y2="21"></line>
                 <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -155,13 +206,28 @@ export default function ServiceNowConnector() {
               value={instanceUrl}
               onChange={(e) => setInstanceUrl(e.target.value)}
               placeholder="your-instance.service-now.com"
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.9rem', color: '#444' }}
+              style={{ 
+                width: '100%', 
+                padding: 'var(--spacing-md)', 
+                borderRadius: 'var(--border-radius)', 
+                border: '1px solid var(--border-primary)', 
+                fontSize: '0.9rem', 
+                color: 'var(--text-primary)',
+                background: 'var(--bg-secondary)'
+              }}
             />
           </div>
           
-          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-            <label htmlFor="scopeId" style={{ display: 'flex', alignItems: 'center', fontWeight: '500', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}>
+          <div style={{ marginBottom: 'var(--spacing-xl)' }}>
+            <label htmlFor="scopeId" style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              fontWeight: 'var(--font-weight-medium)', 
+              fontSize: '0.9rem', 
+              marginBottom: 'var(--spacing-sm)',
+              color: 'var(--text-primary)'
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: 'var(--spacing-sm)' }}>
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
               </svg>
@@ -174,13 +240,33 @@ export default function ServiceNowConnector() {
               onChange={(e) => setScopeId(e.target.value)}
               placeholder="Enter the sys_id of the target scope"
               readOnly
-              style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd', fontSize: '0.9rem', color: '#444' }}
+              style={{ 
+                width: '100%', 
+                padding: 'var(--spacing-md)', 
+                borderRadius: 'var(--border-radius)', 
+                border: '1px solid var(--border-primary)', 
+                fontSize: '0.9rem', 
+                color: 'var(--text-secondary)',
+                background: 'var(--bg-tertiary)'
+              }}
             />
           </div>
           
-          <div style={{ backgroundColor: '#f8f9fa', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
-            <p style={{ fontSize: '0.85rem', color: '#666', margin: '0', display: 'flex', alignItems: 'center' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}>
+          <div style={{ 
+            backgroundColor: 'var(--bg-secondary)', 
+            padding: 'var(--spacing-md)', 
+            borderRadius: 'var(--border-radius)', 
+            marginBottom: 'var(--spacing-xl)',
+            border: '1px solid var(--border-secondary)'
+          }}>
+            <p style={{ 
+              fontSize: '0.85rem', 
+              color: 'var(--text-secondary)', 
+              margin: '0', 
+              display: 'flex', 
+              alignItems: 'center'
+            }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: 'var(--spacing-sm)' }}>
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 6v6l4 2"></path>
               </svg>
@@ -190,8 +276,17 @@ export default function ServiceNowConnector() {
         </div>
         
         {error && (
-          <div className="login-error" style={{ margin: '0 1.5rem 1.5rem', padding: '0.5rem', backgroundColor: '#ffebee', color: '#c62828', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: '0.5rem' }}>
+          <div style={{ 
+            margin: '0 0 var(--spacing-xl) 0', 
+            padding: 'var(--spacing-md)', 
+            backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+            color: 'var(--accent-red)', 
+            borderRadius: 'var(--border-radius)', 
+            display: 'flex', 
+            alignItems: 'center',
+            border: '1px solid rgba(239, 68, 68, 0.2)'
+          }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1rem', height: '1rem', marginRight: 'var(--spacing-sm)' }}>
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="8" x2="12" y2="12"></line>
               <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -203,18 +298,12 @@ export default function ServiceNowConnector() {
         <button
           onClick={handleFetchData}
           disabled={isLoading}
-          className="login-button"
+          className="btn btn-primary"
           style={{ 
-            width: 'calc(100% - 3rem)', 
-            margin: '0 1.5rem 1.5rem',
-            padding: '0.75rem 1rem',
-            backgroundColor: '#2196f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
+            width: '100%', 
+            marginBottom: 'var(--spacing-xl)',
+            padding: 'var(--spacing-md) var(--spacing-lg)',
             fontSize: '0.9rem',
-            fontWeight: '500',
-            cursor: 'pointer',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center'
@@ -238,22 +327,33 @@ export default function ServiceNowConnector() {
           )}
         </button>
         
-        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1rem' }}>
+        <div style={{ 
+          marginTop: 'var(--spacing-xl)', 
+          textAlign: 'center',
+          paddingTop: 'var(--spacing-xl)',
+          borderTop: '1px solid var(--border-secondary)'
+        }}>
+          <p style={{ 
+            color: 'var(--text-secondary)', 
+            fontSize: '0.9rem', 
+            marginBottom: 'var(--spacing-md)' 
+          }}>
             Or explore our client intelligence tools:
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ 
+            display: 'flex', 
+            gap: 'var(--spacing-md)', 
+            justifyContent: 'center', 
+            flexWrap: 'wrap' 
+          }}>
             <button
               type="button"
               onClick={() => window.location.href = '/profiles'}
               className="btn btn-secondary"
               style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#3498db',
-                color: 'white',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: 'var(--spacing-sm)'
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -267,14 +367,11 @@ export default function ServiceNowConnector() {
             <button
               type="button"
               onClick={() => window.location.href = '/timeline'}
-              className="btn btn-secondary"
+              className="btn btn-success"
               style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#10b981',
-                color: 'white',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: 'var(--spacing-sm)'
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

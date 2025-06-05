@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
-import '../profile-detail.css';
+import GlobalHeader from '../../components/GlobalHeader';
 import { ArrowLeft, FileEdit, TrendingUp, Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap } from 'lucide-react';
 
 export default function ProfileDetailPage() {
@@ -119,35 +119,96 @@ export default function ProfileDetailPage() {
   };
 
   return (
-    <div className="profile-detail-page">
-      {/* Header */}
-      <div className="profile-detail-header">
-        <div className="header-content">
+    <div style={{ minHeight: '100vh' }}>
+      <GlobalHeader />
+      
+      {/* Profile Header */}
+      <div style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(var(--backdrop-blur))',
+        borderBottom: '1px solid var(--border-primary)',
+        padding: 'var(--spacing-lg)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--spacing-lg)'
+        }}>
           <button 
-            className="back-button"
             onClick={handleBack}
             aria-label="Back to Profiles"
+            className="btn btn-secondary"
+            style={{
+              padding: 'var(--spacing-sm)',
+              minWidth: '48px',
+              height: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
             <ArrowLeft size={20} />
           </button>
           
-          <div className="header-title-section">
-            <div className="company-header">
-              <div className="company-icon">
-                {getIndustryIcon(profile.industry)}
-              </div>
-              <div>
-                <h1 className="company-name">{profile.companyName}</h1>
-                <div className="company-meta">
-                  <span className="industry-tag">{profile.industry}</span>
-                  <span className="size-tag">{profile.size}</span>
-                  <span className="status-tag status-{profile.status}">{profile.status}</span>
-                </div>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 'var(--spacing-md)',
+            flex: 1
+          }}>
+            <div style={{
+              fontSize: '2.2rem',
+              width: '60px',
+              height: '60px',
+              borderRadius: 'var(--border-radius-lg)',
+              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-green))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white'
+            }}>
+              {getIndustryIcon(profile.industry)}
+            </div>
+            <div>
+              <h1 style={{
+                margin: 0,
+                fontSize: '2rem',
+                fontWeight: 'var(--font-weight-bold)',
+                color: 'var(--text-primary)',
+                marginBottom: 'var(--spacing-sm)'
+              }}>{profile.companyName}</h1>
+              <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
+                <span style={{
+                  padding: '0.3rem 0.75rem',
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  color: 'var(--accent-blue)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'var(--font-weight-medium)'
+                }}>{profile.industry}</span>
+                <span style={{
+                  padding: '0.3rem 0.75rem',
+                  background: 'rgba(16, 185, 129, 0.1)',
+                  color: 'var(--accent-green)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'var(--font-weight-medium)'
+                }}>{profile.size}</span>
+                <span style={{
+                  padding: '0.3rem 0.75rem',
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  color: 'var(--accent-yellow)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.85rem',
+                  fontWeight: 'var(--font-weight-medium)'
+                }}>{profile.status}</span>
               </div>
             </div>
           </div>
           
-          <div className="header-actions">
+          <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
             <button 
               className="btn btn-secondary"
               onClick={handleEdit}
@@ -167,35 +228,86 @@ export default function ProfileDetailPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="profile-detail-nav">
-        <button 
-          className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => setActiveTab('overview')}
-        >
-          Overview
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === 'analysis' ? 'active' : ''}`}
-          onClick={() => setActiveTab('analysis')}
-        >
-          Analysis
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === 'opportunities' ? 'active' : ''}`}
-          onClick={() => setActiveTab('opportunities')}
-        >
-          AI Opportunities
-        </button>
-        <button 
-          className={`nav-tab ${activeTab === 'markdown' ? 'active' : ''}`}
-          onClick={() => setActiveTab('markdown')}
-        >
-          Markdown
-        </button>
+      <div style={{
+        borderBottom: '1px solid var(--border-primary)',
+        background: 'var(--bg-secondary)',
+        padding: '0 var(--spacing-lg)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          gap: 'var(--spacing-lg)'
+        }}>
+          <button 
+            style={{
+              padding: 'var(--spacing-md) var(--spacing-lg)',
+              background: activeTab === 'overview' ? 'var(--accent-blue)' : 'transparent',
+              color: activeTab === 'overview' ? 'white' : 'var(--text-secondary)',
+              border: 'none',
+              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
+              cursor: 'pointer',
+              fontWeight: 'var(--font-weight-medium)',
+              transition: 'all var(--transition-fast) ease'
+            }}
+            onClick={() => setActiveTab('overview')}
+          >
+            Overview
+          </button>
+          <button 
+            style={{
+              padding: 'var(--spacing-md) var(--spacing-lg)',
+              background: activeTab === 'analysis' ? 'var(--accent-blue)' : 'transparent',
+              color: activeTab === 'analysis' ? 'white' : 'var(--text-secondary)',
+              border: 'none',
+              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
+              cursor: 'pointer',
+              fontWeight: 'var(--font-weight-medium)',
+              transition: 'all var(--transition-fast) ease'
+            }}
+            onClick={() => setActiveTab('analysis')}
+          >
+            Analysis
+          </button>
+          <button 
+            style={{
+              padding: 'var(--spacing-md) var(--spacing-lg)',
+              background: activeTab === 'opportunities' ? 'var(--accent-blue)' : 'transparent',
+              color: activeTab === 'opportunities' ? 'white' : 'var(--text-secondary)',
+              border: 'none',
+              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
+              cursor: 'pointer',
+              fontWeight: 'var(--font-weight-medium)',
+              transition: 'all var(--transition-fast) ease'
+            }}
+            onClick={() => setActiveTab('opportunities')}
+          >
+            AI Opportunities
+          </button>
+          <button 
+            style={{
+              padding: 'var(--spacing-md) var(--spacing-lg)',
+              background: activeTab === 'markdown' ? 'var(--accent-blue)' : 'transparent',
+              color: activeTab === 'markdown' ? 'white' : 'var(--text-secondary)',
+              border: 'none',
+              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
+              cursor: 'pointer',
+              fontWeight: 'var(--font-weight-medium)',
+              transition: 'all var(--transition-fast) ease'
+            }}
+            onClick={() => setActiveTab('markdown')}
+          >
+            Markdown
+          </button>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="profile-detail-content">
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: 'var(--spacing-xl) var(--spacing-lg)'
+      }}>
         {activeTab === 'overview' && (
           <ProfileOverviewTab profile={profile} />
         )}
@@ -214,13 +326,26 @@ export default function ProfileDetailPage() {
       </div>
 
       {/* Footer Info */}
-      <div className="profile-detail-footer">
-        <div className="footer-content">
-          <div className="footer-info">
-            <span>Created: {formatDate(profile.createdAt)}</span>
-            <span>Updated: {formatDate(profile.updatedAt)}</span>
-            <span>ID: {profile.id}</span>
-          </div>
+      <div style={{
+        borderTop: '1px solid var(--border-primary)',
+        background: 'var(--bg-secondary)',
+        padding: 'var(--spacing-md) var(--spacing-lg)',
+        marginTop: 'var(--spacing-xxl)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          gap: 'var(--spacing-lg)',
+          fontSize: '0.85rem',
+          color: 'var(--text-muted)',
+          justifyContent: 'center'
+        }}>
+          <span>Created: {formatDate(profile.createdAt)}</span>
+          <span>•</span>
+          <span>Updated: {formatDate(profile.updatedAt)}</span>
+          <span>•</span>
+          <span>ID: {profile.id}</span>
         </div>
       </div>
     </div>

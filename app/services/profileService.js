@@ -3,13 +3,31 @@
 /**
  * Client Profile Management Service
  * 
- * Handles CRUD operations for client profiles stored as structured markdown files.
+ * Handles CRUD operations for client profiles with seamless localStorage/Supabase integration.
  * Integrates with AI services for timeline generation and opportunity analysis.
+ * 
+ * Migration Status: Updated to use ProfileRepository for database persistence
  */
 
 import { markdownService } from './markdownService';
+import { ProfileRepository } from '../repositories/profileRepository';
+import { getCurrentUser } from '../lib/supabase';
 
 export class ProfileService {
+  /**
+   * Get current user ID for database operations
+   * @returns {Promise<string|null>} User ID or null if not authenticated
+   */
+  static async getCurrentUserId() {
+    try {
+      const user = await getCurrentUser();
+      return user?.id || null;
+    } catch (error) {
+      console.error('Error getting current user:', error);
+      return null;
+    }
+  }
+
   /**
    * Create a new client profile
    * @param {Object} profileData - Raw form data
@@ -23,7 +41,7 @@ export class ProfileService {
       // Convert form data to structured markdown
       const markdown = markdownService.generateMarkdown(profileData);
       
-      // Store profile (in real implementation, this would save to backend/filesystem)
+      // Prepare profile data
       const profile = {
         id: profileId,
         ...profileData,
@@ -33,11 +51,119 @@ export class ProfileService {
         status: 'draft'
       };
       
-      await this.saveProfile(profile);
-      return profile;
+      // Get current user for database storage
+      const userId = await this.getCurrentUserId();
+      
+      // Use ProfileRepository for storage (handles localStorage fallback)
+      const createdProfile = await ProfileRepository.createProfile(profile, userId);
+      return createdProfile;
     } catch (error) {
       console.error('Error creating profile:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Get all client profiles for the current user
+   * @returns {Promise<Array>} Array of user profiles
+   */
+  static async getProfiles() {
+    try {
+      const userId = await this.getCurrentUserId();
+      return await ProfileRepository.getProfiles(userId);
+    } catch (error) {
+      console.error('Error getting profiles:', error);
+      // Fallback to empty array on error
+      return [];
+    }
+  }
+
+  /**
+   * Get a specific profile by ID
+   * @param {string} id - Profile ID
+   * @returns {Promise<Object|null>} Profile data or null
+   */
+  static async getProfile(id) {
+    try {
+      const userId = await this.getCurrentUserId();
+      return await ProfileRepository.getProfile(id, userId);
+    } catch (error) {
+      console.error('Error getting profile:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Update a profile
+   * @param {string} profileId - Profile ID
+   * @param {Object} updates - Profile updates
+   * @returns {Promise<Object>} Updated profile
+   */
+  static async updateProfile(profileId, updates) {
+    try {
+      const userId = await this.getCurrentUserId();
+      
+      // Add updated timestamp
+      const updatedData = {
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      
+      return await ProfileRepository.updateProfile(profileId, updatedData, userId);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a profile
+   * @param {string} profileId - Profile ID
+   * @returns {Promise<boolean>} Success status
+   */
+  static async deleteProfile(profileId) {
+    try {
+      const userId = await this.getCurrentUserId();
+      return await ProfileRepository.deleteProfile(profileId, userId);
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Check if user has profiles that need migration from localStorage
+   * @returns {Promise<Object>} Migration status
+   */
+  static async checkMigrationStatus() {
+    try {
+      const userId = await this.getCurrentUserId();
+      return await ProfileRepository.checkMigrationStatus(userId);
+    } catch (error) {
+      console.error('Error checking migration status:', error);
+      return { needsMigration: false, error: error.message };
+    }
+  }
+
+  /**
+   * Migrate localStorage profiles to Supabase for authenticated user
+   * @returns {Promise<Object>} Migration result
+   */
+  static async migrateLocalStorageProfiles() {
+    try {
+      const userId = await this.getCurrentUserId();
+      
+      if (!userId) {
+        return { 
+          success: false, 
+          error: 'User must be authenticated to migrate profiles' 
+        };
+      }
+      
+      return await ProfileRepository.migrateLocalStorageProfiles(userId);
+    } catch (error) {
+      console.error('Error migrating profiles:', error);
+      return { success: false, error: error.message };
     }
   }
 
@@ -275,24 +401,6 @@ export class ProfileService {
     if (profile.businessIssue?.customerExperience) goals.push('Improve Customer Experience');
     if (profile.businessIssue?.operationalEfficiency) goals.push('Automate Workflows');
     return goals;
-  }
-
-  static async saveProfile(profile) {
-    // In production, this would save to your backend/database
-    // For now, store in localStorage
-    const profiles = JSON.parse(localStorage.getItem('clientProfiles') || '[]');
-    profiles.push(profile);
-    localStorage.setItem('clientProfiles', JSON.stringify(profiles));
-  }
-
-  static async getProfiles() {
-    // In production, fetch from backend
-    return JSON.parse(localStorage.getItem('clientProfiles') || '[]');
-  }
-
-  static async getProfile(id) {
-    const profiles = await this.getProfiles();
-    return profiles.find(p => p.id === id);
   }
 
   static identifyRiskFactors(profile) {

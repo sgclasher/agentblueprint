@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import useAgenticStore from './store/useAgenticStore';
 import ServiceNowConnector from './components/ServiceNowConnector';
 import FlowVisualizer from './components/FlowVisualizer';
-import Header from './components/Header';
+import GlobalHeader from './components/GlobalHeader';
 import { ReactFlowProvider } from 'reactflow';
 import { Users, TrendingUp, Info } from 'lucide-react';
 
@@ -57,14 +57,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900" style={{ 
+    <div style={{ 
       minHeight: '100vh',
       width: '100vw',
       margin: 0,
       padding: 0,
     }}>
-      <Header />
-      <main className="flex flex-col items-center" style={{ 
+      <GlobalHeader />
+      <main style={{ 
         minHeight: 'calc(100vh - 64px)', // Subtract header height
         width: '100vw',
         margin: 0,
@@ -72,111 +72,124 @@ export default function Home() {
         overflow: 'hidden'
       }}>
         {agenticData && (
-          <header className="app-header w-full" style={{
-            backgroundColor: '#f5f5f5'
+          <div className="flow-controls" style={{
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(var(--backdrop-blur))',
+            borderBottom: '1px solid var(--border-primary)',
+            padding: 'var(--spacing-md) var(--spacing-lg)'
           }}>
-          <div className="header-top">
-            <div className="logo-and-title">
-              <h1 className="app-title">Agentic AI Flow Manager</h1>
-              <div className="logo-wrapper">
-                <img
-                  src="/images/nowgenticLogo.svg"
-                  alt="NOWGENTIC Logo"
-                  height={30}
-                  width={120}
-                />
+            <div style={{
+              maxWidth: '1400px',
+              margin: '0 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 'var(--spacing-lg)'
+            }}>
+              <div>
+                <h2 style={{
+                  margin: 0,
+                  fontSize: '1.25rem',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  color: 'var(--text-primary)'
+                }}>ServiceNow Agentic AI Flow</h2>
+                <p style={{
+                  margin: 0,
+                  fontSize: '0.9rem',
+                  color: 'var(--text-secondary)'
+                }}>Interactive visualization of AI agents, use cases, and tools</p>
+              </div>
+              
+              <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
+                <div className="button-group">
+                  <button className="btn btn-secondary" onClick={handleCollapseAll}>
+                    Collapse All
+                  </button>
+                  <button className="btn btn-secondary" onClick={handleExpandAll}>
+                    Expand All
+                  </button>
+                </div>
+                <button 
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  className="btn btn-primary"
+                >
+                  {isRefreshing ? 'Refreshing...' : 'Refresh'} 
+                </button>
+                <button 
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="btn btn-secondary"
+                  aria-label="Toggle debug info"
+                >
+                  <Info size={18} />
+                </button>
+                <button 
+                  onClick={clearAgenticData}
+                  className="btn btn-danger"
+                >
+                  Disconnect
+                </button>
               </div>
             </div>
-            <div className="header-actions">
-              <button 
-                onClick={() => window.location.href = '/profiles'}
-                className="btn btn-primary"
-              >
-                <Users size={18} />
-                Client Profiles
-              </button>
-              <button 
-                onClick={() => window.location.href = '/timeline'}
-                className="btn btn-success"
-              >
-                <TrendingUp size={18} />
-                AI Timeline
-              </button>
-              <button 
-                onClick={clearAgenticData}
-                className="btn btn-secondary"
-              >
-                <span>Disconnect</span>
-              </button>
-              <button 
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="btn btn-primary"
-              >
-                {isRefreshing ? 'Refreshing...' : 'Refresh Data'} 
-              </button>
-              <button 
-                onClick={() => setShowDebug(!showDebug)}
-                className="btn btn-secondary btn-icon"
-                aria-label="Toggle debug info"
-              >
-                <Info size={18} />
-              </button>
-            </div>
+            
+            {showDebug && (
+              <div className="debug-info" style={{
+                marginTop: 'var(--spacing-md)',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-primary)',
+                borderRadius: 'var(--border-radius)',
+                padding: 'var(--spacing-md)'
+              }}>
+                <details open>
+                  <summary>Debug Information</summary>
+                  <pre style={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '0.85rem',
+                    marginTop: 'var(--spacing-sm)'
+                  }}>
+                    {JSON.stringify({
+                      dataPresent: !!agenticData,
+                      useCases: agenticData?.use_cases?.length || 0,
+                      firstUseCase: agenticData?.use_cases?.[0]?.name || 'None'
+                    }, null, 2)}
+                  </pre>
+                </details>
+              </div>
+            )}
           </div>
-          
-          {showDebug && (
-            <div className="debug-info">
-              <details open>
-                <summary>Debug Information</summary>
-                <pre>
-                  {JSON.stringify({
-                    dataPresent: !!agenticData,
-                    useCases: agenticData?.use_cases?.length || 0,
-                    firstUseCase: agenticData?.use_cases?.[0]?.name || 'None'
-                  }, null, 2)}
-                </pre>
-              </details>
-            </div>
-          )}
-          
-          <div className="header-tabs">
-            <div className="button-group">
-              <button 
-                className="btn btn-neutral"
-                onClick={handleCollapseAll}
-              >
-                Collapse All
-              </button>
-              <button 
-                className="btn btn-neutral"
-                onClick={handleExpandAll}
-              >
-                Expand All
-              </button>
-            </div>
-            <button 
-              className="btn btn-danger"
-              onClick={handleResetFlow}
-            >
-              Reset Flow
-            </button>
-          </div>
-        </header>
-      )}
+        )}
       
-      <div className={`flex-1 w-full ${agenticData ? 'mt-0' : 'mt-8'}`}>
+      <div style={{ flex: 1, width: '100%' }}>
         {!agenticData ? (
-          <div className="flex flex-col items-center justify-center h-full p-4">
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '100%', 
+            padding: 'var(--spacing-lg)' 
+          }}>
             <ServiceNowConnector />
           </div>
         ) : error ? (
-          <div className="text-red-600 p-4 border border-red-300 rounded bg-red-50 mb-4 m-4">
-            <h3 className="font-bold">Error Displaying Flow</h3>
-            <p>{error}</p>
+          <div style={{
+            color: 'var(--accent-red)',
+            padding: 'var(--spacing-lg)',
+            border: '1px solid var(--accent-red)',
+            borderRadius: 'var(--border-radius)',
+            background: 'var(--bg-secondary)',
+            margin: 'var(--spacing-lg)',
+            maxWidth: '600px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
+          }}>
+            <h3 style={{ fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--spacing-sm)' }}>
+              Error Displaying Flow
+            </h3>
+            <p style={{ marginBottom: 'var(--spacing-md)' }}>{error}</p>
             <button 
               onClick={clearAgenticData}
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
+              className="btn btn-danger"
             >
               Try Again
             </button>

@@ -4,19 +4,25 @@ import React, { useState, useEffect } from 'react';
 import { ProfileService } from '../services/profileService';
 import { demoDataService } from '../services/demoDataService';
 import ProfileWizard from './components/ProfileWizard';
-import { ArrowLeft, Plus, Users, BarChart, Building2, Briefcase, GraduationCap, Home, Truck, Zap, Store, TrendingUp, Eye, FileText } from 'lucide-react';
+import MigrationBanner from '../components/migration/MigrationBanner';
+import SupabaseSetupCheck from '../components/migration/SupabaseSetupCheck';
+import useAuthStore from '../store/useAuthStore';
+import GlobalHeader from '../components/GlobalHeader';
+import { ArrowLeft, Plus, Users, BarChart, Building2, Briefcase, GraduationCap, Home, Truck, Zap, Store, TrendingUp, Eye, FileText, User } from 'lucide-react';
 
 export default function ProfilesPage() {
   const [profiles, setProfiles] = useState([]);
   const [showWizard, setShowWizard] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     loadProfiles();
-  }, []);
+  }, [isAuthenticated]); // Reload when auth state changes
 
   const loadProfiles = async () => {
     try {
+      setIsLoading(true);
       const profileList = await ProfileService.getProfiles();
       setProfiles(profileList);
     } catch (error) {
@@ -44,10 +50,14 @@ export default function ProfilesPage() {
     }
   };
 
-  const clearDemoData = () => {
-    // Clear all profiles from localStorage and reload
-    localStorage.removeItem('clientProfiles');
-    window.location.reload();
+  const clearDemoData = async () => {
+    try {
+      // Clear localStorage profiles and reload from database
+      localStorage.removeItem('clientProfiles');
+      await loadProfiles();
+    } catch (error) {
+      console.error('Error clearing demo data:', error);
+    }
   };
 
   const hasDemoProfiles = () => {
@@ -87,28 +97,49 @@ export default function ProfilesPage() {
   }
 
   return (
-    <div className="profiles-page">
-      <div className="profiles-header">
-        <div className="header-content">
-          <button 
-            className="back-button"
-            onClick={() => window.location.href = '/'}
-            aria-label="Back to Flow Visualizer"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          
-          <div className="header-title-section">
-            <h1 className="profiles-title">Client Profiles</h1>
-            <p className="profiles-subtitle">Manage your client intelligence and AI transformation roadmaps</p>
+    <div style={{ minHeight: '100vh' }}>
+      <GlobalHeader />
+      
+      {/* Page Title and Controls */}
+      <div style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(var(--backdrop-blur))',
+        borderBottom: '1px solid var(--border-primary)',
+        padding: 'var(--spacing-lg)'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 'var(--spacing-lg)'
+        }}>
+          <div>
+            <h1 style={{
+              margin: 0,
+              fontSize: '2rem',
+              fontWeight: 'var(--font-weight-bold)',
+              color: 'var(--text-primary)',
+              marginBottom: 'var(--spacing-sm)'
+            }}>Client Profiles</h1>
+            <p style={{
+              margin: 0,
+              fontSize: '1rem',
+              color: 'var(--text-secondary)'
+            }}>
+              {isAuthenticated ? 
+                `Welcome back, ${user?.email?.split('@')[0] || 'User'}! Manage your client intelligence and AI transformation roadmaps` :
+                'Manage your client intelligence and AI transformation roadmaps'
+              }
+            </p>
           </div>
           
-          <div className="header-actions">
+          <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
             {hasDemoProfiles() && (
               <button 
                 className="btn btn-secondary"
                 onClick={clearDemoData}
-                style={{ marginRight: '1rem' }}
               >
                 Clear Demo Data
               </button>
@@ -124,17 +155,69 @@ export default function ProfilesPage() {
         </div>
       </div>
 
-      <div className="profiles-content">
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        padding: 'var(--spacing-xl) var(--spacing-lg)'
+      }}>
+        {/* Show migration banner for authenticated users with localStorage profiles */}
+        {isAuthenticated && <MigrationBanner />}
+        
+        {/* Show Supabase setup status */}
+        <SupabaseSetupCheck />
+        
         {isLoading ? (
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading profiles...</p>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'var(--spacing-xxl)',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              border: '3px solid var(--border-secondary)',
+              borderTop: '3px solid var(--accent-blue)',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              marginBottom: 'var(--spacing-md)'
+            }}></div>
+            <p style={{ color: 'var(--text-secondary)' }}>Loading profiles...</p>
           </div>
         ) : profiles.length === 0 ? (
-          <div className="empty-state">
-            <Users size={48} className="empty-icon-lucide" />
-            <h2>No Client Profiles Yet</h2>
-            <p>Create your first client profile to start building comprehensive business intelligence and AI transformation roadmaps.</p>
+          <div style={{
+            textAlign: 'center',
+            padding: 'var(--spacing-xxl)',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(var(--backdrop-blur))',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 'var(--border-radius-xl)',
+            margin: 'var(--spacing-xl) auto',
+            maxWidth: '600px'
+          }}>
+            <Users size={48} style={{ color: 'var(--text-muted)', marginBottom: 'var(--spacing-lg)' }} />
+            <h2 style={{
+              fontSize: '2rem',
+              color: 'var(--text-primary)',
+              marginBottom: 'var(--spacing-md)',
+              fontWeight: 'var(--font-weight-semibold)'
+            }}>No Client Profiles Yet</h2>
+            <p style={{
+              color: 'var(--text-secondary)',
+              fontSize: '1.1rem',
+              lineHeight: '1.6',
+              marginBottom: 'var(--spacing-xl)',
+              maxWidth: '500px',
+              marginLeft: 'auto',
+              marginRight: 'auto'
+            }}>
+              {isAuthenticated ? 
+                'Create your first client profile to start building comprehensive business intelligence and AI transformation roadmaps. Your profiles will be securely stored in your cloud account.' :
+                'Create your first client profile to start building comprehensive business intelligence and AI transformation roadmaps.'
+              }
+            </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
               <button 
                 className="btn btn-primary btn-large"
@@ -149,16 +232,38 @@ export default function ProfilesPage() {
                 <BarChart size={20} style={{ marginRight: '0.5rem' }} /> Load Demo Profiles
               </button>
             </div>
+            
+            {!isAuthenticated && (
+              <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+                <p style={{ 
+                  color: 'var(--text-secondary)', 
+                  fontSize: '0.9rem', 
+                  marginTop: 'var(--spacing-xl)',
+                  padding: 'var(--spacing-md)',
+                  background: 'var(--glass-bg)',
+                  borderRadius: 'var(--border-radius)',
+                  border: '1px solid var(--border-primary)'
+                }}>
+                  💡 <strong>Tip:</strong> Sign in to securely store your profiles in the cloud and access them from any device.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <>
-            <div className="profiles-grid">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+              gap: 'var(--spacing-xl)',
+              marginBottom: 'var(--spacing-xxl)'
+            }}>
               {profiles.map((profile) => (
                 <ProfileCard
                   key={profile.id}
                   profile={profile}
                   onView={() => handleViewProfile(profile.id)}
                   onGenerateTimeline={() => handleGenerateTimeline(profile)}
+                  isAuthenticated={isAuthenticated}
                 />
               ))}
             </div>
@@ -166,13 +271,13 @@ export default function ProfilesPage() {
             {hasDemoProfiles() && (
               <div style={{ 
                 textAlign: 'center', 
-                marginTop: '2rem', 
-                padding: '1rem',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                marginTop: 'var(--spacing-xxl)', 
+                padding: 'var(--spacing-md)',
+                borderTop: '1px solid var(--border-primary)'
               }}>
                 <p style={{ 
-                  color: 'rgba(255, 255, 255, 0.7)', 
-                  marginBottom: '1rem', 
+                  color: 'var(--text-secondary)', 
+                  marginBottom: 'var(--spacing-md)', 
                   fontSize: '0.9rem' 
                 }}>
                   Demo profiles are currently loaded
@@ -192,7 +297,7 @@ export default function ProfilesPage() {
   );
 }
 
-function ProfileCard({ profile, onView, onGenerateTimeline }) {
+function ProfileCard({ profile, onView, onGenerateTimeline, isAuthenticated }) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -227,62 +332,208 @@ function ProfileCard({ profile, onView, onGenerateTimeline }) {
   };
 
   return (
-    <div className="profile-card">
-      <div className="profile-card-header">
-        <div className="profile-icon">
+    <div style={{
+      background: 'var(--glass-bg)',
+      backdropFilter: 'blur(var(--backdrop-blur))',
+      borderRadius: 'var(--border-radius-xl)',
+      padding: 'var(--spacing-xl)',
+      border: '1px solid var(--border-primary)',
+      transition: 'all var(--transition-normal) cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--spacing-md)',
+        marginBottom: 'var(--spacing-lg)'
+      }}>
+        <div style={{
+          fontSize: '2.2rem',
+          width: '60px',
+          height: '60px',
+          borderRadius: 'var(--border-radius-lg)',
+          background: 'linear-gradient(135deg, rgba(120, 119, 198, 0.3), rgba(255, 119, 198, 0.2))',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'rgba(255, 255, 255, 0.9)',
+          border: '1px solid var(--border-primary)',
+          backdropFilter: 'blur(10px)'
+        }}>
           {getIndustryIcon(profile.industry)}
         </div>
-        <div className="profile-meta">
-          <h3 className="profile-name">{profile.companyName}</h3>
-          <div className="profile-tags">
-            <span className="tag industry-tag">{profile.industry}</span>
-            <span className="tag size-tag">{getSizeLabel(profile.size)}</span>
+        <div style={{ flex: 1 }}>
+          <h3 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'var(--font-weight-bold)',
+            color: 'var(--text-primary)',
+            margin: '0 0 var(--spacing-sm) 0',
+            letterSpacing: '-0.01em'
+          }}>{profile.companyName}</h3>
+          <div style={{ 
+            display: 'flex', 
+            gap: 'var(--spacing-sm)', 
+            flexWrap: 'wrap' 
+          }}>
+            <span style={{
+              padding: '0.4rem 1rem',
+              borderRadius: 'var(--border-radius-lg)',
+              fontSize: '0.8rem',
+              fontWeight: 'var(--font-weight-semibold)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid var(--profile-tag-industry-border)',
+              background: 'var(--profile-tag-industry-bg)',
+              color: 'var(--profile-tag-industry-color)'
+            }}>{profile.industry}</span>
+            <span style={{
+              padding: '0.4rem 1rem',
+              borderRadius: 'var(--border-radius-lg)',
+              fontSize: '0.8rem',
+              fontWeight: 'var(--font-weight-semibold)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid var(--profile-tag-size-border)',
+              background: 'var(--profile-tag-size-bg)',
+              color: 'var(--profile-tag-size-color)'
+            }}>{getSizeLabel(profile.size)}</span>
+            {profile._supabaseRecord && (
+              <span style={{
+                padding: '0.4rem 1rem',
+                borderRadius: 'var(--border-radius-lg)',
+                fontSize: '0.8rem',
+                fontWeight: 'var(--font-weight-semibold)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(59, 130, 246, 0.2)',
+                background: 'rgba(59, 130, 246, 0.1)',
+                color: '#60a5fa'
+              }}>☁️ Cloud</span>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="profile-card-content">
-        <div className="profile-stats">
-          <div className="stat">
-            <span className="stat-label">Created</span>
-            <span className="stat-value">{formatDate(profile.createdAt)}</span>
+      <div style={{
+        marginBottom: 'var(--spacing-lg)',
+        paddingBottom: 'var(--spacing-lg)',
+        borderBottom: '1px solid var(--border-primary)'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: 'var(--spacing-md)'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
+              marginBottom: 'var(--spacing-xs)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontWeight: 'var(--font-weight-medium)'
+            }}>Created</span>
+            <span style={{
+              fontWeight: 'var(--font-weight-bold)',
+              color: 'var(--text-primary)',
+              fontSize: '1rem'
+            }}>{formatDate(profile.createdAt)}</span>
           </div>
-          <div className="stat">
-            <span className="stat-label">Status</span>
-            <span className={`stat-value status-${profile.status}`}>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              color: 'var(--text-muted)',
+              marginBottom: 'var(--spacing-xs)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontWeight: 'var(--font-weight-medium)'
+            }}>Status</span>
+            <span style={{
+              fontWeight: 'var(--font-weight-bold)',
+              color: profile.status === 'draft' ? 'var(--accent-yellow)' : 'var(--accent-green)',
+              fontSize: '1rem'
+            }}>
               {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
             </span>
           </div>
         </div>
 
         {profile.valueSellingFramework?.businessIssues?.length > 0 && (
-          <div className="profile-issues">
-            <span className="issues-label">Key Issues:</span>
-            <div className="issues-list">
+          <div style={{ marginBottom: 'var(--spacing-md)' }}>
+            <span style={{
+              fontSize: '0.9rem',
+              fontWeight: 'var(--font-weight-semibold)',
+              color: 'var(--text-secondary)',
+              display: 'block',
+              marginBottom: 'var(--spacing-sm)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>Key Issues:</span>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 'var(--spacing-xs)'
+            }}>
               {profile.valueSellingFramework.businessIssues.slice(0, 2).map((issue, index) => (
-                <span key={index} className="issue-tag">{issue}</span>
+                <span key={index} style={{
+                  padding: '0.3rem 0.75rem',
+                  background: 'var(--profile-tag-issue-bg)',
+                  color: 'var(--profile-tag-issue-color)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.75rem',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  border: '1px solid var(--profile-tag-issue-border)',
+                  backdropFilter: 'blur(10px)'
+                }}>{issue}</span>
               ))}
               {profile.valueSellingFramework.businessIssues.length > 2 && (
-                <span className="issue-tag more">+{profile.valueSellingFramework.businessIssues.length - 2} more</span>
+                <span style={{
+                  padding: '0.3rem 0.75rem',
+                  background: 'var(--profile-tag-more-bg)',
+                  color: 'var(--profile-tag-more-color)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.75rem',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  border: '1px solid var(--profile-tag-more-border)',
+                  backdropFilter: 'blur(10px)'
+                }}>+{profile.valueSellingFramework.businessIssues.length - 2} more</span>
               )}
             </div>
           </div>
         )}
       </div>
 
-      <div className="profile-card-actions">
+      <div style={{
+        display: 'flex',
+        gap: 'var(--spacing-md)',
+        justifyContent: 'flex-end'
+      }}>
         <button 
-          className="btn btn-secondary btn-small"
+          className="btn btn-secondary"
           onClick={onView}
+          style={{
+            padding: 'var(--spacing-sm) var(--spacing-md)',
+            fontSize: '0.875rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-xs)'
+          }}
         >
-          <Eye size={16} style={{ marginRight: '0.25rem' }} />
+          <Eye size={16} />
           View Details
         </button>
         <button 
-          className="btn btn-primary btn-small"
+          className="btn btn-primary"
           onClick={onGenerateTimeline}
+          style={{
+            padding: 'var(--spacing-sm) var(--spacing-md)',
+            fontSize: '0.875rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-xs)'
+          }}
         >
-          <TrendingUp size={16} style={{ marginRight: '0.25rem' }} />
+          <TrendingUp size={16} />
           AI Timeline
         </button>
       </div>

@@ -1,6 +1,17 @@
-# Agentic AI Flow Visualizer - Project Roadmap
+# Agent Blueprint - Project Roadmap
 
 ## 🚀 Current Status & Recent Updates
+
+### ✅ COMPLETED: Phase 4 - Database Migration (December 2024)
+**What was implemented:**
+- **ProfileService Migration**: Updated to use ProfileRepository with seamless localStorage/Supabase integration
+- **Automatic User Context**: ProfileService automatically detects authenticated users and routes data correctly
+- **Migration UI**: MigrationBanner component provides one-click migration from localStorage to Supabase
+- **Backwards Compatibility**: Full support for non-authenticated users with localStorage fallback
+- **Database Setup Verification**: DatabaseSetupCheck component helps users verify Supabase configuration
+- **Row-Level Security**: Users can only access their own profiles with database-level security
+- **Visual Indicators**: Profile cards show "☁️ Cloud" tags for Supabase-stored profiles
+- **Authentication Integration**: ProfilesPage shows user context and migration prompts when appropriate
 
 ### ✅ COMPLETED: MVP Testing Setup (Phase 1 - Simplified)
 **What was implemented:**
@@ -12,6 +23,7 @@
 - **GitHub Actions**: Optional CI/CD at `.github/workflows/test.yml`
 - **Testing Philosophy**: "Test the Features, Not the Functions" - simple MVP approach
 - **Documentation**: `MVP_TESTING_SUMMARY.md` explains the full testing strategy
+- **Supabase Mocking**: Jest configuration handles Supabase ES6 modules for testing
 
 ### ✅ COMPLETED: Authentication System (Phase 3)
 **What was implemented:**
@@ -41,25 +53,143 @@ npm run test:features # All feature tests
 npm test             # Full test suite
 ```
 
-**Authentication Features:**
-- ✅ Email/password signup and signin
-- ✅ Magic link authentication (passwordless)  
-- ✅ Email verification workflow
-- ✅ User profile management with encrypted credential storage
-- ✅ Persistent auth state across page refreshes
-- ✅ Professional UI components with dark theme
+**Database Migration Features:**
+- ✅ Seamless localStorage → Supabase migration
+- ✅ Automatic user context detection  
+- ✅ Row-level security for user profiles
+- ✅ Backwards compatibility for non-authenticated users
+- ✅ Migration UI with progress tracking
+- ✅ Database setup verification tools
+- ✅ Visual indicators for cloud-stored profiles
+
+### ✅ COMPLETED: Phase 5 - UI Consistency & Design System (January 2025)
+**What was implemented:**
+- **Global CSS Variables System**: Extended timeline's professional CSS variables across entire application
+- **Global Theme Provider**: React context for theme management with localStorage persistence
+- **Standardized Global Header**: Professional header with theme toggle, navigation, and auth integration
+- **Complete Page Consistency**: All pages (ServiceNow, Profiles, Timeline, Auth) now use consistent theming
+- **ServiceNow Connector Styling**: Fixed login/connector page to use dark theme and display logo properly
+- **Profile Detail Page Updates**: Removed hardcoded colors, added GlobalHeader, uses CSS variables
+- **Button System Standardization**: All buttons now use CSS variables instead of hardcoded colors
+- **Light/Dark Mode Support**: Global theme toggle works across entire application with persistence
+- **App Rebranding**: Updated from "Agentic AI Flow Visualizer" to "Agent Blueprint" throughout
+- **User Profile Management**: Complete user profile page at `/profile` with editable settings
+- **Profile Tag Readability**: Improved contrast for profile cards tags in both light and dark modes
+- **Enhanced Navigation**: Clickable user profile in header for easy access to account management
 
 ### 🎯 READY FOR: Next Implementation Phase
 
 **Current Priority Order:**
-1. **Database Migration** (Phase 4) - Move client profiles from localStorage to Supabase
-2. **AI Integration** (Phase 5) - ChatGPT 4o for timeline generation  
-3. **PDF Export** (Phase 6) - Professional document generation
+1. **AI Integration** (Phase 6) - ChatGPT 4o for timeline generation  
+2. **PDF Export** (Phase 7) - Professional document generation
+3. **Multi-Platform Connectors** (Phase 8) - Expand beyond ServiceNow
 
 **Recommended Next Steps:**
-1. Begin Phase 4: Migrate client profiles to authenticated user storage
-2. Connect existing profile functionality to Supabase user system
-3. Run `npm run test:smoke` after any major changes
+1. Begin Phase 6: AI-powered timeline generation using ChatGPT 4o
+2. Implement LLM provider integration for intelligent timeline creation
+3. Add structured prompt engineering for industry-specific recommendations
+4. Run `npm run test:smoke` after any major changes
+
+---
+
+## 🗄️ Database Migration Summary (Phase 4 - Completed)
+
+### What Changed
+- **ProfileService**: Now uses ProfileRepository internally with user authentication
+- **Data Storage**: Authenticated users → Supabase, Non-authenticated → localStorage  
+- **Migration Tool**: One-click migration from localStorage to secure cloud storage
+- **User Experience**: Seamless experience regardless of authentication status
+
+### Migration Features
+```javascript
+// Automatic user detection and data routing
+const profiles = await ProfileService.getProfiles(); // Works for any user
+
+// Migration checking
+const status = await ProfileService.checkMigrationStatus();
+// { needsMigration: true, localCount: 3, supabaseCount: 0 }
+
+// One-click migration
+const result = await ProfileService.migrateLocalStorageProfiles();
+// { success: true, migrated: 3, failed: 0 }
+```
+
+### User Experience Improvements
+- **Migration Banner**: Friendly prompt when localStorage profiles are detected
+- **Database Setup Check**: Floating widget to verify Supabase configuration  
+- **Visual Indicators**: Cloud tags on profiles stored in Supabase
+- **Authentication Context**: Welcome messages and user-specific content
+- **Backwards Compatibility**: Non-authenticated users continue using localStorage
+
+---
+
+## ✅ UI Consistency Complete (Phase 5 - COMPLETED January 2025)
+
+### ✅ **Implementation Completed Successfully**
+
+**All major UI inconsistencies have been resolved across the entire application:**
+
+#### ✅ **Global Theme System** (COMPLETED)
+- **Professional CSS Variables System**: Extended timeline's complete theme infrastructure to entire app
+- **Global Theme Provider**: React context managing theme state with localStorage persistence
+- **Light/Dark Mode Toggle**: Working theme switcher accessible from GlobalHeader on all pages
+- **Theme Persistence**: User theme preference persists across sessions and page navigation
+
+#### ✅ **Consistent Page Implementation** (COMPLETED)
+- **ServiceNow Flow Visualizer**: ✅ Now uses CSS variables, proper logo display, dark theme
+- **Client Profiles**: ✅ GlobalHeader integrated, hardcoded colors removed, consistent styling
+- **Profile Detail Pages**: ✅ Full CSS variable conversion, GlobalHeader, professional navigation
+- **Authentication Pages**: ✅ Consistent styling approach with theme system
+- **Timeline Page**: ✅ Already was the gold standard, now integrated with global system
+
+### ✅ **Technical Implementation Details**
+
+**Global CSS Variables System** (`app/globals.css`):
+```css
+:root {
+  --bg-primary: #0A0E1A;
+  --text-primary: #E0E0E0;
+  --accent-blue: #3B82F6;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --backdrop-blur: 20px;
+  /* ... complete professional variable set */
+}
+
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --text-primary: #1e293b;
+  --accent-blue: #2563eb;
+  /* ... light theme overrides */
+}
+```
+
+**Theme Provider** (`app/components/theme/ThemeProvider.js`):
+- React context with useTheme hook
+- localStorage persistence ("app-theme" key)
+- Automatic theme detection and application
+- Theme toggle functionality
+
+**Global Header** (`app/components/GlobalHeader.js`):
+- Professional navigation with theme toggle
+- Responsive design with mobile menu
+- Authentication integration with useAuthStore
+- Consistent across all pages
+
+### ✅ **Success Criteria Achieved**
+- ✅ **Consistent theming** across all pages (ServiceNow, Profiles, Auth, Timeline)
+- ✅ **Global light/dark toggle** accessible from any page via GlobalHeader
+- ✅ **Professional appearance** matching timeline page quality across entire app
+- ✅ **Responsive design** working across all components
+- ✅ **Theme persistence** using localStorage with "app-theme" key
+- ✅ **No hardcoded colors** - all styling uses CSS variables
+- ✅ **Professional glass morphism** with backdrop-blur effects
+- ✅ **Logo display** working correctly on all pages
+- ✅ **User profile management** with complete account settings and navigation
+- ✅ **Tag readability** optimized for both light and dark themes
+- ✅ **Intuitive navigation** with clickable user profile access
+
+### 🎯 **Next Phase Ready**
+Phase 5 is now **COMPLETE**. The application has consistent, professional theming across all pages with working light/dark mode. Ready to proceed with **Phase 6: AI Integration**.
 
 ---
 
@@ -131,7 +261,7 @@ jobs:
 ---
 
 ## Project Vision
-Transform the Agentic AI Flow Visualizer into a robust, scalable platform that serves as a comprehensive business intelligence tool, featuring ServiceNow integration, AI-powered insights, and secure multi-user support.
+Transform Agent Blueprint into a robust, scalable platform that serves as a comprehensive business intelligence tool, featuring ServiceNow integration, AI-powered insights, and secure multi-user support.
 
 ## Core Objectives
 1. **Testing Excellence**: Achieve comprehensive test coverage and implement CI/CD pipelines
@@ -280,10 +410,78 @@ Transform the Agentic AI Flow Visualizer into a robust, scalable platform that s
 - [ ] FlowDataRepository for ServiceNow data
 - [ ] Implement optimistic updates for better UX
 
-### Phase 5: AI Integration (Week 5-6)
+### Phase 5: UI Consistency & Design System (Week 5-6)
+**Goal**: Standardize design system and implement global light/dark mode across entire application
+
+#### 5.1 Design System Standardization
+- [ ] **Audit Current UI State**
+  - Catalog inconsistencies across pages (ServiceNow, Profiles, Timeline, Auth)
+  - Document current color usage and CSS organization
+  - Identify hardcoded styles that need conversion to variables
+
+- [ ] **Extend Timeline CSS Variables System**
+  ```css
+  // Apply timeline's professional CSS variables system globally
+  :root {
+    /* Dark theme (current default) */
+    --bg-primary: #0a0e27;
+    --bg-secondary: rgba(255, 255, 255, 0.05);
+    --text-primary: #e2e8f0;
+    // ... complete variable set
+  }
+  
+  [data-theme="light"] {
+    /* Light theme overrides */
+    --bg-primary: #ffffff;
+    --bg-secondary: rgba(0, 0, 0, 0.03);
+    --text-primary: #1f2937;
+    // ... complete variable set
+  }
+  ```
+
+- [ ] **Global Theme Infrastructure**
+  - Create global theme context/state management
+  - Implement theme persistence in localStorage
+  - Add theme toggle to global header navigation
+  - Ensure theme changes apply immediately across all pages
+
+#### 5.2 Page-by-Page Conversion
+- [ ] **ServiceNow Flow Visualizer Page**
+  - Convert hardcoded colors to CSS variables
+  - Implement light mode styles
+  - Test flow diagram readability in both themes
+
+- [ ] **Client Profiles Pages**
+  - Standardize profile cards, forms, and detail views
+  - Convert authentication pages to use design system
+  - Ensure migration UI components use consistent styling
+
+- [ ] **Global Components**
+  - Header navigation with theme toggle
+  - Authentication forms (login, signup)
+  - Loading states and error messages
+  - Buttons, inputs, and form elements
+
+#### 5.3 Professional UI Enhancements
+- [ ] **Consistent Glass Morphism Effects**
+  - Standardize backdrop-filter usage across all components
+  - Consistent border radius and spacing system
+  - Professional hover states and animations
+
+- [ ] **Typography System**
+  - Consistent font families, weights, and sizes
+  - Proper text hierarchy across all pages
+  - Improved contrast ratios for accessibility
+
+- [ ] **Component Library Foundation**
+  - Standardized button variants (primary, secondary, danger)
+  - Form component consistency (inputs, selects, textareas)
+  - Card and modal styling standardization
+
+### Phase 6: AI Integration (Week 7-8)
 **Goal**: Generate intelligent timelines using LLM providers
 
-#### 5.1 LLM Provider Integration
+#### 6.1 LLM Provider Integration
 - [ ] OpenAI GPT-4o integration
   ```typescript
   class OpenAITimelineProvider implements ILLMProvider {
@@ -299,7 +497,7 @@ Transform the Agentic AI Flow Visualizer into a robust, scalable platform that s
   - Context injection from client profiles
   - Response formatting and validation
 
-#### 5.2 AI Service Layer
+#### 6.2 AI Service Layer
 - [ ] Implement provider abstraction for flexibility
   - OpenAI provider (initial)
   - Anthropic Claude provider (future)
@@ -308,7 +506,7 @@ Transform the Agentic AI Flow Visualizer into a robust, scalable platform that s
 - [ ] Response caching for cost efficiency
 - [ ] Streaming responses for better UX
 
-#### 5.3 AI-Enhanced Features
+#### 6.3 AI-Enhanced Features
 - [ ] Timeline generation from profiles
   - Industry-specific recommendations
   - ROI calculations based on profile data
@@ -317,10 +515,10 @@ Transform the Agentic AI Flow Visualizer into a robust, scalable platform that s
 - [ ] Automated opportunity identification
 - [ ] Intelligent phase recommendations
 
-### Phase 6: Export Capabilities (Week 6-7)
+### Phase 7: Export Capabilities (Week 8-9)
 **Goal**: Professional PDF exports with customization options
 
-#### 6.1 PDF Generation Service
+#### 7.1 PDF Generation Service
 - [ ] Integrate PDF generation library (react-pdf or puppeteer)
 - [ ] Design professional PDF templates
   - Executive summary page
@@ -332,13 +530,13 @@ Transform the Agentic AI Flow Visualizer into a robust, scalable platform that s
   - Color schemes
   - Font selection
 
-#### 6.2 Export Pipeline
+#### 7.2 Export Pipeline
 - [ ] Implement export queue for large documents
 - [ ] Progress tracking for exports
 - [ ] Email delivery option
 - [ ] Cloud storage integration (optional)
 
-#### 6.3 Export Formats
+#### 7.3 Export Formats
 - [ ] PDF export (primary)
 - [ ] PNG/JPEG image export
 - [ ] PowerPoint export (future)
@@ -378,8 +576,9 @@ main (production)
     ├── feature/phase-2-architecture
     ├── feature/phase-3-auth
     ├── feature/phase-4-database
-    ├── feature/phase-5-ai
-    └── feature/phase-6-export
+    ├── feature/phase-5-ui-design-system
+    ├── feature/phase-6-ai
+    └── feature/phase-7-export
 ```
 
 ### Code Review Process
@@ -467,129 +666,39 @@ main (production)
 - Good performance
 - Active community
 
-## 🌙 Light Mode Implementation Guide
+## 🌙 UI Consistency & Design System - Implementation Notes
 
 ### Current State (December 2024)
-The platform currently uses a **professional dark theme** with hardcoded colors throughout the CSS. All text and UI elements are optimized for dark backgrounds.
+**PRIORITY**: UI consistency is now **Phase 5** - the next implementation phase after database migration completion.
 
-### Implementation Complexity
-**Difficulty Level**: 6/10 (Medium-High)
-**Estimated Effort**: 1-2 days for experienced developer
+**The Challenge**: The application has inconsistent UI across pages:
+- ✅ **Timeline page**: Professional CSS variables system with working light/dark mode
+- ❌ **Other pages**: Hardcoded dark theme colors and inconsistent styling
 
-### Current Architecture Issues
-```css
-/* Current hardcoded approach */
-.profile-card {
-  background: rgba(255, 255, 255, 0.05);  /* Hardcoded dark theme */
-  color: #e2e8f0;                         /* Hardcoded light text */
-  border: 1px solid rgba(255, 255, 255, 0.1);  /* Hardcoded transparent white */
-}
-```
+### Reference Implementation
+The **timeline page** (`app/timeline/timeline.css`) already demonstrates the complete solution:
+- CSS variables system (`:root` and `[data-timeline-theme="light"]`)
+- Professional theme toggle component
+- Responsive design with glass morphism effects
 
-### Recommended Approach: CSS Variables
-**Step 1**: Create theme variables
-```css
-:root {
-  /* Dark theme (current default) */
-  --bg-primary: #0a0e27;
-  --bg-secondary: rgba(255, 255, 255, 0.05);
-  --text-primary: #e2e8f0;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --link-primary: #94a3b8;
-  --link-email: #10b981;
-  --link-phone: #f59e0b;
-  --accent-blue: #3b82f6;
-  --accent-green: #10b981;
-  --accent-amber: #f59e0b;
-  --accent-red: #f87171;
-}
+### Implementation Approach (Phase 5)
+**Goal**: Extend timeline's CSS variables system to entire application
 
-[data-theme="light"] {
-  /* Light theme overrides */
-  --bg-primary: #ffffff;
-  --bg-secondary: rgba(0, 0, 0, 0.03);
-  --text-primary: #1f2937;
-  --text-secondary: #374151;
-  --text-muted: #6b7280;
-  --border-subtle: rgba(0, 0, 0, 0.1);
-  --link-primary: #4b5563;
-  --link-email: #059669;
-  --link-phone: #d97706;
-  --accent-blue: #2563eb;
-  --accent-green: #059669;
-  --accent-amber: #d97706;
-  --accent-red: #dc2626;
-}
-```
+**Files Requiring Updates**:
+1. **Global Styles**: `app/globals.css` - Main application styles
+2. **ServiceNow Page**: Convert hardcoded colors to variables
+3. **Profile Pages**: Standardize profile cards, forms, detail views  
+4. **Authentication**: Convert auth forms to use design system
+5. **Global Header**: Add theme toggle component
 
-**Step 2**: Replace hardcoded colors
-```css
-/* Convert existing styles to use variables */
-.profile-card {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-}
-```
+**Success Criteria**:
+- All pages use consistent CSS variables system
+- Global light/dark mode toggle works across entire app
+- Professional appearance matching timeline page quality
+- Theme persistence using localStorage
 
-**Step 3**: Create theme toggle component
-```jsx
-// ThemeToggle.jsx
-const ThemeToggle = () => {
-  const [theme, setTheme] = useState('dark');
-  
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  };
-  
-  return (
-    <button onClick={toggleTheme}>
-      {theme === 'dark' ? '☀️' : '🌙'}
-    </button>
-  );
-};
-```
-
-### Files Requiring Updates
-1. **Primary CSS Files**:
-   - `app/globals.css` - Main application styles
-   - `app/profiles/profile-detail.css` - Profile detail pages
-   - `app/timeline/timeline.css` - Timeline visualization
-
-2. **Component Integration**:
-   - Add theme toggle to header navigation
-   - Update global layout to support theme switching
-   - Ensure proper theme persistence
-
-3. **Color Mapping Checklist**:
-   - ✅ Background colors (primary, secondary, cards)
-   - ✅ Text colors (headings, body, muted)
-   - ✅ Border colors (subtle, focus states)
-   - ✅ Link colors (general, email, phone)
-   - ✅ Accent colors (success, warning, error, info)
-   - ✅ Interactive states (hover, active, focus)
-
-### Alternative Approaches
-1. **Tailwind CSS Migration** (Higher effort, long-term benefits)
-2. **CSS-in-JS Solution** (styled-components, emotion)
-3. **Parallel CSS Classes** (Duplicate styles with `.light-theme` prefixes)
-
-### Testing Requirements
-- Manual testing across all pages and components
-- Verify theme persistence across page reloads
-- Test accessibility contrast ratios for both themes
-- Ensure smooth transitions between themes
-
-### Business Context
-Light mode implementation should be prioritized based on:
-- User feedback requesting light mode option
-- Enterprise environments preferring light themes
-- Accessibility requirements for specific use cases
+### Ready for Implementation
+This is now **the next development priority** before AI integration. The timeline page provides the complete blueprint for implementation.
 
 ---
 

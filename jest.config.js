@@ -18,6 +18,8 @@ const customJestConfig = {
     '^@/utils/(.*)$': '<rootDir>/app/utils/$1',
     '^@/store/(.*)$': '<rootDir>/app/store/$1',
     '^@/hooks/(.*)$': '<rootDir>/app/hooks/$1',
+    // Mock Supabase modules
+    '^@supabase/supabase-js$': '<rootDir>/app/__mocks__/@supabase/supabase-js.js',
   },
   testEnvironment: 'jest-environment-jsdom',
   testMatch: [
@@ -47,6 +49,10 @@ const customJestConfig = {
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
   },
+  // Handle ES6 modules from Supabase
+  transformIgnorePatterns: [
+    'node_modules/(?!(@supabase|jose|openid-client|uuid|oauth|preact-render-to-string|preact|@preact|comlink|core-js|@babel|babel-preset-react-app)/)',
+  ],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
