@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
 import { demoDataService } from '../../services/demoDataService';
+import StrategicInitiativesForm from './StrategicInitiativesForm';
+import ProblemsOpportunitiesForm from './ProblemsOpportunitiesForm';
 
 const WIZARD_STEPS = [
   { id: 'company', title: 'Company Overview', icon: '🏢' },
-  { id: 'business-issue', title: 'Business Issue', icon: '🎯' },
-  { id: 'problems', title: 'Problems & Challenges', icon: '⚠️' },
+  { id: 'strategic-initiatives', title: 'Strategic Initiatives', icon: '🎯' },
+  { id: 'problems', title: 'Problems & Opportunities', icon: '⚠️' },
   { id: 'impact', title: 'Impact Analysis', icon: '💰' },
   { id: 'solution', title: 'Solution Requirements', icon: '🔧' },
   { id: 'decision', title: 'Decision Process', icon: '👥' },
@@ -25,6 +27,32 @@ export default function ProfileWizard({ onComplete, onCancel, initialData }) {
     annualRevenue: '',
     employeeCount: '',
     primaryLocation: '',
+    // New agentic AI format
+    expectedOutcome: {
+      strategicInitiatives: [],
+      businessObjectives: ''
+    },
+    problems: {
+      businessProblems: [],
+      agenticOpportunities: []
+    },
+    solutions: {
+      capabilities: [],
+      differentiators: [],
+      competitorGaps: []
+    },
+    value: {
+      businessValue: {},
+      personalValue: {}
+    },
+    currentArchitecture: {
+      coreSystems: [],
+      integrations: '',
+      dataQuality: '',
+      technicalDebt: '',
+      aiReadiness: ''
+    },
+    // Legacy format for backward compatibility
     valueSellingFramework: {
       businessIssues: [],
       problems: {
@@ -88,10 +116,10 @@ export default function ProfileWizard({ onComplete, onCancel, initialData }) {
     switch (currentStep) {
       case 0: // Company Overview
         return profileData.companyName && profileData.industry && profileData.size;
-      case 1: // Business Issue
-        return getNestedValue(profileData, 'valueSellingFramework.businessIssues')?.length > 0;
-      case 2: // Problems
-        return true; // Optional step
+      case 1: // Strategic Initiatives
+        return profileData.expectedOutcome?.strategicInitiatives?.length > 0;
+      case 2: // Problems & Opportunities
+        return profileData.problems?.businessProblems?.length > 0 || profileData.problems?.agenticOpportunities?.length > 0;
       case 3: // Impact
         return getNestedValue(profileData, 'valueSellingFramework.impact.totalAnnualImpact');
       case 4: // Solution
@@ -142,10 +170,10 @@ export default function ProfileWizard({ onComplete, onCancel, initialData }) {
     switch (currentStepId) {
       case 'company':
         return <CompanyOverviewStep data={profileData} updateData={updateProfileData} />;
-      case 'business-issue':
-        return <BusinessIssueStep data={profileData} updateData={updateProfileData} onToggle={handleArrayToggle} />;
+      case 'strategic-initiatives':
+        return <StrategicInitiativesForm data={profileData} onChange={setProfileData} />;
       case 'problems':
-        return <ProblemsStep data={profileData} updateData={updateProfileData} />;
+        return <ProblemsOpportunitiesForm data={profileData} onChange={setProfileData} />;
       case 'impact':
         return <ImpactStep data={profileData} updateData={updateProfileData} />;
       case 'solution':

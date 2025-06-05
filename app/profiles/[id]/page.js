@@ -263,38 +263,78 @@ function ProfileOverviewTab({ profile }) {
           </div>
         </div>
 
-        {/* Business Issues */}
-        {profile.valueSellingFramework?.businessIssues?.length > 0 && (
+        {/* Strategic Initiatives */}
+        {profile.expectedOutcome?.strategicInitiatives?.length > 0 && (
           <div className="info-card">
-            <h3>Key Business Issues</h3>
-            <div className="tags-list">
-              {profile.valueSellingFramework.businessIssues.map((issue, index) => (
-                <span key={index} className="tag business-issue-tag">{issue}</span>
+            <h3>Strategic Initiatives</h3>
+            <div className="initiatives-list">
+              {profile.expectedOutcome.strategicInitiatives.map((initiative, index) => (
+                <div key={index} className="initiative-item">
+                  <div className="initiative-description">{initiative.initiative}</div>
+                  {initiative.contact && (
+                    <div className="initiative-contact">
+                      <strong>{initiative.contact.name}</strong> ({initiative.contact.title})
+                      <br />
+                      <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-            {profile.valueSellingFramework.businessIssueDetails && (
-              <div className="details-text">
-                <p>{profile.valueSellingFramework.businessIssueDetails}</p>
+          </div>
+        )}
+
+        {/* Business Problems & Opportunities */}
+        {(profile.problems?.businessProblems?.length > 0 || profile.problems?.agenticOpportunities?.length > 0) && (
+          <div className="info-card">
+            <h3>Problems & Agentic AI Opportunities</h3>
+            {profile.problems.businessProblems?.length > 0 && (
+              <div className="problems-section">
+                <h4>Current Problems:</h4>
+                <ul>
+                  {profile.problems.businessProblems.map((problem, index) => (
+                    <li key={index}>{problem}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {profile.problems.agenticOpportunities?.length > 0 && (
+              <div className="opportunities-section">
+                <h4>Agentic Opportunities:</h4>
+                <ul>
+                  {profile.problems.agenticOpportunities.map((opportunity, index) => (
+                    <li key={index}>{opportunity}</li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
         )}
 
-        {/* Impact Summary */}
-        {profile.valueSellingFramework?.impact && (
+        {/* Business Value */}
+        {profile.value?.businessValue && (
           <div className="info-card">
-            <h3>Impact Analysis</h3>
-            <div className="metrics-grid">
-              {profile.valueSellingFramework.impact.totalAnnualImpact && (
-                <div className="metric-item">
+            <h3>Business Value</h3>
+            <div className="value-content">
+              {profile.value.businessValue.totalAnnualImpact && (
+                <div className="metric-item highlight">
                   <label>Total Annual Impact</label>
-                  <span className="metric-value">${parseInt(profile.valueSellingFramework.impact.totalAnnualImpact).toLocaleString()}</span>
+                  <span className="metric-value">{profile.value.businessValue.totalAnnualImpact}</span>
                 </div>
               )}
-              {profile.valueSellingFramework.impact.laborCosts && (
-                <div className="metric-item">
-                  <label>Labor Costs</label>
-                  <span className="metric-value">${parseInt(profile.valueSellingFramework.impact.laborCosts).toLocaleString()}</span>
+              {profile.value.businessValue.revenueImpact && (
+                <div className="value-item">
+                  <strong>Revenue Impact:</strong> {profile.value.businessValue.revenueImpact}
+                </div>
+              )}
+              {profile.value.businessValue.costReduction && (
+                <div className="value-item">
+                  <strong>Cost Reduction:</strong> {profile.value.businessValue.costReduction}
+                </div>
+              )}
+              {profile.value.businessValue.operationalEfficiency && (
+                <div className="value-item">
+                  <strong>Operational Efficiency:</strong> {profile.value.businessValue.operationalEfficiency}
                 </div>
               )}
             </div>
@@ -337,53 +377,63 @@ function ProfileAnalysisTab({ profile }) {
   return (
     <div className="tab-content analysis-tab">
       <div className="analysis-sections">
-        {/* Decision Makers */}
-        {profile.valueSellingFramework?.decisionMakers && (
+        {/* Key Contacts */}
+        {profile.expectedOutcome?.strategicInitiatives?.length > 0 && (
           <div className="analysis-card">
-            <h3>Decision Makers</h3>
-            <div className="decision-makers-grid">
-              {profile.valueSellingFramework.decisionMakers.economicBuyer?.name && (
-                <div className="decision-maker">
-                  <h4>Economic Buyer</h4>
-                  <p><strong>{profile.valueSellingFramework.decisionMakers.economicBuyer.name}</strong></p>
-                  <p>{profile.valueSellingFramework.decisionMakers.economicBuyer.title}</p>
-                  {profile.valueSellingFramework.decisionMakers.economicBuyer.budget && (
-                    <p>Budget: ${parseInt(profile.valueSellingFramework.decisionMakers.economicBuyer.budget).toLocaleString()}</p>
-                  )}
-                </div>
-              )}
-              
-              {profile.valueSellingFramework.decisionMakers.technicalBuyer?.name && (
-                <div className="decision-maker">
-                  <h4>Technical Buyer</h4>
-                  <p><strong>{profile.valueSellingFramework.decisionMakers.technicalBuyer.name}</strong></p>
-                  <p>{profile.valueSellingFramework.decisionMakers.technicalBuyer.title}</p>
-                </div>
-              )}
-              
-              {profile.valueSellingFramework.decisionMakers.champion?.name && (
-                <div className="decision-maker">
-                  <h4>Champion</h4>
-                  <p><strong>{profile.valueSellingFramework.decisionMakers.champion.name}</strong></p>
-                  <p>{profile.valueSellingFramework.decisionMakers.champion.title}</p>
-                </div>
-              )}
+            <h3>Key Executive Contacts</h3>
+            <div className="contacts-grid">
+              {profile.expectedOutcome.strategicInitiatives.map((initiative, index) => (
+                initiative.contact && (
+                  <div key={index} className="contact-card">
+                    <h4>{initiative.contact.name}</h4>
+                    <p className="contact-title">{initiative.contact.title}</p>
+                    <p className="contact-initiative"><strong>Initiative:</strong> {initiative.initiative}</p>
+                    <div className="contact-details">
+                      <p><strong>Email:</strong> <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a></p>
+                      {initiative.contact.phone && (
+                        <p><strong>Phone:</strong> <a href={`tel:${initiative.contact.phone}`}>{initiative.contact.phone}</a></p>
+                      )}
+                      {initiative.contact.linkedin && (
+                        <p><strong>LinkedIn:</strong> <a href={`https://${initiative.contact.linkedin}`} target="_blank" rel="noopener noreferrer">{initiative.contact.linkedin}</a></p>
+                      )}
+                    </div>
+                  </div>
+                )
+              ))}
             </div>
           </div>
         )}
 
-        {/* Solution Requirements */}
-        {profile.valueSellingFramework?.solutionCapabilities?.length > 0 && (
+        {/* Solutions & Capabilities */}
+        {(profile.solutions?.capabilities?.length > 0 || profile.solutions?.differentiators?.length > 0) && (
           <div className="analysis-card">
-            <h3>Solution Requirements</h3>
-            <div className="capabilities-list">
-              {profile.valueSellingFramework.solutionCapabilities.map((capability, index) => (
-                <div key={index} className="capability-item">
-                  <span className="capability-icon">✓</span>
-                  <span>{capability}</span>
+            <h3>Solutions & Capabilities</h3>
+            {profile.solutions.capabilities?.length > 0 && (
+              <div className="capabilities-section">
+                <h4>Required Capabilities:</h4>
+                <div className="capabilities-list">
+                  {profile.solutions.capabilities.map((capability, index) => (
+                    <div key={index} className="capability-item">
+                      <span className="capability-icon">✓</span>
+                      <span>{capability}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+            {profile.solutions.differentiators?.length > 0 && (
+              <div className="differentiators-section">
+                <h4>Key Differentiators:</h4>
+                <div className="differentiators-list">
+                  {profile.solutions.differentiators.map((differentiator, index) => (
+                    <div key={index} className="differentiator-item">
+                      <span className="differentiator-icon">⭐</span>
+                      <span>{differentiator}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -409,58 +459,78 @@ function ProfileAnalysisTab({ profile }) {
 }
 
 function ProfileOpportunitiesTab({ profile }) {
-  const opportunities = profile.aiOpportunityAssessment?.opportunities || [];
-  const quickWins = profile.aiOpportunityAssessment?.quickWins || [];
+  const businessProblems = profile.problems?.businessProblems || [];
+  const agenticOpportunities = profile.problems?.agenticOpportunities || [];
+  const currentArchitecture = profile.currentArchitecture || {};
 
   return (
     <div className="tab-content opportunities-tab">
-      {opportunities.length > 0 && (
-        <div className="opportunities-section">
-          <h3>AI Opportunities</h3>
-          <div className="opportunities-grid">
-            {opportunities.map((opportunity, index) => (
-              <div key={index} className="opportunity-card">
-                <div className="opportunity-header">
-                  <h4>{opportunity.name}</h4>
-                  <span className="priority-badge priority-{opportunity.priorityScore > 7 ? 'high' : opportunity.priorityScore > 4 ? 'medium' : 'low'}">
-                    Priority: {opportunity.priorityScore}/10
-                  </span>
-                </div>
-                <div className="opportunity-details">
-                  <p><strong>Department:</strong> {opportunity.department}</p>
-                  <p><strong>Process:</strong> {opportunity.process}</p>
-                  <p><strong>Current State:</strong> {opportunity.currentState}</p>
-                  <p><strong>AI Solution:</strong> {opportunity.aiSolution}</p>
-                  <p><strong>Estimated Impact:</strong> ${parseInt(opportunity.estimatedImpact || 0).toLocaleString()}</p>
-                  <p><strong>Timeline:</strong> {opportunity.timeline}</p>
-                  <p><strong>Effort:</strong> {opportunity.implementationEffort}</p>
+      {(businessProblems.length > 0 || agenticOpportunities.length > 0) && (
+        <div className="problems-opportunities-section">
+          <div className="problems-opportunities-grid">
+            {businessProblems.length > 0 && (
+              <div className="problems-section">
+                <h3>Current Business Problems</h3>
+                <div className="problems-list">
+                  {businessProblems.map((problem, index) => (
+                    <div key={index} className="problem-card">
+                      <div className="problem-text">{problem}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {agenticOpportunities.length > 0 && (
+              <div className="opportunities-section">
+                <h3>Agentic AI Opportunities</h3>
+                <div className="opportunities-list">
+                  {agenticOpportunities.map((opportunity, index) => (
+                    <div key={index} className="opportunity-card">
+                      <div className="opportunity-text">{opportunity}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {quickWins.length > 0 && (
-        <div className="quick-wins-section">
-          <h3>Quick Wins (0-6 months)</h3>
-          <div className="quick-wins-grid">
-            {quickWins.map((quickWin, index) => (
-              <div key={index} className="quick-win-card">
-                <h4>{quickWin.name}</h4>
-                <div className="quick-win-details">
-                  <span className="impact">${parseInt(quickWin.impact || 0).toLocaleString()} impact</span>
-                  <span className="timeline">{quickWin.timeline}</span>
-                </div>
+      {/* Current Architecture */}
+      {(currentArchitecture.coreSystems?.length > 0 || currentArchitecture.aiReadiness) && (
+        <div className="architecture-section">
+          <h3>Current Architecture & AI Readiness</h3>
+          <div className="architecture-content">
+            {currentArchitecture.coreSystems?.length > 0 && (
+              <div className="systems-list">
+                <h4>Core Systems:</h4>
+                <ul>
+                  {currentArchitecture.coreSystems.map((system, index) => (
+                    <li key={index}>{system}</li>
+                  ))}
+                </ul>
               </div>
-            ))}
+            )}
+            {currentArchitecture.aiReadiness && (
+              <div className="readiness-assessment">
+                <h4>AI Readiness:</h4>
+                <p>{currentArchitecture.aiReadiness}</p>
+              </div>
+            )}
+            {currentArchitecture.technicalDebt && (
+              <div className="technical-debt">
+                <h4>Technical Debt:</h4>
+                <p>{currentArchitecture.technicalDebt}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {opportunities.length === 0 && quickWins.length === 0 && (
+      {businessProblems.length === 0 && agenticOpportunities.length === 0 && (
         <div className="empty-opportunities">
-          <p>No AI opportunities identified yet. Complete the AI assessment section to generate recommendations.</p>
+          <p>No problems or agentic AI opportunities identified yet. Complete the Problems & Opportunities section to see the analysis.</p>
         </div>
       )}
     </div>

@@ -14,6 +14,12 @@ export const markdownService = {
    * @returns {string} Formatted markdown content
    */
   generateMarkdown(profileData) {
+    // Check if this is new agentic AI format or old Value Selling Framework format
+    if (profileData.expectedOutcome || profileData.problems || profileData.solutions) {
+      return this.generateAgenticAIMarkdown(profileData);
+    }
+    
+    // Fallback to old format
     const sections = [
       this.generateHeader(profileData),
       this.generateCompanyOverview(profileData),
@@ -23,6 +29,199 @@ export const markdownService = {
     ];
 
     return sections.filter(section => section).join('\n\n---\n\n');
+  },
+
+  /**
+   * Generate markdown for new agentic AI format
+   * @param {Object} data - Agentic AI format data
+   * @returns {string} Formatted markdown
+   */
+  generateAgenticAIMarkdown(data) {
+    const sections = [
+      this.generateHeader(data),
+      this.generateCompanyOverview(data),
+      this.generateExpectedOutcome(data),
+      this.generateProblemsAndOpportunities(data),
+      this.generateSolutionsAndValue(data),
+      this.generateCurrentArchitectureSection(data),
+      this.generateAgenticAISummary(data)
+    ];
+
+    return sections.filter(section => section).join('\n\n---\n\n');
+     },
+
+  /**
+   * Generate Expected Business Outcome section
+   */
+  generateExpectedOutcome(data) {
+    const outcome = data.expectedOutcome || {};
+    let content = '## Expected Business Outcome\n\n';
+
+    content += '### Strategic Initiatives\n';
+    if (outcome.strategicInitiatives?.length > 0) {
+      outcome.strategicInitiatives.forEach((initiative, index) => {
+        content += `#### ${index + 1}. ${initiative.initiative}\n`;
+        if (initiative.contact) {
+          content += `**Contact**: ${initiative.contact.name} (${initiative.contact.title})\n`;
+          content += `- Email: ${initiative.contact.email}\n`;
+          content += `- LinkedIn: ${initiative.contact.linkedin}\n`;
+          content += `- Phone: ${initiative.contact.phone}\n\n`;
+        }
+      });
+    }
+
+    if (outcome.businessObjectives) {
+      content += `### Business Objectives\n${outcome.businessObjectives}\n`;
+    }
+
+    return content;
+  },
+
+  /**
+   * Generate Problems and Agentic Opportunities section
+   */
+  generateProblemsAndOpportunities(data) {
+    const problems = data.problems || {};
+    let content = '## Problems & Agentic AI Opportunities\n\n';
+
+    content += '### Current Business Problems\n';
+    if (problems.businessProblems?.length > 0) {
+      problems.businessProblems.forEach(problem => {
+        content += `- ${problem}\n`;
+      });
+    }
+
+    content += '\n### Agentic Workflow Opportunities\n';
+    if (problems.agenticOpportunities?.length > 0) {
+      problems.agenticOpportunities.forEach(opportunity => {
+        content += `- **${opportunity}**\n`;
+      });
+    }
+
+    return content;
+  },
+
+  /**
+   * Generate Solutions and Value section
+   */
+  generateSolutionsAndValue(data) {
+    const solutions = data.solutions || {};
+    const value = data.value || {};
+    let content = '## Solutions & Value Proposition\n\n';
+
+    content += '### Capabilities\n';
+    if (solutions.capabilities?.length > 0) {
+      solutions.capabilities.forEach(capability => {
+        content += `- ${capability}\n`;
+      });
+    }
+
+    content += '\n### Key Differentiators\n';
+    if (solutions.differentiators?.length > 0) {
+      solutions.differentiators.forEach(diff => {
+        content += `- ${diff}\n`;
+      });
+    }
+
+    if (solutions.competitorGaps?.length > 0) {
+      content += '\n### Competitor Gaps\n';
+      solutions.competitorGaps.forEach(gap => {
+        content += `- ${gap}\n`;
+      });
+    }
+
+    // Value section
+    if (value.businessValue) {
+      content += '\n### Business Value\n';
+      const bv = value.businessValue;
+      if (bv.revenueImpact) content += `**Revenue Impact**: ${bv.revenueImpact}\n\n`;
+      if (bv.costReduction) content += `**Cost Reduction**: ${bv.costReduction}\n\n`;
+      if (bv.operationalEfficiency) content += `**Operational Efficiency**: ${bv.operationalEfficiency}\n\n`;
+      
+      if (bv.kpiImprovements?.length > 0) {
+        content += '**KPI Improvements**:\n';
+        bv.kpiImprovements.forEach(kpi => {
+          content += `- ${kpi}\n`;
+        });
+        content += '\n';
+      }
+      
+      if (bv.totalAnnualImpact) {
+        content += `**Total Annual Impact**: ${bv.totalAnnualImpact}\n\n`;
+      }
+    }
+
+    if (value.personalValue) {
+      content += '### Personal Value\n';
+      const pv = value.personalValue;
+      if (pv.executiveWin) content += `**Executive Win**: ${pv.executiveWin}\n\n`;
+      if (pv.teamWin) content += `**Team Win**: ${pv.teamWin}\n\n`;
+      if (pv.careerImpact) content += `**Career Impact**: ${pv.careerImpact}\n\n`;
+      if (pv.organizationalBenefit) content += `**Organizational Benefit**: ${pv.organizationalBenefit}\n\n`;
+    }
+
+    return content;
+  },
+
+  /**
+   * Generate Current Architecture section
+   */
+  generateCurrentArchitectureSection(data) {
+    const arch = data.currentArchitecture || {};
+    let content = '## Current Architecture\n\n';
+
+    content += '### Core Systems\n';
+    if (arch.coreSystems?.length > 0) {
+      arch.coreSystems.forEach(system => {
+        content += `- ${system}\n`;
+      });
+    }
+
+    if (arch.integrations) {
+      content += `\n**Integrations**: ${arch.integrations}\n`;
+    }
+    if (arch.dataQuality) {
+      content += `**Data Quality**: ${arch.dataQuality}\n`;
+    }
+    if (arch.technicalDebt) {
+      content += `**Technical Debt**: ${arch.technicalDebt}\n`;
+    }
+    if (arch.aiReadiness) {
+      content += `**AI Readiness**: ${arch.aiReadiness}\n`;
+    }
+
+    return content;
+  },
+
+  /**
+   * Generate summary for agentic AI format
+   */
+  generateAgenticAISummary(data) {
+    const outcome = data.expectedOutcome || {};
+    const value = data.value || {};
+    
+    let content = '## Executive Summary\n\n';
+    
+    content += `**Company**: ${data.companyName} (${data.industry}, ${data.size})\n\n`;
+    
+    if (outcome.businessObjectives) {
+      content += `**Strategic Objective**: ${outcome.businessObjectives}\n\n`;
+    }
+    
+    if (value.businessValue?.totalAnnualImpact) {
+      content += `**Financial Impact**: ${value.businessValue.totalAnnualImpact}\n\n`;
+    }
+    
+    content += '### Key Contacts\n';
+    if (outcome.strategicInitiatives?.length > 0) {
+      outcome.strategicInitiatives.forEach(initiative => {
+        if (initiative.contact) {
+          content += `- **${initiative.contact.name}** (${initiative.contact.title}) - ${initiative.contact.email}\n`;
+        }
+      });
+    }
+
+    return content;
   },
 
   /**
@@ -74,9 +273,14 @@ export const markdownService = {
 ---`;
   },
 
+  // Alias for backward compatibility
   generateValueSellingFramework(data) {
-    const framework = data.valueSellingFramework || {};
-    let content = '## Value Selling Framework\n\n';
+    return this.generateAgenticAIFramework(data);
+  },
+
+  generateAgenticAIFramework(data) {
+    const framework = data.agenticAIFramework || {};
+    let content = '## Agentic AI Framework\n\n';
 
     // 1. Business Issue
     content += '### 1. Business Issue\n';
@@ -284,9 +488,14 @@ export const markdownService = {
     return content;
   },
 
+  // Alias for backward compatibility  
   generateAIOpportunityAssessment(data) {
-    const assessment = data.aiOpportunityAssessment || {};
-    let content = '## AI/Automation Opportunity Assessment\n\n';
+    return this.generateCurrentArchitecture(data);
+  },
+
+  generateCurrentArchitecture(data) {
+    const assessment = data.currentArchitectureAssessment || {};
+    let content = '## Current Architecture Assessment\n\n';
 
     // Current Technology Landscape
     content += '### Current Technology Landscape\n';

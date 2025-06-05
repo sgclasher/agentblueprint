@@ -1,8 +1,8 @@
 # Agentic AI Flow Visualizer & Business AI Advisory Platform
 
-**🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with Value Selling Framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
+**🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional four-feature platform with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system, and complete user authentication. Recent major additions include Supabase authentication system with user management, ProfileWizard with 8-step Value Selling Framework, structured markdown profile storage, realistic demo data system, and automatic timeline generation from client profiles. Architecture includes robust service layers (ProfileService, MarkdownService, DemoDataService) and secure multi-user authentication. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional four-feature platform with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system, and complete user authentication. Recent major additions include modular form architecture with independent components, professional enterprise-grade dark theme with glass morphism design, smart demo data management, and complete visual overhaul. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers (ProfileService, MarkdownService, DemoDataService) and secure multi-user authentication. Ready for production deployment and enterprise use.
 
 **🚀 Next Steps:** Database migration to connect client profiles with authenticated users, AI-powered timeline generation using ChatGPT 4o, PDF export capabilities, and multi-platform connectors. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
 
@@ -12,7 +12,7 @@ A Next.js application that serves four primary functions:
 
 1. **ServiceNow Agentic AI Visualizer**: Transform ServiceNow agentic AI data into interactive flow diagrams
 2. **AI Transformation Timeline**: Business advisory tool that generates personalized AI adoption roadmaps  
-3. **Client Profile Management**: Comprehensive business intelligence system using Value Selling Framework to create client "digital twins"
+3. **Client Profile Management**: Comprehensive business intelligence system using structured methodology to create client "digital twins"
 4. **User Authentication & Management**: Secure multi-user system with encrypted credential storage and profile management
 
 The platform positions itself as a sophisticated enterprise tool for AI transformation planning, providing immediate value through visualization and analysis while capturing comprehensive business intelligence for strategic decision-making.
@@ -35,9 +35,9 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Mobile-Responsive Design**: Optimized for all device types
 
 ### 👥 **Client Profile Management**
-- **ProfileWizard**: 8-step guided form implementing Value Selling Framework methodology
+- **ProfileWizard**: 8-step guided form implementing structured business intelligence methodology
 - **Business Intelligence Capture**: Company overview, strategic issues, quantified impact analysis
-- **Value Selling Framework**: Business Issues → Problems → Impact → Solution → Decision → AI Assessment
+- **Structured Framework**: Expected Outcomes → Problems & Opportunities → Solutions & Value → Architecture Assessment
 - **Structured Markdown Storage**: Prevents AI hallucinations while maintaining human readability
 - **Demo Data System**: 4 realistic industry profiles (Technology, Manufacturing, Healthcare, Finance)
 - **Automatic Timeline Generation**: Client profiles automatically populate personalized AI roadmaps
@@ -53,11 +53,14 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Security Features**: Audit logging, encrypted data storage, and secure key management
 
 ### 🎨 **Design System (ai-2027.com Inspired)**
-- **Dark Theme**: Modern #0a0e27 background with gradient accents
-- **Floating UI Elements**: Metrics widget positioned absolutely with backdrop blur
-- **Smooth Animations**: Scroll-based progress indicators and smooth transitions
-- **Responsive Layout**: 2-column design with floating widget on desktop, stacked on mobile
-- **Visual Storytelling**: Phase-based progression with icons and visual hierarchy
+- **Professional Dark Theme**: Enterprise-grade #0a0e27 background with sophisticated color palette
+- **Glass Morphism Effects**: Backdrop blur throughout with rgba overlays and subtle transparency
+- **Professional Typography**: Carefully designed text hierarchy with gradient effects for emphasis
+- **Smart Animations**: Hover effects with lift/glow, smooth transitions, and interactive feedback
+- **Modular Component Design**: Independent form components with consistent styling patterns
+- **Enterprise Color Scheme**: Professional slate colors (#f1f5f9, #e2e8f0, #cbd5e1, #94a3b8)
+- **Responsive Excellence**: Mobile-optimized layouts with professional spacing and hierarchy
+- **Demo Data Management**: Smart detection and easy clearing functionality
 
 ## Getting Started
 
@@ -105,7 +108,7 @@ npm test
 #### **Option 3: Client Profile Management**
 1. Click "Client Profiles" button or go to `/profiles`
 2. Create new profile or load demo data (4 industry scenarios available)
-3. Complete 8-step Value Selling Framework assessment
+3. Complete 8-step business intelligence assessment
 4. Generate automatic AI timeline from profile data
 5. View comprehensive business intelligence and opportunity analysis
 
@@ -178,7 +181,7 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 ---
 
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, and secure user authentication, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of the Value Selling Framework-based profile system and complete authentication infrastructure, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through automated timeline generation and opportunity analysis.
+**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, and secure user authentication, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of the structured business intelligence profile system and complete authentication infrastructure, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through automated timeline generation and opportunity analysis.
 
 **🔐 Authentication Status**: Complete Supabase integration with user management, encrypted credential storage, and enterprise-grade security features.
 

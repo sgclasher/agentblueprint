@@ -44,6 +44,17 @@ export default function ProfilesPage() {
     }
   };
 
+  const clearDemoData = () => {
+    // Clear all profiles from localStorage and reload
+    localStorage.removeItem('clientProfiles');
+    window.location.reload();
+  };
+
+  const hasDemoProfiles = () => {
+    const demoCompanyNames = ['TechFlow Solutions', 'PrecisionParts Manufacturing', 'Regional Medical Center', 'Community Trust Bank'];
+    return profiles.some(profile => demoCompanyNames.includes(profile.companyName));
+  };
+
   const handleWizardComplete = (profile) => {
     setProfiles(prev => [...prev, profile]);
     setShowWizard(false);
@@ -93,6 +104,15 @@ export default function ProfilesPage() {
           </div>
           
           <div className="header-actions">
+            {hasDemoProfiles() && (
+              <button 
+                className="btn btn-secondary"
+                onClick={clearDemoData}
+                style={{ marginRight: '1rem' }}
+              >
+                Clear Demo Data
+              </button>
+            )}
             <button 
               className="btn btn-primary"
               onClick={handleCreateProfile}
@@ -131,16 +151,41 @@ export default function ProfilesPage() {
             </div>
           </div>
         ) : (
-          <div className="profiles-grid">
-            {profiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                profile={profile}
-                onView={() => handleViewProfile(profile.id)}
-                onGenerateTimeline={() => handleGenerateTimeline(profile)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="profiles-grid">
+              {profiles.map((profile) => (
+                <ProfileCard
+                  key={profile.id}
+                  profile={profile}
+                  onView={() => handleViewProfile(profile.id)}
+                  onGenerateTimeline={() => handleGenerateTimeline(profile)}
+                />
+              ))}
+            </div>
+            
+            {hasDemoProfiles() && (
+              <div style={{ 
+                textAlign: 'center', 
+                marginTop: '2rem', 
+                padding: '1rem',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <p style={{ 
+                  color: 'rgba(255, 255, 255, 0.7)', 
+                  marginBottom: '1rem', 
+                  fontSize: '0.9rem' 
+                }}>
+                  Demo profiles are currently loaded
+                </p>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={clearDemoData}
+                >
+                  Clear Demo Data
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
