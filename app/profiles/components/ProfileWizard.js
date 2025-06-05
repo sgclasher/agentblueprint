@@ -18,7 +18,7 @@ const WIZARD_STEPS = [
   { id: 'summary', title: 'Summary & Next Steps', icon: '📋' }
 ];
 
-export default function ProfileWizard({ onComplete, onCancel, initialData }) {
+export default function ProfileWizard({ onComplete, onCancel, initialData, isEditMode = false }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [profileData, setProfileData] = useState(initialData || {
     companyName: '',
@@ -113,34 +113,82 @@ export default function ProfileWizard({ onComplete, onCancel, initialData }) {
   };
 
   const canProceedToNext = () => {
-    switch (currentStep) {
+    // Allow free navigation between all steps
+    // Users can explore the wizard without being forced to complete each section
+    return true;
+  };
+
+  const getStepValidationStatus = (stepIndex) => {
+    // Return validation info for visual indicators (without blocking navigation)
+    switch (stepIndex) {
       case 0: // Company Overview
-        return profileData.companyName && profileData.industry && profileData.size;
+        return {
+          isValid: profileData.companyName && profileData.industry && profileData.size,
+          requiredFields: ['Company Name', 'Industry', 'Company Size']
+        };
       case 1: // Strategic Initiatives
-        return profileData.expectedOutcome?.strategicInitiatives?.length > 0;
+        return {
+          isValid: profileData.expectedOutcome?.strategicInitiatives?.length > 0,
+          requiredFields: ['At least one Strategic Initiative']
+        };
       case 2: // Problems & Opportunities
-        return profileData.problems?.businessProblems?.length > 0 || profileData.problems?.agenticOpportunities?.length > 0;
+        return {
+          isValid: profileData.problems?.businessProblems?.length > 0 || profileData.problems?.agenticOpportunities?.length > 0,
+          requiredFields: ['Business Problems or AI Opportunities']
+        };
       case 3: // Impact
-        return getNestedValue(profileData, 'valueSellingFramework.impact.totalAnnualImpact');
+        return {
+          isValid: getNestedValue(profileData, 'valueSellingFramework.impact.totalAnnualImpact'),
+          requiredFields: ['Total Annual Impact']
+        };
       case 4: // Solution
-        return getNestedValue(profileData, 'valueSellingFramework.solutionCapabilities')?.length > 0;
+        return {
+          isValid: getNestedValue(profileData, 'valueSellingFramework.solutionCapabilities')?.length > 0,
+          requiredFields: ['Solution Capabilities']
+        };
       case 5: // Decision
-        return getNestedValue(profileData, 'valueSellingFramework.decisionMakers.economicBuyer.name');
+        return {
+          isValid: getNestedValue(profileData, 'valueSellingFramework.decisionMakers.economicBuyer.name'),
+          requiredFields: ['Economic Buyer Name']
+        };
       case 6: // AI Assessment
-        return profileData.aiOpportunityAssessment?.aiReadinessScore;
+        return {
+          isValid: profileData.aiOpportunityAssessment?.aiReadinessScore,
+          requiredFields: ['AI Readiness Score']
+        };
       case 7: // Summary
-        return true;
+        return {
+          isValid: true,
+          requiredFields: []
+        };
       default:
-        return false;
+        return { isValid: false, requiredFields: [] };
     }
   };
 
   const handleComplete = async () => {
     try {
-      const profile = await ProfileService.createProfile(profileData);
+      // Check if critical fields are missing (warn but don't block)
+      const criticalValidation = getStepValidationStatus(0); // Company Overview
+      if (!criticalValidation.isValid) {
+        const proceed = window.confirm(
+          `You haven't completed the basic company information (${criticalValidation.requiredFields.join(', ')}). ` +
+          'Do you want to save the profile anyway?'
+        );
+        if (!proceed) return;
+      }
+
+      let profile;
+      if (isEditMode && initialData?.id) {
+        // Update existing profile
+        profile = await ProfileService.updateProfile(initialData.id, profileData);
+      } else {
+        // Create new profile
+        profile = await ProfileService.createProfile(profileData);
+      }
       onComplete(profile);
     } catch (error) {
-      console.error('Error creating profile:', error);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} profile:`, error);
     }
   };
 
@@ -192,97 +240,261 @@ export default function ProfileWizard({ onComplete, onCancel, initialData }) {
   const markdownPreview = showMarkdownPreview ? markdownService.generateMarkdown(profileData) : '';
 
   return (
-    <div className="profile-wizard">
-      <div className="wizard-header">
-        <h1>Create Client Profile</h1>
-        <div className="wizard-progress">
-          <div className="progress-steps">
-            {WIZARD_STEPS.map((step, index) => (
-              <div 
-                key={step.id}
-                className={`progress-step ${index <= currentStep ? 'active' : ''} ${index === currentStep ? 'current' : ''}`}
-              >
-                <div className="step-icon">{step.icon}</div>
-                <span className="step-title">{step.title}</span>
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--bg-primary)',
+      color: 'var(--text-primary)',
+      fontFamily: 'var(--font-family)'
+    }}>
+      <div style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(var(--backdrop-blur))',
+        borderBottom: '1px solid var(--border-primary)',
+        padding: 'var(--spacing-xl) var(--spacing-lg)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100
+      }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: '2rem',
+          fontWeight: 'var(--font-weight-bold)',
+          color: 'var(--text-primary)',
+          textAlign: 'center',
+          marginBottom: 'var(--spacing-lg)'
+        }}>{isEditMode ? 'Edit Client Profile' : 'Create Client Profile'}</h1>
+        <div style={{
+          maxWidth: '1000px',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 'var(--spacing-lg)',
+            position: 'relative'
+          }}>
+            {WIZARD_STEPS.map((step, index) => {
+              const validation = getStepValidationStatus(index);
+              const isCompleted = index < currentStep && validation.isValid;
+              const isCurrent = index === currentStep;
+              const isIncomplete = index < currentStep && !validation.isValid;
+              
+              return (
+                <div 
+                  key={step.id}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    flex: 1,
+                    transition: 'all var(--transition-normal) ease',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => setCurrentStep(index)}
+                  title={`${step.title}${!validation.isValid && validation.requiredFields.length > 0 ? '\nMissing: ' + validation.requiredFields.join(', ') : ''}`}
+                >
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: 'var(--border-radius-full)',
+                    background: isCompleted ? 'var(--accent-green)' : 
+                               isCurrent ? 'var(--accent-blue)' : 
+                               isIncomplete ? 'var(--accent-yellow)' : 'var(--btn-secondary-bg)',
+                    border: `2px solid ${isCurrent ? 'var(--accent-blue)' : 
+                                        isCompleted ? 'var(--accent-green)' : 
+                                        isIncomplete ? 'var(--accent-yellow)' : 'var(--border-primary)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: isCompleted ? '1rem' : '1.2rem',
+                    color: (isCompleted || isCurrent || isIncomplete) ? 'white' : 'var(--text-secondary)',
+                    marginBottom: 'var(--spacing-sm)',
+                    transition: 'all var(--transition-normal) ease',
+                    cursor: 'pointer',
+                    ...(isCurrent && {
+                      boxShadow: '0 0 0 4px rgba(59, 130, 246, 0.2)'
+                    })
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isCurrent) {
+                      e.target.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isCurrent) {
+                      e.target.style.transform = 'scale(1)';
+                    }
+                  }}
+                >{isCompleted ? '✓' : step.icon}</div>
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 'var(--font-weight-medium)',
+                  color: (isCompleted || isCurrent || isIncomplete) ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  textAlign: 'center',
+                  maxWidth: '80px',
+                  lineHeight: '1.2'
+                }}>{step.title}</span>
               </div>
-            ))}
+              );
+            })}
           </div>
-          <div className="progress-bar">
+          <div style={{
+            height: '4px',
+            background: 'var(--border-primary)',
+            borderRadius: 'var(--border-radius)',
+            overflow: 'hidden',
+            marginBottom: 'var(--spacing-lg)'
+          }}>
             <div 
-              className="progress-fill" 
-              style={{ width: `${((currentStep + 1) / WIZARD_STEPS.length) * 100}%` }}
+              style={{ 
+                width: `${((currentStep + 1) / WIZARD_STEPS.length) * 100}%`,
+                height: '100%',
+                background: 'var(--accent-blue)',
+                transition: 'width var(--transition-normal) ease'
+              }}
             />
           </div>
         </div>
       </div>
 
-      <div className="wizard-content">
-        <div className="wizard-main">
+      <div style={{
+        display: 'flex',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: 'var(--spacing-xl) var(--spacing-lg)',
+        gap: 'var(--spacing-xl)'
+      }}>
+        <div style={{
+          flex: showMarkdownPreview ? '1' : '1',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(var(--backdrop-blur))',
+          borderRadius: 'var(--border-radius-xl)',
+          padding: 'var(--spacing-xl)',
+          border: '1px solid var(--border-primary)'
+        }}>
           {renderCurrentStep()}
         </div>
 
         {showMarkdownPreview && (
-          <div className="wizard-sidebar">
-            <div className="markdown-preview">
-              <h3>Markdown Preview</h3>
-              <pre className="markdown-content">{markdownPreview}</pre>
+          <div style={{
+            width: '400px',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(var(--backdrop-blur))',
+            borderRadius: 'var(--border-radius-xl)',
+            padding: 'var(--spacing-xl)',
+            border: '1px solid var(--border-primary)'
+          }}>
+            <div>
+              <h3 style={{
+                margin: '0 0 var(--spacing-md) 0',
+                fontSize: '1.25rem',
+                fontWeight: 'var(--font-weight-semibold)',
+                color: 'var(--text-primary)'
+              }}>Markdown Preview</h3>
+              <pre style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-primary)',
+                borderRadius: 'var(--border-radius)',
+                padding: 'var(--spacing-md)',
+                fontSize: '0.75rem',
+                lineHeight: '1.4',
+                color: 'var(--text-secondary)',
+                overflow: 'auto',
+                maxHeight: '400px',
+                fontFamily: 'var(--font-family-mono)'
+              }}>{markdownPreview}</pre>
             </div>
           </div>
         )}
       </div>
 
-      <div className="wizard-actions">
-        <div className="left-actions">
-          <button 
-            type="button" 
-            className="btn-secondary btn-small"
-            onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
-          >
-            {showMarkdownPreview ? 'Hide Preview' : 'Show Markdown'}
-          </button>
-          
-          <div className="demo-data-dropdown">
-            <select 
-              onChange={(e) => e.target.value && loadDemoData(e.target.value)}
-              className="btn-secondary btn-small"
-              style={{ cursor: 'pointer' }}
+      <div style={{
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(var(--backdrop-blur))',
+        borderTop: '1px solid var(--border-primary)',
+        padding: 'var(--spacing-lg)',
+        position: 'sticky',
+        bottom: 0,
+        zIndex: 100
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 'var(--spacing-lg)'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: 'var(--spacing-md)',
+            alignItems: 'center'
+          }}>
+            <button 
+              type="button" 
+              onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
+              className="btn btn-secondary"
+              style={{
+                fontSize: '0.875rem'
+              }}
             >
-              <option value="">Load Demo Data</option>
-              <option value="tech-startup">TechFlow Solutions (SaaS)</option>
-              <option value="manufacturing">PrecisionParts Manufacturing</option>
-              <option value="healthcare">Regional Medical Center</option>
-              <option value="finance">Community Trust Bank</option>
-            </select>
+              {showMarkdownPreview ? 'Hide Preview' : 'Show Markdown'}
+            </button>
+            
+                          {!isEditMode && (
+                <select 
+                  onChange={(e) => e.target.value && loadDemoData(e.target.value)}
+                  style={{
+                    padding: 'var(--spacing-sm) var(--spacing-md)',
+                    background: 'var(--btn-secondary-bg)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: 'var(--border-radius)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-family)'
+                  }}
+                >
+                  <option value="">Load Demo Data</option>
+                  <option value="tech-startup">TechFlow Solutions (SaaS)</option>
+                  <option value="manufacturing">PrecisionParts Manufacturing</option>
+                  <option value="healthcare">Regional Medical Center</option>
+                  <option value="finance">Community Trust Bank</option>
+                </select>
+              )}
           </div>
-        </div>
 
-        <div className="main-actions">
-          <button 
-            type="button" 
-            className="btn-secondary"
-            onClick={currentStep === 0 ? onCancel : () => setCurrentStep(currentStep - 1)}
-          >
-            {currentStep === 0 ? 'Cancel' : 'Back'}
-          </button>
-
-          {currentStep < WIZARD_STEPS.length - 1 ? (
+          <div style={{
+            display: 'flex',
+            gap: 'var(--spacing-md)',
+            alignItems: 'center'
+          }}>
             <button 
               type="button" 
-              className="btn-primary"
-              disabled={!canProceedToNext()}
-              onClick={() => setCurrentStep(currentStep + 1)}
+              onClick={currentStep === 0 ? onCancel : () => setCurrentStep(currentStep - 1)}
+              className="btn btn-secondary"
             >
-              Next
+              {currentStep === 0 ? 'Cancel' : 'Back'}
             </button>
-          ) : (
-            <button 
-              type="button" 
-              className="btn-success"
-              onClick={handleComplete}
-            >
-              Create Profile
-            </button>
-          )}
+
+            {currentStep < WIZARD_STEPS.length - 1 ? (
+              <button 
+                type="button" 
+                onClick={() => setCurrentStep(currentStep + 1)}
+                className="btn btn-primary"
+              >
+                Next
+              </button>
+            ) : (
+              <button 
+                type="button" 
+                onClick={handleComplete}
+                className="btn btn-success"
+              >
+                {isEditMode ? 'Update Profile' : 'Create Profile'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -304,13 +516,35 @@ function CompanyOverviewStep({ data, updateData }) {
   ];
 
   return (
-    <div className="wizard-step">
-      <h2>Company Overview</h2>
-      <p>Let's start with basic information about your client.</p>
+    <div style={{
+      color: 'var(--text-primary)'
+    }}>
+      <h2 style={{
+        margin: '0 0 var(--spacing-sm) 0',
+        fontSize: '1.75rem',
+        fontWeight: 'var(--font-weight-bold)',
+        color: 'var(--text-primary)'
+      }}>Company Overview</h2>
+      <p style={{
+        margin: '0 0 var(--spacing-xl) 0',
+        fontSize: '1rem',
+        color: 'var(--text-secondary)',
+        lineHeight: 'var(--line-height)',
+        opacity: 0.9
+      }}>Let's start with basic information about your client.</p>
 
-      <div className="form-grid">
-        <div className="form-group">
-          <label htmlFor="companyName">Company Name *</label>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: 'var(--spacing-lg)'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          <label htmlFor="companyName" style={{
+            fontSize: '0.9rem',
+            fontWeight: 'var(--font-weight-medium)',
+            color: 'var(--text-primary)',
+            opacity: 0.9
+          }}>Company Name *</label>
           <input
             id="companyName"
             type="text"
@@ -318,16 +552,39 @@ function CompanyOverviewStep({ data, updateData }) {
             onChange={(e) => updateData('companyName', e.target.value)}
             placeholder="Enter company name"
             required
+            style={{
+              padding: 'var(--spacing-md)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius)',
+              background: 'var(--btn-secondary-bg)',
+              color: 'var(--text-primary)',
+              fontSize: '1rem',
+              fontFamily: 'var(--font-family)'
+            }}
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="industry">Industry *</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          <label htmlFor="industry" style={{
+            fontSize: '0.9rem',
+            fontWeight: 'var(--font-weight-medium)',
+            color: 'var(--text-primary)',
+            opacity: 0.9
+          }}>Industry *</label>
           <select
             id="industry"
             value={data.industry || ''}
             onChange={(e) => updateData('industry', e.target.value)}
             required
+            style={{
+              padding: 'var(--spacing-md)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius)',
+              background: 'var(--btn-secondary-bg)',
+              color: 'var(--text-primary)',
+              fontSize: '1rem',
+              fontFamily: 'var(--font-family)'
+            }}
           >
             <option value="">Select industry</option>
             {industries.map(industry => (
@@ -336,54 +593,120 @@ function CompanyOverviewStep({ data, updateData }) {
           </select>
         </div>
 
-        <div className="form-group">
-          <label>Company Size *</label>
-          <div className="radio-group">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          <label style={{
+            fontSize: '0.9rem',
+            fontWeight: 'var(--font-weight-medium)',
+            color: 'var(--text-primary)',
+            opacity: 0.9
+          }}>Company Size *</label>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--spacing-sm)'
+          }}>
             {companySizes.map(size => (
-              <label key={size} className="radio-label">
+              <label key={size} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--spacing-sm)',
+                padding: 'var(--spacing-md)',
+                border: `1px solid ${data.size === size ? 'var(--accent-blue)' : 'var(--border-primary)'}`,
+                borderRadius: 'var(--border-radius)',
+                background: data.size === size ? 'rgba(59, 130, 246, 0.1)' : 'var(--btn-secondary-bg)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast) ease'
+              }}>
                 <input
                   type="radio"
                   name="companySize"
                   value={size}
                   checked={data.size === size}
                   onChange={(e) => updateData('size', e.target.value)}
+                  style={{ margin: 0 }}
                 />
-                <span>{size}</span>
+                <span style={{
+                  color: 'var(--text-primary)',
+                  fontSize: '1rem',
+                  fontWeight: 'var(--font-weight-medium)'
+                }}>{size}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="annualRevenue">Annual Revenue</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          <label htmlFor="annualRevenue" style={{
+            fontSize: '0.9rem',
+            fontWeight: 'var(--font-weight-medium)',
+            color: 'var(--text-primary)',
+            opacity: 0.9
+          }}>Annual Revenue</label>
           <input
             id="annualRevenue"
             type="text"
             value={data.annualRevenue || ''}
             onChange={(e) => updateData('annualRevenue', e.target.value)}
             placeholder="e.g., 50M, 1.2B"
+            style={{
+              padding: 'var(--spacing-md)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius)',
+              background: 'var(--btn-secondary-bg)',
+              color: 'var(--text-primary)',
+              fontSize: '1rem',
+              fontFamily: 'var(--font-family)'
+            }}
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="employeeCount">Employee Count</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          <label htmlFor="employeeCount" style={{
+            fontSize: '0.9rem',
+            fontWeight: 'var(--font-weight-medium)',
+            color: 'var(--text-primary)',
+            opacity: 0.9
+          }}>Employee Count</label>
           <input
             id="employeeCount"
             type="number"
             value={data.employeeCount || ''}
             onChange={(e) => updateData('employeeCount', e.target.value)}
             placeholder="Number of employees"
+            style={{
+              padding: 'var(--spacing-md)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius)',
+              background: 'var(--btn-secondary-bg)',
+              color: 'var(--text-primary)',
+              fontSize: '1rem',
+              fontFamily: 'var(--font-family)'
+            }}
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="primaryLocation">Primary Location</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+          <label htmlFor="primaryLocation" style={{
+            fontSize: '0.9rem',
+            fontWeight: 'var(--font-weight-medium)',
+            color: 'var(--text-primary)',
+            opacity: 0.9
+          }}>Primary Location</label>
           <input
             id="primaryLocation"
             type="text"
             value={data.primaryLocation || ''}
             onChange={(e) => updateData('primaryLocation', e.target.value)}
             placeholder="City, State/Country"
+            style={{
+              padding: 'var(--spacing-md)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius)',
+              background: 'var(--btn-secondary-bg)',
+              color: 'var(--text-primary)',
+              fontSize: '1rem',
+              fontFamily: 'var(--font-family)'
+            }}
           />
         </div>
       </div>

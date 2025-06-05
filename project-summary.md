@@ -1,22 +1,39 @@
 Directory structure:
-└── sgclasher-agentic-ai-flow/
+└── sgclasher-agentblueprint/
     ├── README.md
     ├── CLIENT_PROFILE_SYSTEM.md
+    ├── COMPREHENSIVE_TESTING_CHECKLIST.md
+    ├── database-migration-plan.md
+    ├── DATABASE_MIGRATION_GUIDE.md
+    ├── instructions.md
     ├── jest.config.js
     ├── jest.setup.js
+    ├── MODULAR_FORMS_COMPLETE.md
+    ├── MVP_TESTING_SUMMARY.md
     ├── next.config.js
     ├── package.json
     ├── project-summary.md
+    ├── SUPABASE_SETUP.md
     ├── test-parse-overview.js
     ├── test-regex.js
-    ├── TESTING_GUIDE.md
-    ├── TESTING_WORKFLOW.md
     ├── .cursorignore
     ├── .cursorrules
     ├── app/
     │   ├── globals.css
     │   ├── layout.js
     │   ├── page.js
+    │   ├── __mocks__/
+    │   │   └── @supabase/
+    │   │       └── supabase-js.js
+    │   ├── __tests__/
+    │   │   └── features/
+    │   │       ├── ai-timeline.test.js
+    │   │       ├── client-profiles.test.js
+    │   │       ├── database-migration.test.js
+    │   │       ├── manual-test-checklist.md
+    │   │       ├── run-all-features.test.js
+    │   │       ├── servicenow-flow.test.js
+    │   │       └── simple-smoke-tests.js
     │   ├── api/
     │   │   ├── servicenow/
     │   │   │   ├── route.js
@@ -27,20 +44,49 @@ Directory structure:
     │   │   └── timeline/
     │   │       └── generate/
     │   │           └── route.js
+    │   ├── auth/
+    │   │   ├── callback/
+    │   │   │   └── page.js
+    │   │   ├── signin/
+    │   │   │   └── page.js
+    │   │   └── signup/
+    │   │       └── page.js
     │   ├── components/
     │   │   ├── FlowVisualizer.js
+    │   │   ├── GlobalHeader.js
+    │   │   ├── Header.js
     │   │   ├── NodeIcons.js
     │   │   ├── ServiceNowConnector.js
+    │   │   ├── auth/
+    │   │   │   ├── AuthModal.js
+    │   │   │   ├── AuthProvider.js
+    │   │   │   ├── LoginForm.js
+    │   │   │   ├── SignupForm.js
+    │   │   │   └── UserMenu.js
     │   │   ├── flow/
     │   │   │   └── FlowCanvas.js
-    │   │   └── nodes/
-    │   │       ├── AgentNode.js
-    │   │       ├── ToolNode.js
-    │   │       ├── TriggerNode.js
-    │   │       └── UseCaseNode.js
+    │   │   ├── migration/
+    │   │   │   ├── DatabaseSetupCheck.js
+    │   │   │   ├── MigrationBanner.js
+    │   │   │   └── SupabaseSetupCheck.js
+    │   │   ├── nodes/
+    │   │   │   ├── AgentNode.js
+    │   │   │   ├── ToolNode.js
+    │   │   │   ├── TriggerNode.js
+    │   │   │   └── UseCaseNode.js
+    │   │   └── theme/
+    │   │       └── ThemeProvider.js
+    │   ├── database/
+    │   │   └── schema.sql
     │   ├── hooks/
     │   │   ├── useFlowData.js
     │   │   └── useFlowLayout.js
+    │   ├── lib/
+    │   │   ├── debug-supabase.js
+    │   │   ├── env-check.js
+    │   │   └── supabase.js
+    │   ├── profile/
+    │   │   └── page.js
     │   ├── profiles/
     │   │   ├── page.js
     │   │   ├── profile-detail.css
@@ -49,9 +95,13 @@ Directory structure:
     │   │   │   └── __tests__/
     │   │   │       └── page.test.js
     │   │   └── components/
+    │   │       ├── ProblemsOpportunitiesForm.js
     │   │       ├── ProfileWizard.js
+    │   │       ├── StrategicInitiativesForm.js
     │   │       └── __tests__/
     │   │           └── ProfileWizard.test.js
+    │   ├── repositories/
+    │   │   └── profileRepository.js
     │   ├── services/
     │   │   ├── demoDataService.js
     │   │   ├── markdownService.js
@@ -62,6 +112,7 @@ Directory structure:
     │   │       └── profileService.test.js
     │   ├── store/
     │   │   ├── useAgenticStore.js
+    │   │   ├── useAuthStore.js
     │   │   └── useBusinessProfileStore.js
     │   ├── timeline/
     │   │   ├── README.md
@@ -79,179 +130,145 @@ Directory structure:
     │   │       ├── TimelineSidebar.js
     │   │       └── TimelineVisualization.js
     │   └── utils/
+    │       ├── encryption.js
     │       ├── layoutGraph.js
     │       ├── nodeUtils.js
     │       ├── transformAgenticData.js
     │       └── validation.js
-    └── public/
-        └── images/
+    ├── public/
+    │   └── images/
+    └── .github/
+        └── workflows/
+            └── test.yml
 
 
-## `app/` Directory Contents:
 
-This directory is the core of your Next.js application, following the App Router structure.
+Here is a list of each file in the `/app` directory and a brief description of its purpose:
 
-### Root Files in `app/`
+### **Root**
 
-  * **`layout.js`**:
-      * **Purpose**: This is the **root layout** for the entire application. It defines the main HTML structure (\<html\>, \<body\> tags) that wraps all pages.
-      * **Details**: It imports global CSS (`./globals.css`) and sets up the `Inter` font for consistent typography across the application. It also defines global metadata like the site title and description.
-  * **`page.js`**:
-      * **Purpose**: This is the **main landing page** of the application, specifically for the **ServiceNow Agentic AI Flow Visualizer** feature.
-      * **Details**: It's a client component (`'use client'`) that manages the initial state for displaying the flow visualizer or the `ServiceNowConnector` if data isn't loaded. It uses the `useAgenticStore` for state related to ServiceNow data, handles data fetching/refreshing, error display, and provides top-level controls for the flow (expand/collapse all, reset).
+* **`globals.css`**: Defines global CSS variables for the entire application, including comprehensive light and dark theme palettes for backgrounds, text, borders, and accents. [cite_start]It ensures a consistent and professional look across all components and pages[cite: 184, 188].
+* **`layout.js`**: The root layout for the application, wrapping all pages. [cite_start]It sets up the primary HTML structure, imports the global `ThemeProvider` and `AuthProvider`, and includes a `DatabaseSetupCheck` component to verify database configuration[cite: 242, 243].
+* **`page.js`**: The main landing page of the application, responsible for the ServiceNow Agentic AI Flow Visualizer. [cite_start]It manages the state for the flow visualizer and the ServiceNow connector, allowing users to connect and view their AI workflows[cite: 244, 247, 251].
 
-### `app/api/` (API Routes)
+### **`__mocks__`**
 
-This directory contains backend API endpoints that the frontend application consumes.
+* **`__mocks__/@supabase/supabase-js.js`**: A mock of the Supabase client used for testing purposes. [cite_start]It simulates Supabase's authentication and database functions, allowing for isolated testing without making actual database calls[cite: 269].
 
-  * **`app/api/servicenow/route.js`**:
-      * **Purpose**: A general-purpose **proxy API route** for making requests to a ServiceNow instance.
-      * **Details**: It's designed to handle various requests to the ServiceNow Table API by taking parameters like instance URL, credentials (intended for server-to-server use, not client-side exposure), table name, fields, scope, and query. This helps avoid CORS issues.
-  * **`app/api/servicenow/fetch-agentic-data/route.js`**:
-      * **Purpose**: A **specialized API route** to fetch all the necessary data for the **ServiceNow agentic AI flow visualization** in a single, consolidated request.
-      * **Details**: It securely uses server-side credentials (from environment variables) to connect to a specific scripted REST API endpoint (`/api/x_nowge_rfx_ai/ai_relationship_explorer/relationships`) on the ServiceNow instance. It includes input validation for `instanceUrl` and `scopeId`, and basic rate limiting.
-  * **`app/api/servicenow/get-credentials/route.js`**:
-      * **Purpose**: An API endpoint to provide **non-sensitive connection details** to the frontend.
-      * **Details**: It returns the `instanceUrl` and `scopeId` (likely from environment variables) to the client, importantly *excluding* actual authentication credentials like username and password, which are handled server-side.
-  * **`app/api/timeline/generate/route.js`**:
-      * **Purpose**: The backend API endpoint responsible for **generating the AI Transformation Timeline**.
-      * **Details**: It receives a `businessProfile` (client data) and `scenarioType` (e.g., conservative, balanced, aggressive) from the client, validates them using functions from `app/utils/validation.js`, and then calls the `TimelineService` to generate the actual timeline data. It also implements basic rate limiting.
+### **`__tests__`**
 
-### `app/components/` (UI Components)
+* [cite_start]**`__tests__/features/ai-timeline.test.js`**: Contains feature tests for the AI Transformation Timeline, verifying the user journey from generating a timeline to interacting with different scenarios and metrics[cite: 270, 273, 279, 282].
+* **`__tests__/features/client-profiles.test.js`**: Holds feature tests for the Client Profile Management system. [cite_start]It covers creating new profiles, loading demo data, viewing existing profiles, and handling errors[cite: 286, 289, 292, 295].
+* [cite_start]**`__tests__/features/database-migration.test.js`**: Includes tests for the database migration feature, ensuring that client profiles can be successfully moved from local storage to Supabase[cite: 296, 299, 303, 307].
+* [cite_start]**`__tests__/features/manual-test-checklist.md`**: A checklist for manually testing the application's core features, including the ServiceNow visualizer, client profile management, and AI timeline generation[cite: 308, 309].
+* [cite_start]**`__tests__/features/run-all-features.test.js`**: A summary test file that provides a high-level overview of the feature tests, confirming that tests exist for all major functionalities[cite: 311].
+* **`__tests__/features/servicenow-flow.test.js`**: Contains tests specifically for the ServiceNow Flow Visualization feature. [cite_start]It verifies the connection process, data display, and user interactions like node expansion and layout changes[cite: 312, 315, 318, 322].
+* **`__tests__/features/simple-smoke-tests.js`**: A set of quick, basic tests to verify that key application components and services can be imported and have basic functionality. [cite_start]These tests are designed to run quickly to catch major issues[cite: 323, 324, 327, 330].
 
-This directory houses reusable React components that make up the user interface.
+### **`api`**
 
-  * **`app/components/FlowVisualizer.js`**:
-      * **Purpose**: The main React component for **rendering and managing the interactive AI flow diagrams**.
-      * **Details**: It uses `reactflow` library and custom hooks (`useFlowLayout`, `useFlowData`) to display nodes and edges based on the `agenticData`. It handles node selection, and exposes methods like `expandAllNodes` and `collapseAllNodes` to its parent.
-  * **`app/components/NodeIcons.js`**:
-      * **Purpose**: Provides **reusable icon components** (`ExternalLinkIcon`) and the `NodeHeaderButtons` component.
-      * **Details**: `NodeHeaderButtons` is used within custom flow nodes to provide standard buttons for actions like toggling node expansion and opening the corresponding item in ServiceNow.
-  * **`app/components/ServiceNowConnector.js`**:
-      * **Purpose**: The UI component that allows users to **input connection details for a ServiceNow instance** and initiate data fetching.
-      * **Details**: It fetches initial non-sensitive details (like instance URL and scope ID) from `/api/servicenow/get-credentials`, takes user input, and then calls the `/api/servicenow/fetch-agentic-data` endpoint. It manages loading and error states during this process.
-  * **`app/components/flow/FlowCanvas.js`**:
-      * **Purpose**: Encapsulates the core `ReactFlow` component setup.
-      * **Details**: It defines the `ReactFlow` instance, including its `MiniMap`, `Controls`, `Background`, and the `Panel` for displaying selected node details. It takes nodes and edges as props and configures the custom node types (`UseCaseNode`, `TriggerNode`, etc.).
-  * **`app/components/nodes/AgentNode.js`**:
-      * **Purpose**: Defines the visual representation and behavior of an **"Agent" node** in the flow diagram.
-      * **Details**: It displays agent-specific information (label, description, role), handles connection points (sources/targets), and includes `NodeHeaderButtons` for expansion and linking to the agent's record in ServiceNow.
-  * **`app/components/nodes/ToolNode.js`**:
-      * **Purpose**: Defines the visual representation and behavior of a **"Tool" node** in the flow diagram.
-      * **Details**: Similar to `AgentNode`, it displays tool-specific data (label, description, tool type), handles connection points, and uses `NodeHeaderButtons`.
-  * **`app/components/nodes/TriggerNode.js`**:
-      * **Purpose**: Defines the visual representation and behavior of a **"Trigger" node** in the flow diagram.
-      * **Details**: Displays trigger information (label, description, condition), handles connection points, and includes `NodeHeaderButtons`.
-  * **`app/components/nodes/UseCaseNode.js`**:
-      * **Purpose**: Defines the visual representation and behavior of a **"Use Case" node** in the flow diagram (typically the top-level nodes).
-      * **Details**: Displays use case details (label, description), handles connection points, and uses `NodeHeaderButtons` for expansion and linking to the use case in ServiceNow.
+* **`api/servicenow/route.js`**: A server-side proxy API route that forwards requests to a ServiceNow instance. [cite_start]This is designed to avoid CORS issues by making server-to-server requests and can handle various queries to the ServiceNow Table API[cite: 331, 333].
+* **`api/servicenow/fetch-agentic-data/route.js`**: A specialized API endpoint that securely fetches all the necessary data from a ServiceNow instance to build the agentic AI flow visualization. [cite_start]It uses server-side credentials and includes validation and rate-limiting[cite: 337, 339, 341].
+* [cite_start]**`api/servicenow/get-credentials/route.js`**: An API route that provides non-sensitive connection details to the frontend, such as the ServiceNow instance URL and scope ID, while keeping actual authentication credentials on the server[cite: 344].
+* **`api/timeline/generate/route.js`**: The backend endpoint responsible for generating the AI Transformation Timeline. [cite_start]It receives a client's business profile, validates the data, and then uses the `TimelineService` to create the timeline[cite: 345, 347, 348].
 
-### `app/hooks/` (Custom React Hooks)
+### **`auth`**
 
-This directory contains custom hooks for encapsulating reusable stateful logic.
+* **`auth/callback/page.js`**: Handles the authentication callback from Supabase. [cite_start]After a user signs in or confirms their email, this page processes the authentication code or token and redirects the user back to the application[cite: 350, 351, 353].
+* **`auth/signin/page.js`**: The user sign-in page. [cite_start]It provides forms for both password-based and magic link (OTP) authentication and redirects authenticated users to their profiles[cite: 361, 363, 369].
+* **`auth/signup/page.js`**: The user registration page. [cite_start]It includes a form for users to create a new account with their email and password, along with form validation to ensure data integrity[cite: 408, 410, 411].
 
-  * **`app/hooks/useFlowData.js`**:
-      * **Purpose**: Manages the **transformation and initialization of data for the flow diagram**.
-      * **Details**: It takes raw `agenticData`, processes it using `transformAgenticData` (from `app/utils/`), applies an initial layout using `applyDagreLayout`, sets initial node visibility (e.g., collapsing children), and updates the nodes and edges state for `ReactFlow`.
-  * **`app/hooks/useFlowLayout.js`**:
-      * **Purpose**: Manages the **dynamic layout and interaction logic for the flow diagram**.
-      * **Details**: It handles changes in layout direction (Left-to-Right or Top-to-Bottom), node expansion/collapse logic (updating visibility of child nodes and edges), re-applying the Dagre layout when the graph structure changes, and fitting the view.
+### **`components`**
 
-### `app/profiles/` (Client Profiles Feature)
+* **`components/FlowVisualizer.js`**: The main component for rendering the interactive flow diagrams. [cite_start]It uses custom hooks to manage data transformation and layout, displaying nodes and edges based on the agentic AI data received from ServiceNow[cite: 457, 458, 461].
+* **`components/GlobalHeader.js`**: The primary header component used across the entire application. [cite_start]It includes navigation links, a theme toggle for light/dark mode, and user authentication status with sign-in/sign-out actions[cite: 462, 464, 466, 468].
+* [cite_start]**`components/Header.js`**: A header component that includes navigation to the main features and handles user authentication state by showing either a `UserMenu` for logged-in users or a login/signup `AuthModal` for guests[cite: 476, 482, 495].
+* **`components/NodeIcons.js`**: Provides reusable icon components for the flow visualization. [cite_start]It includes the `ExternalLinkIcon` and the `NodeHeaderButtons` component for node interactions like expanding, collapsing, and linking to ServiceNow[cite: 516, 518].
+* **`components/ServiceNowConnector.js`**: The user interface component that allows users to input their ServiceNow instance details. [cite_start]It handles fetching the connection credentials and initiating the data fetch to visualize the AI flow[cite: 520, 522, 524].
+* **`components/auth/AuthModal.js`**: A modal component that houses the login and signup forms. [cite_start]It can be opened to either the "login" or "signup" view and manages its own visibility and state[cite: 565, 567, 569].
+* [cite_start]**`components/auth/AuthProvider.js`**: A client-side component that initializes the authentication state for the application by calling the `initialize` function from the `useAuthStore` when the app loads[cite: 570].
+* **`components/auth/LoginForm.js`**: A form component for user sign-in, supporting both email/password and magic link authentication methods. [cite_start]It interacts with the `useAuthStore` to handle the login process[cite: 571, 582, 586].
+* **`components/auth/SignupForm.js`**: A form used for new user registration. [cite_start]It includes fields for name, email, and password, performs validation, and uses the `useAuthStore` to handle the sign-up process[cite: 589, 591, 605].
+* **`components/auth/UserMenu.js`**: A dropdown menu component for authenticated users. [cite_start]It displays the user's name and email and provides options for signing out and accessing account settings[cite: 611, 613, 620].
+* **`components/flow/FlowCanvas.js`**: Encapsulates the core `ReactFlow` component, configuring its setup, controls, and custom node types. [cite_start]It is responsible for rendering the main canvas where the flow diagram is displayed[cite: 634, 635, 638].
+* **`components/migration/DatabaseSetupCheck.js`**: A utility component that checks if the Supabase database is correctly configured for the application. [cite_start]It provides visual feedback on the connection status and guides the user if setup is required[cite: 643, 645, 655].
+* **`components/migration/MigrationBanner.js`**: A UI component that appears for authenticated users when it detects they have client profiles stored in local storage. [cite_start]It provides a one-click process to migrate this data to their Supabase account[cite: 677, 681, 685].
+* [cite_start]**`components/migration/SupabaseSetupCheck.js`**: A client-side component that verifies if the necessary Supabase environment variables (`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`) are correctly set up, displaying an error if they are missing or invalid[cite: 698, 702, 706].
+* **`components/nodes/AgentNode.js`**: Defines the visual representation and behavior for "Agent" nodes within the flow diagram. [cite_start]It displays agent-specific information and includes controls for node interaction and linking back to ServiceNow[cite: 714, 718, 722].
+* **`components/nodes/ToolNode.js`**: Defines the appearance and functionality of "Tool" nodes in the flow visualization. [cite_start]It shows tool-specific data and provides interaction buttons for expanding the node or navigating to the tool's record in ServiceNow[cite: 724, 728, 731].
+* **`components/nodes/TriggerNode.js`**: Specifies the visual representation for "Trigger" nodes in the flow diagram. [cite_start]It displays the trigger's objective and condition and includes a link to view the trigger's details in ServiceNow[cite: 733, 737, 741].
+* **`components/nodes/UseCaseNode.js`**: This component defines the visual representation for "Use Case" nodes in the flow diagram. [cite_start]It displays the use case label and description and includes header buttons for node interactions[cite: 744, 747, 748].
+* **`components/theme/ThemeProvider.js`**: A React context provider that manages the application's theme (light or dark). [cite_start]It persists the user's theme preference in local storage and applies the corresponding `data-theme` attribute to the HTML document[cite: 751, 752].
 
-This section contains the pages and components for the Client Profile Management feature.
+### **`database`**
 
-  * **`app/profiles/page.js`**:
-      * **Purpose**: The main page for the **Client Profiles feature**, listing existing profiles and allowing creation of new ones.
-      * **Details**: It fetches and displays a list of client profiles (using `ProfileService`), provides a button to launch the `ProfileWizard` for creating new profiles, and allows loading of demo data (using `demoDataService`). It renders `ProfileCard` components for each profile.
-  * **`app/profiles/[id]/page.js`**:
-      * **Purpose**: A dynamic route page that displays the **detailed view of a specific client profile**.
-      * **Details**: It fetches the profile data based on the `id` parameter using `ProfileService`. It features tabbed navigation (`ProfileOverviewTab`, `ProfileAnalysisTab`, `ProfileOpportunitiesTab`, `ProfileMarkdownTab`) to display different aspects of the client profile.
-  * **`app/profiles/components/ProfileWizard.js`**:
-      * **Purpose**: A **multi-step form component** that guides the user through creating a comprehensive client profile based on the Value Selling Framework.
-      * **Details**: It manages the state for each of the 8 steps (Company Overview, Business Issue, Problems, Impact, Solution, Decision, AI Assessment, Summary). It uses `ProfileService` to save the completed profile and `markdownService` for previewing the structured markdown output. It also allows loading demo data via `demoDataService`.
+* **`database/schema.sql`**: Contains the complete SQL schema for setting up the Supabase database. [cite_start]This includes tables for user profiles, encrypted ServiceNow credentials, client profiles for migration, and audit logs, along with row-level security policies to ensure data privacy[cite: 753, 755, 756, 758].
 
-### `app/services/` (Business Logic Services)
+### **`hooks`**
 
-Modules containing core business logic, separate from UI concerns.
+* **`hooks/useFlowData.js`**: A custom React hook responsible for transforming the raw agentic AI data from ServiceNow into the node and edge structure required by ReactFlow. [cite_start]It applies an initial layout and sets the visibility of nodes[cite: 763, 765, 769, 772].
+* **`hooks/useFlowLayout.js`**: A custom hook that manages the dynamic layout and interactions of the flow diagram. [cite_start]It handles expanding and collapsing nodes, toggling layout direction (horizontal/vertical), and re-applying the layout when the graph structure changes[cite: 774, 778, 789, 791].
 
-  * **`app/services/demoDataService.js`**:
-      * **Purpose**: Provides **realistic sample client profiles** for demonstration and testing purposes.
-      * **Details**: It contains hardcoded data for various industry profiles (Tech Startup, Manufacturing, Healthcare, Finance) structured according to the client profile schema. This allows users to quickly populate the system with examples.
-  * **`app/services/markdownService.js`**:
-      * **Purpose**: Handles the **conversion between structured JavaScript objects (client profile data) and a standardized Markdown format**.
-      * **Details**: This service is crucial for the "anti-hallucination" design, ensuring data is stored and processed in a consistent, parseable way. It has `generateMarkdown` to create Markdown from profile data and `parseMarkdown` (though its parsing implementation is partial in the snippet) to convert Markdown back to an object.
-  * **`app/services/profileService.js`**:
-      * **Purpose**: Manages the **business logic related to client profiles**.
-      * **Details**: It handles CRUD-like operations for profiles (currently using `localStorage` for client-side persistence), integrates with `markdownService`, and orchestrates the generation of AI timelines by calling `timelineService` with data extracted from a client profile.
-  * **`app/services/timelineService.js`**:
-      * **Purpose**: Contains the logic for **generating the AI Transformation Timeline**.
-      * **Details**: It takes a `businessProfile` (extracted from a client profile) and a `scenarioType` (e.g., conservative, aggressive) to produce a structured timeline. The timeline includes a current state analysis, multiple transformation phases with initiatives, technologies, and outcomes, and a future state vision. Currently, it uses a rule-based approach for generation.
+### **`lib`**
 
-### `app/store/` (Global State Management)
+* **`lib/debug-supabase.js`**: A client-side utility for debugging the Supabase connection. [cite_start]It checks for the existence of required tables and can verify access to specific profiles, helping diagnose configuration and security rule issues[cite: 805, 806, 811].
+* **`lib/env-check.js`**: A utility that checks for the presence and validity of required environment variables, particularly for Supabase configuration. [cite_start]It includes a client-side component to display warnings if the environment is not set up correctly[cite: 813, 814, 816].
+* **`lib/supabase.js`**: Initializes and exports the Supabase client for the application. [cite_start]It uses environment variables to configure the connection and includes helper functions to get the current user and session on the client-side[cite: 817].
 
-This directory holds Zustand stores for managing global application state.
+### **`profile`**
 
-  * **`app/store/useAgenticStore.js`**:
-      * **Purpose**: A Zustand store to manage state related to the **ServiceNow Agentic AI Flow visualization**.
-      * **Details**: It stores the fetched `agenticData`, connection details (`instanceUrl`, `serviceNowUrl`, `scopeId`), loading status, and any errors related to data fetching or processing for the flow diagram. It provides actions to set, clear, and refresh this data.
-  * **`app/store/useBusinessProfileStore.js`**:
-      * **Purpose**: (As described in `README.md`, though not fully present in the file snippets) A Zustand store intended to manage state for **client business profiles and the AI Transformation Timeline data**.
-      * **Details**: This would likely hold data related to the multi-step business profile form for the timeline, the generated timeline itself, and any user selections or scenario planning data for the timeline feature.
+* **`profile/page.js`**: The user profile management page. It allows authenticated users to view their account information, edit their display name, and manage preferences. [cite_start]It also provides the option to sign out[cite: 818, 819, 824, 878].
 
-### `app/timeline/` (AI Transformation Timeline Feature)
+### **`profiles`**
 
-This section contains the pages and components specific to the AI Transformation Timeline feature.
+* **`profiles/page.js`**: The main page for the Client Profile Management feature. It displays a list of existing profiles and provides options to create a new profile or load demo data. [cite_start]It also integrates a migration banner for authenticated users[cite: 880, 881, 888, 892].
+* [cite_start]**`profiles/profile-detail.css`**: This CSS file provides the styling for the profile detail page, including a professional dark theme with glass morphism effects, consistent typography, and a responsive layout for various screen sizes[cite: 940, 943, 947, 958].
+* **`profiles/[id]/page.js`**: A dynamic route that displays the detailed view of a single client profile. [cite_start]It fetches the profile data based on the ID from the URL and presents it in a tabbed interface for overview, analysis, and AI opportunities[cite: 963, 966, 970, 994].
+* **`profiles/[id]/__tests__/page.test.js`**: Contains tests for the profile detail page. [cite_start]It verifies that profile data is displayed correctly across different tabs, handles loading and error states, and ensures that navigation and actions work as expected[cite: 1043, 1051, 1054, 1069].
+* **`profiles/components/ProblemsOpportunitiesForm.js`**: A form component for mapping business problems to agentic AI solutions. [cite_start]It allows users to input current challenges and corresponding AI workflow opportunities, with suggestions for common scenarios[cite: 1075, 1078, 1081, 1091].
+* **`profiles/components/ProfileWizard.js`**: A multi-step wizard that guides users through creating a detailed client profile. [cite_start]It includes steps for company overview, strategic initiatives, problems, and more, using modular form components to capture the data[cite: 1112, 1119, 1123, 1126].
+* **`profiles/components/StrategicInitiativesForm.js`**: A form component for defining a client's strategic initiatives and the executive contacts responsible for them. [cite_start]It is a key part of capturing the "Expected Business Outcome" in the profile wizard[cite: 1270, 1272, 1275].
+* **`profiles/components/__tests__/ProfileWizard.test.js`**: Contains tests for the `ProfileWizard` component. [cite_start]It verifies that all steps of the wizard render correctly, that form validation works as expected, and that the wizard successfully completes the profile creation process[cite: 1306, 1308, 1311, 1318].
 
-  * **`app/timeline/README.md`**:
-      * **Purpose**: Provides specific documentation for the **AI Transformation Timeline feature**. (Its content is not in the provided snippets but its existence is noted).
-  * **`app/timeline/layout.js`**:
-      * **Purpose**: A **layout component specifically for the timeline pages**.
-      * **Details**: It likely sets up a structure common to all timeline views, potentially including a consistent header, sidebar, or footer for this section of the application.
-  * **`app/timeline/page.js`**:
-      * **Purpose**: The **main page for the AI Transformation Timeline feature**.
-      * **Details**: This page would orchestrate the display of the timeline, manage the business profile input (perhaps via `BusinessProfileModal.js`), call the API to generate the timeline, and render the various timeline components (`TimelineSidebar.js`, `TimelineContent.js`, `MetricsWidget.js`).
-  * **`app/timeline/components/BusinessProfileForm.js`**:
-      * **Purpose**: A form component used to **collect detailed business profile information** from the user, which is then used to generate a personalized AI Transformation Timeline.
-      * **Details**: It likely contains various input fields for company details, AI maturity, goals, etc.
-  * **`app/timeline/components/BusinessProfileModal.js`**:
-      * **Purpose**: A modal component that likely houses the `BusinessProfileForm.js` to **collect user input before generating the timeline**.
-      * **Details**: It handles the presentation of the form in a modal dialog, making it easy to gate the timeline generation until the necessary information is provided.
-  * **`app/timeline/components/MetricsCards.js`**:
-      * **Purpose**: Displays key **metrics or Key Performance Indicators (KPIs)** relevant to the AI transformation journey, likely in a card format.
-      * **Details**: These cards could show data like projected ROI, efficiency gains, or cost savings at different stages of the timeline.
-  * **`app/timeline/components/MetricsWidget.js`**:
-      * **Purpose**: The **floating widget** (inspired by ai-2027.com) that displays real-time KPIs that update as the user scrolls through the timeline.
-      * **Details**: This is a key UI element for the timeline, providing dynamic feedback. It's styled with a dark theme and backdrop blur.
-  * **`app/timeline/components/ScenarioSelector.js`**:
-      * **Purpose**: Allows the user to **select different scenarios** (e.g., conservative, balanced, aggressive) for the AI transformation timeline.
-      * **Details**: This component would modify the parameters sent to the `TimelineService` to generate different versions of the roadmap.
-  * **`app/timeline/components/TimelineContent.js`**:
-      * **Purpose**: The main component responsible for **rendering the scrollable content of the AI Transformation Timeline**.
-      * **Details**: It would display the different phases, initiatives, and details of the generated roadmap.
-  * **`app/timeline/components/TimelineHeader.js`**:
-      * **Purpose**: Displays the **header section for the AI Transformation Timeline page**.
-      * **Details**: This might include the timeline title, introductory text, or primary action buttons related to the timeline.
-  * **`app/timeline/components/TimelineSidebar.js`**:
-      * **Purpose**: Provides **navigation for the different phases** of the AI Transformation Timeline.
-      * **Details**: It likely uses a scroll-spy mechanism to highlight the current phase as the user scrolls through the `TimelineContent`.
-  * **`app/timeline/components/TimelineVisualization.js`**:
-      * **Purpose**: Could be a component responsible for any **visual aspects of the timeline itself**, perhaps charts or graphical representations of progress or phases.
-      * **Details**: The exact nature depends on the design, but it would complement the textual information in `TimelineContent`.
+### **`repositories`**
 
-### `app/utils/` (Utility Functions)
+* **`repositories/profileRepository.js`**: An abstraction layer for data access that handles client profiles. [cite_start]It automatically routes requests to either Supabase for authenticated users or local storage for guests, and includes logic for migrating data between the two[cite: 1330, 1331, 1335, 1339].
 
-This directory contains helper functions used in various parts of the application.
+### **`services`**
 
-  * **`app/utils/layoutGraph.js`**:
-      * **Purpose**: Provides the `applyDagreLayout` function for **automatic graph layout**.
-      * **Details**: It uses the Dagre.js library to calculate node positions for the flow diagram, supporting different layout directions (e.g., top-to-bottom, left-to-right) and spacing parameters.
-  * **`app/utils/nodeUtils.js`**:
-      * **Purpose**: Contains utility functions related to **nodes in the flow diagram**.
-      * **Details**: Based on imports in other files, this includes `generateServiceNowUrl` for creating direct links to records in ServiceNow and likely other helper functions for node manipulation or data extraction. The `ExternalLinkIcon` component is also often associated with this or similar utility files.
-  * **`app/utils/transformAgenticData.js`**:
-      * **Purpose**: A crucial utility for the ServiceNow visualizer, responsible for **transforming the raw JSON data fetched from ServiceNow into the specific node and edge objects** that the `ReactFlow` library expects.
-      * **Details**: It maps the ServiceNow data structure to the visual elements, defining their types (UseCase, Trigger, Agent, Tool), labels, connections, and associated metadata.
-  * **`app/utils/validation.js`**:
-      * **Purpose**: Contains functions for **input validation and basic security measures**.
-      * **Details**: This includes functions to validate ServiceNow instance URLs (`validateInstanceUrl`), scope IDs (`validateScopeId`), business profile data for the timeline (`validateBusinessProfile`), timeline scenario types (`validateScenarioType`), and a basic rate-limiting mechanism (`checkRateLimit`).
+* **`services/demoDataService.js`**: Provides a set of realistic, sample client profiles for different industries like Technology, Manufacturing, Healthcare, and Finance. [cite_start]This allows users to quickly explore the application's features without creating a profile from scratch[cite: 1362, 1363, 1379, 1393].
+* **`services/markdownService.js`**: A service dedicated to converting the structured JSON data of a client profile into a standardized, human-readable Markdown format. [cite_start]This structured output is designed to be easily parseable, which helps prevent AI hallucinations when the data is used for analysis[cite: 1422, 1423, 1424].
+* **`services/profileService.js`**: The core service for managing all business logic related to client profiles. [cite_start]It handles creating, reading, updating, and deleting profiles, and it uses the `ProfileRepository` to seamlessly interact with either local storage or Supabase depending on the user's authentication state[cite: 1464, 1465, 1467, 1472].
+* **`services/timelineService.js`**: A service responsible for generating the AI Transformation Timeline. [cite_start]It takes a business profile and a scenario type (e.g., conservative, balanced) as input and produces a structured timeline with multiple phases and initiatives[cite: 1487, 1488, 1490].
+* **`services/__tests__/markdownService.test.js`**: Contains unit tests for the `markdownService`. [cite_start]These tests ensure that the service correctly generates Markdown from various profile data structures and handles missing data gracefully[cite: 1514, 1519, 1522, 1525].
+* **`services/__tests__/profileService.test.js`**: Includes unit tests for the `ProfileService`. [cite_start]These tests verify that profile creation, timeline generation, and data extraction logic all function correctly and handle different profile scenarios as expected[cite: 1537, 1539, 1544, 1553].
+
+### **`store`**
+
+* **`store/useAgenticStore.js`**: A Zustand store for managing the global state related to the ServiceNow Agentic AI Flow visualization. [cite_start]It holds the fetched AI data, connection details, and loading status, and provides actions to manage this state[cite: 1561, 1563, 1565, 1568].
+* **`store/useAuthStore.js`**: A Zustand store that manages the application's authentication state. [cite_start]It handles user sessions, sign-up, sign-in, and sign-out processes by interacting with the Supabase client[cite: 1571, 1574, 1576, 1578].
+* **`store/useBusinessProfileStore.js`**: A Zustand store used for managing the state of the AI Transformation Timeline feature. [cite_start]It holds the user's business profile data, timeline settings, and the generated timeline itself, persisting the information to local storage[cite: 1581, 1583, 1586, 1588].
+
+### **`timeline`**
+
+* **`timeline/README.md`**: Provides specific documentation for the AI Transformation Timeline feature, outlining its architecture, key features, and how to extend it. [cite_start]It serves as a guide for developers working on this part of the application[cite: 1589, 1591, 1592, 1594].
+* [cite_start]**`timeline/layout.js`**: A simple layout component specifically for the timeline pages, ensuring a consistent structure for this feature[cite: 1596].
+* **`timeline/page.js`**: The main page for the AI Transformation Timeline. [cite_start]It orchestrates the display of the timeline, manages the active section based on scroll position, and handles the initial loading of profile data to generate the timeline[cite: 1597, 1601, 1603, 1609].
+* **`timeline/timeline.css`**: Contains the CSS styles specifically for the AI Transformation Timeline feature. [cite_start]It defines a professional dark theme with variables for colors, fonts, and spacing, and includes responsive styles for different screen sizes[cite: 1621, 1623, 1629, 1633].
+* **`timeline/components/BusinessProfileForm.js`**: A form used to collect detailed business information from the user, which is then used to generate a personalized AI Transformation Timeline. [cite_start]It captures data such as company name, industry, AI maturity, and primary goals[cite: 1648, 1650, 1652, 1658].
+* **`timeline/components/BusinessProfileModal.js`**: A multi-step modal that houses the business profile form. [cite_start]It guides the user through the process of providing the necessary information before generating an AI transformation timeline[cite: 1672, 1674, 1676, 1680].
+* [cite_start]**`timeline/components/MetricsCards.js`**: A component that displays key metrics for the AI transformation journey, such as total investment, expected ROI, and time to value, in a visually appealing card format[cite: 1712, 1713].
+* [cite_start]**`timeline/components/MetricsWidget.js`**: The floating widget that displays real-time Key Performance Indicators (KPIs) that update as the user scrolls through the different phases of the AI timeline[cite: 1715, 1718, 1722, 1727].
+* [cite_start]**`timeline/components/ScenarioSelector.js`**: Allows users to choose between different AI adoption scenarios, such as "Conservative," "Balanced," or "Aggressive," which then adjusts the generated timeline accordingly[cite: 1734, 1735].
+* [cite_start]**`timeline/components/TimelineContent.js`**: The main component responsible for rendering the scrollable content of the AI Transformation Timeline, displaying the different phases, initiatives, and details of the roadmap[cite: 1737, 1740, 1743, 1747].
+* **`timeline/components/TimelineHeader.js`**: The header component for the timeline page. [cite_start]It includes the page title and action buttons for sharing or exporting the timeline report[cite: 1759, 1760].
+* **`timeline/components/TimelineSidebar.js`**: Provides the main navigation for the timeline page. [cite_start]It displays the different phases of the AI journey and includes a progress bar that updates as the user scrolls[cite: 1762, 1763, 1766, 1768].
+* **`timeline/components/TimelineVisualization.js`**: A component responsible for rendering the interactive events of the AI timeline. [cite_start]It includes functionality for expanding and collapsing event details to show more information about each phase[cite: 1778, 1781, 1785, 1788].
+
+### **`utils`**
+
+* **`utils/encryption.js`**: A server-side utility for handling AES-256-GCM encryption and decryption of sensitive credentials, such as those for ServiceNow. [cite_start]It ensures that sensitive data is stored securely[cite: 1809, 1811, 1812, 1816].
+* **`utils/layoutGraph.js`**: Provides a function to automatically arrange nodes and edges in the flow diagram using the Dagre.js library. [cite_start]It supports different layout directions and helps create a clean, organized visualization[cite: 1817, 1819, 1822, 1825].
+* [cite_start]**`utils/nodeUtils.js`**: Contains helper functions related to the nodes in the flow diagram, including a function to generate the correct ServiceNow URL for a given node type and its system ID[cite: 1826, 1828].
+* **`utils/transformAgenticData.js`**: A crucial utility that transforms the raw JSON data fetched from ServiceNow into the specific node and edge objects that the ReactFlow library can render. [cite_start]It maps ServiceNow records to visual elements in the diagram[cite: 1829, 1831, 1838, 1843].
+* **`utils/validation.js`**: Contains various functions for validating user input and API requests. [cite_start]This includes validating ServiceNow URLs, scope IDs, business profile data, and timeline scenarios, as well as providing a basic rate-limiting mechanism[cite: 1852, 1855, 1856, 1861].

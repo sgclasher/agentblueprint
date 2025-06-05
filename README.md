@@ -2,7 +2,7 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional four-feature platform with consistent UI theming across all pages. Recent major addition: **Phase 5 UI Consistency & Design System** with global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) now have consistent professional theming with working light/dark mode toggle. Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system, complete user authentication, and seamless database migration. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional four-feature platform with consistent UI theming across all pages. Recent major addition: **Phase 5 UI Consistency & Design System** with global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) now have consistent professional theming with working light/dark mode toggle. **Latest enhancements include working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, AI transformation timeline, comprehensive client profile management system with full edit capability, complete user authentication, and seamless database migration. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
 
 **🚀 Next Steps:** AI-powered timeline generation using ChatGPT 4o, PDF export capabilities, and multi-platform connectors. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
 
@@ -37,8 +37,11 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 
 ### 👥 **Client Profile Management**
 - **ProfileWizard**: 8-step guided form implementing structured business intelligence methodology
+- **Enhanced UX**: Clickable step navigation, free exploration without field blocking, smart visual completion indicators
+- **Full CRUD Operations**: Create new profiles, edit existing profiles, view detailed breakdowns, delete as needed
 - **Business Intelligence Capture**: Company overview, strategic issues, quantified impact analysis
 - **Structured Framework**: Expected Outcomes → Problems & Opportunities → Solutions & Value → Architecture Assessment
+- **Smart Validation**: Visual step indicators (completed ✓, current, incomplete) with gentle warnings instead of hard blocks
 - **Database Integration**: Seamless localStorage/Supabase storage based on user authentication
 - **Demo Data System**: 4 realistic industry profiles (Technology, Manufacturing, Healthcare, Finance)
 - **Migration Tools**: One-click migration from localStorage to cloud storage
@@ -120,9 +123,10 @@ npm test
 1. Click "Client Profiles" button or go to `/profiles`
 2. Sign up/sign in for cloud storage (optional - localStorage works without auth)
 3. Create new profile or load demo data (4 industry scenarios available)
-4. Complete 8-step business intelligence assessment
-5. Migrate localStorage profiles to cloud with one-click migration
-6. Generate automatic AI timeline from profile data
+4. Complete 8-step business intelligence assessment (click any step to jump around freely)
+5. **Edit existing profiles** - click "View Details" then "Edit Profile" for full wizard editing
+6. Migrate localStorage profiles to cloud with one-click migration
+7. Generate automatic AI timeline from profile data
 
 ## Business Value & Enterprise Use Cases
 
@@ -195,7 +199,7 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 ---
 
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, seamless database migration, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of the structured business intelligence profile system, complete authentication infrastructure, automatic database migration tools, and global design system, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through automated timeline generation and opportunity analysis.
+**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, seamless database migration, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of the structured business intelligence profile system, complete authentication infrastructure, automatic database migration tools, global design system, and enhanced ProfileWizard with full edit capabilities and intuitive navigation, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through automated timeline generation and opportunity analysis.
 
 **🎨 UI Consistency Status**: Complete global design system with CSS variables, theme provider, and professional theming across all pages. Light/dark mode toggle works globally with localStorage persistence.
 

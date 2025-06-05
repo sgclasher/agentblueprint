@@ -44,9 +44,7 @@ export default function ProfileDetailPage() {
   };
 
   const handleEdit = () => {
-    // For now, redirect to profiles page
-    // In the future, this could open the wizard in edit mode
-    window.location.href = '/profiles';
+    window.location.href = `/profiles/${profileId}/edit`;
   };
 
   const handleBack = () => {
