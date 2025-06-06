@@ -18,6 +18,7 @@ export default function TimelinePage() {
     timelineData,
     isGenerating,
     generateTimeline,
+    generateTimelineFromProfile,
     hasValidProfile,
     theme,
     toggleTheme
@@ -92,7 +93,7 @@ export default function TimelinePage() {
         try {
           const loadedProfile = await ProfileService.getProfile(profileIdFromUrl);
           if (loadedProfile) {
-            await generateTimeline(loadedProfile);
+            await generateTimelineFromProfile(loadedProfile);
           } else {
             console.warn(`Profile with ID ${profileIdFromUrl} not found.`);
           }
@@ -107,7 +108,7 @@ export default function TimelinePage() {
     if (!isInitializing) {
       initializeTimeline();
     }
-  }, [profileIdFromUrl, generateTimeline, isInitializing]);
+  }, [profileIdFromUrl, generateTimelineFromProfile, isInitializing]);
   
   // Changed to useLayoutEffect for scroll handling to sync with paint
   useLayoutEffect(() => {

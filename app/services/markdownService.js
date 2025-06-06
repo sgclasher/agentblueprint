@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Markdown Service for Client Profiles
  * 

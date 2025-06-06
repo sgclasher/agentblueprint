@@ -174,15 +174,18 @@ export class ProfileService {
    */
   static async generateTimelineFromProfile(profile) {
     try {
-      // Extract business profile data for timeline service
+      // Generate full markdown representation of the client profile
+      const profileMarkdown = markdownService.generateMarkdown(profile);
+      
+      // Extract business profile data for metadata and scenario determination
       const businessProfile = this.extractBusinessProfile(profile);
       
       // Determine scenario type based on profile characteristics
       const scenarioType = this.determineScenarioType(profile);
       
-      // Use existing timeline service with enhanced context
+      // Use existing timeline service but pass the full markdown for richer context
       const { TimelineService } = await import('./timelineService');
-      const timeline = await TimelineService.generateTimeline(businessProfile, scenarioType);
+      const timeline = await TimelineService.generateTimelineFromMarkdown(profileMarkdown, scenarioType, businessProfile);
       
       // Enhance timeline with profile-specific insights
       return this.enhanceTimelineWithProfile(timeline, profile);

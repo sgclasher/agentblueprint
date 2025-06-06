@@ -2,7 +2,6 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { TimelineService } from '../services/timelineService';
 
 const useBusinessProfileStore = create(
   persist(
@@ -82,11 +81,58 @@ const useBusinessProfileStore = create(
         const { businessProfile, scenarioType } = get();
         
         try {
-          // Use the timeline service to generate the timeline
-          const timelineData = await TimelineService.generateTimeline(businessProfile, scenarioType);
-          set({ timelineData, isGenerating: false });
+          // Call server-side API instead of TimelineService directly
+          const response = await fetch('/api/timeline/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              businessProfile,
+              scenarioType
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          set({ timelineData: data.timeline, isGenerating: false });
         } catch (error) {
           console.error('Error generating timeline:', error);
+          set({ isGenerating: false });
+          throw error;
+        }
+      },
+      
+      generateTimelineFromProfile: async (profile) => {
+        set({ isGenerating: true });
+        
+        try {
+          // Call server-side API for profile-based timeline generation
+          const response = await fetch('/api/timeline/generate-from-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              profileId: profile.id || null,
+              profile: profile
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          set({ timelineData: data.timeline, isGenerating: false });
+          return data.timeline;
+        } catch (error) {
+          console.error('Error generating timeline from profile:', error);
           set({ isGenerating: false });
           throw error;
         }
@@ -100,7 +146,5 @@ const useBusinessProfileStore = create(
     }
   )
 );
-
-
 
 export default useBusinessProfileStore; 

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { TimelineService } from '../../services/timelineService';
 
 /**
  * Debug Environment Configuration Endpoint
@@ -9,26 +8,30 @@ import { TimelineService } from '../../services/timelineService';
  */
 export async function GET() {
   try {
+    const isConfigured = !!process.env.OPENAI_API_KEY;
+    
     const envStatus = {
       timestamp: new Date().toISOString(),
-      timelineService: TimelineService.getStatus(),
+      timelineService: {
+        configured: isConfigured,
+        provider: 'OpenAI GPT-4o',
+        apiKeyStatus: isConfigured ? 'Set' : 'Missing'
+      },
       environment: {
         nodeEnv: process.env.NODE_ENV || 'development',
-        openaiKeyConfigured: !!process.env.OPENAI_API_KEY,
+        openaiKeyConfigured: isConfigured,
         openaiKeyLength: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0
       },
       features: {
-        aiTimelineGeneration: !!process.env.OPENAI_API_KEY,
+        aiTimelineGeneration: isConfigured,
         profileMarkdownConversion: true,
         timelineValidation: true
       }
     };
 
-    const allConfigured = envStatus.timelineService.configured;
-
     return NextResponse.json({
-      configured: allConfigured,
-      status: allConfigured ? 'ready' : 'configuration_needed',
+      configured: isConfigured,
+      status: isConfigured ? 'ready' : 'configuration_needed',
       ...envStatus
     });
 
