@@ -2,13 +2,15 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional platform with **Phase 6 AI Integration** mostly complete! Features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific business transformation roadmaps. **Client profiles are now exclusively stored in Supabase, requiring user authentication for all profile-related features.** This change removes all `localStorage` fallback and data migration logic, streamlining the architecture. **⚠️ Two urgent issues need fixing: timeline progress bar not updating with scroll, and missing timeline caching (regenerates on every page refresh).** All four core features have consistent UI theming across all pages with **Phase 5 UI Consistency & Design System** including global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include AI-powered timeline generation, working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, **AI-powered transformation timeline**, comprehensive client profile management system with full edit capability, complete user authentication, and a secure Supabase database backend. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional platform with a **centralized, provider-agnostic `aiService`**. The AI architecture is scalable, secure, and ready for future features. Features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific business transformation roadmaps. **Client profiles are now exclusively stored in Supabase, requiring user authentication for all profile-related features.** This change removes all `localStorage` fallback and data migration logic, streamlining the architecture. **⚠️ The most urgent issue is implementing database-backed caching for generated timelines to prevent wasteful API calls on every page refresh.** All core features have consistent UI theming across all pages with **Phase 5 UI Consistency & Design System** including global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include AI-powered timeline generation, working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, **AI-powered transformation timeline**, comprehensive client profile management system with full edit capability, complete user authentication, and a secure Supabase database backend. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
 
 **🚀 Next Steps:** 
-1. **URGENT**: Fix timeline progress bar not updating with scroll (left sidebar issue)
-2. **URGENT**: Implement timeline caching to prevent regeneration on page refresh + add "Regenerate Timeline" button
-3. PDF export capabilities, multi-platform connectors, and timeline collaboration features
-4. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning
+1. **URGENT**: Implement database-backed timeline caching in Supabase.
+   - This involves adding a `generated_timeline` column to the `client_profiles` table.
+   - The API will be updated to save and retrieve this data, with a "Regenerate" option on the frontend.
+   - This provides data persistence across devices and prevents wasteful API calls.
+2. PDF export capabilities, multi-platform connectors, and timeline collaboration features.
+3. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
 
 ## Project Overview
 
@@ -177,12 +179,13 @@ npm test
 - Structured markdown for profile storage
 
 ### **AI Integration & LLM Services**
-- OpenAI GPT-4o integration for timeline generation
-- LLM provider architecture with extensible design
-- Structured prompt engineering for business scenarios
-- Profile-to-markdown conversion pipeline
-- JSON response validation and error handling
-- Environment configuration with debug endpoints
+- **Centralized `aiService`**: A single, reusable service (`app/services/aiService.js`) that acts as the entry point for all LLM interactions.
+- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, with `openaiServerProvider.js` as the first implementation. This allows for easy extension to other models or providers in the future.
+- **Secure Server-Side Execution**: All LLM calls are handled securely on the server, with no client-side exposure of API keys.
+- **Centralized Prompt Management**: Prompts are stored and managed in a dedicated directory (`app/lib/llm/prompts`) for better organization and reusability.
+- **OpenAI GPT-4o Integration**: Uses GPT-4o for timeline generation, managed through the central `aiService`.
+- **JSON Response Validation**: Services that consume the `aiService` are responsible for validating the structure of the returned JSON data.
+- **Environment Configuration**: Easy setup verification via the `/api/debug-env` endpoint.
 
 ### **Development**
 - TypeScript-ready architecture
@@ -227,6 +230,6 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 **🗄️ Database Status**: All client profile data is now exclusively stored in Supabase, with all `localStorage` fallbacks and migration code removed. This provides a more secure, scalable, and centralized data architecture.
 
-**🤖 AI Integration Status**: ✅ Mostly Complete OpenAI GPT-4o integration with intelligent timeline generation, structured prompt engineering, transparent error handling, and comprehensive validation. Environment configuration verified via debug endpoint. **⚠️ Missing timeline caching - regenerates on every page refresh (wasteful). Progress bar scroll sync still broken on left sidebar.**
+**🤖 AI Integration Status**: ✅ **Architectural Refactor Complete!** The AI integration has been refactored into a centralized, provider-agnostic `aiService`. This new architecture is more secure, scalable, and ready for future AI features. All LLM calls are now handled server-side. **⚠️ The next critical step is to implement database-backed caching for generated timelines to prevent unnecessary API calls and persist user data.**
 
 **🧪 Testing Status**: Simple MVP testing approach with 9 passing smoke tests including Supabase mocking and AI integration error handling. All tests continue to pass with AI integration updates. See `MVP_TESTING_SUMMARY.md` for details.

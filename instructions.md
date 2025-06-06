@@ -70,36 +70,38 @@ npm test             # Full test suite
 
 ### ✅ MOSTLY COMPLETED: Phase 6 - AI Integration (January 2025)
 **What was implemented:**
-- **OpenAI GPT-4o Integration**: Real LLM-powered timeline generation using OpenAI's GPT-4o model
-- **Server-Side Provider Architecture**: Fixed client/server-side issues with OpenAIServerProvider for API routes
-- **Timeline Service Refactor**: Replaced mock data generation with real AI integration using profile markdown
-- **Structured Prompt Engineering**: Comprehensive prompts for industry-specific, scenario-based timeline generation
-- **Profile-to-Markdown Pipeline**: Enhanced markdownService to convert rich profile data to structured LLM input
-- **Transparent Error Handling**: Clear error messages when OpenAI API key is not configured - no fallback data
-- **Environment Configuration**: Debug endpoint (`/api/debug-env`) to verify AI integration setup
-- **Scenario-Based Generation**: Conservative, Balanced, and Aggressive timeline scenarios with different risk profiles
-- **JSON Response Validation**: Strict validation of LLM responses to ensure consistent timeline structure
-- **Test Integration**: Updated smoke tests to handle both configured and unconfigured AI scenarios
+- **Centralized AI Service Architecture**: Refactored all LLM interactions into a generic, reusable `aiService.js`. This central service manages different AI providers and is the single entry point for any feature requiring AI capabilities.
+- **Provider-Agnostic Design**: The new architecture abstracts the specific LLM provider, with `openaiServerProvider.js` refactored as the first concrete implementation. This makes it easy to add other providers (e.g., Anthropic, Gemini) in the future.
+- **Timeline Service Refactor**: `timelineService.js` is now a clean consumer of the central `aiService`, completely decoupled from the underlying AI provider logic.
+- **Centralized Prompt Management**: Created a new `app/lib/llm/prompts` directory to store all prompt templates, starting with `timelinePrompts.js`. This separates prompt engineering from application logic.
+- **Enhanced Security**: Removed the client-side `openaiProvider.js` to ensure all LLM calls and API keys are handled securely on the server, eliminating any risk of client-side key exposure.
+- **OpenAI GPT-4o Integration**: Real LLM-powered timeline generation using OpenAI's GPT-4o model, now managed through the central AI service.
+- **Structured Prompt Engineering**: Comprehensive prompts for industry-specific, scenario-based timeline generation, now managed in a dedicated prompts directory.
+- **Profile-to-Markdown Pipeline**: Enhanced `markdownService` to convert rich profile data to structured LLM input.
+- **Transparent Error Handling**: Clear error messages when the AI service is not configured.
+- **Environment Configuration**: Debug endpoint (`/api/debug-env`) to verify AI integration setup.
+- **Scenario-Based Generation**: Conservative, Balanced, and Aggressive timeline scenarios with different risk profiles.
+- **JSON Response Validation**: Strict validation of LLM responses to ensure consistent timeline structure.
+- **Test Integration**: Updated smoke tests to handle both configured and unconfigured AI scenarios.
 
 **Key Features:**
-- **Real AI Timeline Generation**: Uses actual OpenAI GPT-4o model for intelligent business transformation roadmaps
-- **Industry-Specific Recommendations**: Tailored advice based on company industry, size, and maturity level
+- **Scalable AI Foundation**: The new `aiService` provides a robust and extensible foundation for adding more AI-powered features beyond timeline generation.
+- **Real AI Timeline Generation**: Uses actual OpenAI GPT-4o model for intelligent business transformation roadmaps.
+- **Industry-Specific Recommendations**: Tailored advice based on company industry, size, and maturity level.
 - **Profile Data Integration**: Converts rich profile data (strategic initiatives, problems, solutions) to structured markdown for LLM processing
 - **Transparent Error Handling**: When OpenAI API key is missing, provides clear error messages instead of generic fallback data
 - **Comprehensive Validation**: Validates timeline structure, required fields, and response format
 - **Configuration Status**: Easy verification of AI integration setup via debug endpoint
 
 **⚠️ REMAINING ISSUES TO RESOLVE:**
-1. **Timeline Progress Bar Bug**: Left sidebar progress line not updating with scroll (right sidebar works fine)
-   - Issue: Scroll event handling dependency array was causing problems
-   - Attempted fix: Removed activeSection from dependency array, added useRef pattern
-   - Status: Still needs debugging - may be CSS-related or calculation timing issue
-
-2. **Timeline Caching Missing**: AI generation happens on every page refresh
-   - Current: Regenerates timeline every time, wasting API calls and time
-   - Needed: Cache generated timelines in localStorage/Supabase with user profiles
-   - Needed: "Regenerate Timeline" button for when users want fresh generation
-   - Impact: Cost savings and better UX
+1. **Database-Backed Timeline Caching**: AI generation happens on every page refresh, which is inefficient and costly.
+   - **Current State**: Timelines are not saved. API calls are wasted on every page load.
+   - **Required Solution**: Store generated timelines in the Supabase `client_profiles` table. This provides a superior user experience with data persistence across devices.
+   - **Implementation Plan**:
+     - Add a `generated_timeline` (JSONB) column to the `client_profiles` table.
+     - Modify the API to save the timeline upon generation and retrieve the cached version on subsequent loads.
+     - Add a "Regenerate Timeline" button to the UI to allow users to force an update.
+   - **Impact**: Significant cost savings, faster load times, and a better, more persistent user experience.
 
 **Environment Setup Required:**
 ```bash
@@ -112,19 +114,13 @@ curl http://localhost:3000/api/debug-env
 
 ### 🎯 IMMEDIATE PRIORITIES (Next Session)
 
-**URGENT FIXES NEEDED:**
-1. **Fix Timeline Progress Bar** (15-30 minutes) 🔧
-   - Left sidebar blue progress line not updating with scroll
-   - Right sidebar metrics work fine, so activeSection updates are working
-   - Issue likely in TimelineSidebar useLayoutEffect or CSS calculations
-   - Check: timing of ref updates, DOM measurement timing, CSS transition conflicts
-
-2. **Implement Timeline Caching** (1-2 hours) 💾
-   - Save generated timelines in ProfileService alongside profiles
-   - Add cache invalidation logic (profile changes, manual regeneration)
-   - Add "Regenerate Timeline" button to timeline page
-   - Update API to check cache before calling OpenAI
-   - Significant cost savings and UX improvement
+**URGENT FIX NEEDED:**
+1. **Implement Database-Backed Timeline Caching** (1-2 hours) 💾
+   - **Goal**: Persist generated timelines in Supabase to improve performance and reduce costs.
+   - **Step 1 (Schema)**: Add a `generated_timeline` JSONB column to the `client_profiles` table.
+   - **Step 2 (API)**: Update the `/api/timeline/generate` route to save the generated timeline to Supabase against the profile ID. On subsequent requests, the API should return the cached data unless forced to regenerate.
+   - **Step 3 (Frontend)**: The UI should first attempt to load the timeline from the database. Add a "Regenerate Timeline" button that allows users to force a new AI generation, which will then update the record in the database.
+   - **Benefit**: This provides a robust, cross-device experience and prevents wasteful API calls.
 
 **AFTER URGENT FIXES - Next Implementation Phase:**
 1. **PDF Export** (Phase 7) - Professional document generation
@@ -132,10 +128,10 @@ curl http://localhost:3000/api/debug-env
 3. **Timeline Collaboration** (Phase 9) - Multi-user timeline editing
 
 **Recommended Session Flow:**
-1. Debug timeline progress bar issue (check TimelineSidebar.js calculations)
-2. Implement timeline caching in ProfileService + API routes
-3. Test both fixes thoroughly
-4. Update smoke tests if needed
+1. Implement timeline caching in `ProfileService` and API routes using Supabase.
+2. Add "Regenerate Timeline" button to the timeline page UI.
+3. Test the caching and regeneration flow thoroughly.
+4. Update smoke tests if needed.
 5. Run `npm run test:smoke` to verify nothing broke (currently 9/9 passing ✅)
 
 ---
@@ -401,11 +397,13 @@ Transform Agent Blueprint into a robust, scalable platform that serves as a comp
     findAll(userId: string): Promise<Profile[]>
   }
   ```
-- [ ] Create Provider/Adapter pattern for LLM integration
-  ```typescript
-  interface ILLMProvider {
-    generateTimeline(profile: Profile, options: TimelineOptions): Promise<Timeline>
-    generateInsights(profile: Profile): Promise<Insights>
+- [✅] **Centralized AI Service**: Implemented a provider-agnostic `aiService.js` to handle all LLM interactions.
+  ```javascript
+  // app/services/aiService.js
+  class AIService {
+    async generateJson(systemPrompt, userPrompt, options = {}) {
+      // ... delegates to a configured provider
+    }
   }
   ```
 - [ ] Implement Strategy Pattern for export formats
@@ -563,26 +561,15 @@ Transform Agent Blueprint into a robust, scalable platform that serves as a comp
 **Goal**: Generate intelligent timelines using LLM providers
 
 #### 6.1 LLM Provider Integration
-- [ ] OpenAI GPT-4o integration
-  ```typescript
-  class OpenAITimelineProvider implements ILLMProvider {
-    async generateTimeline(profile: Profile): Promise<Timeline> {
-      // Structured prompt engineering
-      // Response parsing and validation
-      // Error handling and retries
-    }
-  }
-  ```
-- [ ] Prompt engineering framework
-  - Template system for different industries
-  - Context injection from client profiles
-  - Response formatting and validation
+- [✅] **OpenAI GPT-4o Integration**: Integrated via the central `aiService`.
+- [✅] **Prompt Engineering Framework**: Centralized in `app/lib/llm/prompts`.
+  - Template system for different industries.
+  - Context injection from client profiles.
+  - Response formatting and validation.
 
 #### 6.2 AI Service Layer
-- [ ] Implement provider abstraction for flexibility
-  - OpenAI provider (initial)
-  - Anthropic Claude provider (future)
-  - Local LLM support (future)
+- [✅] **Centralized `aiService`**: Implemented `aiService.js` as the single entry point for all LLM calls, abstracting provider details.
+- [ ] **Provider Abstraction**: The service can be extended to support multiple providers (e.g., Anthropic, Gemini). The foundation is laid.
 - [ ] Token usage tracking and optimization
 - [ ] Response caching for cost efficiency
 - [ ] Streaming responses for better UX

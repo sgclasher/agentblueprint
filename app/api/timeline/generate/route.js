@@ -4,13 +4,13 @@ import { TimelineService } from '../../../services/timelineService';
 
 export async function POST(request) {
   try {
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    // Check if the AI service is configured via TimelineService
+    if (!TimelineService.isConfigured()) {
       return NextResponse.json(
         { 
           error: 'AI timeline generation not available', 
-          details: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.',
-          configured: false
+          details: 'The AI service is not configured on the server. Please contact the administrator.',
+          ...TimelineService.getStatus()
         },
         { status: 503 }
       );
@@ -74,13 +74,12 @@ export async function POST(request) {
         success: true,
         timeline: timelineData,
         generatedAt: new Date().toISOString(),
-        provider: 'OpenAI GPT-4o'
+        provider: TimelineService.getStatus().provider
       });
 
     } catch (serviceError) {
       console.error('Timeline generation service error:', serviceError);
       
-      // Provide transparent error information
       return NextResponse.json(
         { 
           error: 'AI timeline generation failed', 

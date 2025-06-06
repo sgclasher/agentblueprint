@@ -1,85 +1,79 @@
-import { OpenAIServerProvider } from '../lib/llm/providers/openaiServerProvider';
 import { markdownService } from './markdownService';
+import { aiService } from './aiService';
+import { buildTimelineUserPrompt, getTimelineSystemPrompt } from '../lib/llm/prompts/timelinePrompts';
 
 /**
  * Timeline Generation Service
- * 
- * This service handles the generation of AI transformation timelines based on
- * business profiles using real LLM integration (OpenAI GPT-4o).
+ *
+ * This service handles the business logic for generating AI transformation timelines.
+ * It uses the central aiService to interact with LLMs and is responsible for
+ * preparing data for and validating the results from the AI.
  */
-
 export class TimelineService {
   /**
-   * Generate a comprehensive AI transformation timeline using AI from markdown content
-   * @param {string} profileMarkdown - Full markdown representation of client profile
-   * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'
-   * @param {Object} businessProfile - Extracted business profile for validation
-   * @returns {Promise<Object>} Generated timeline data
+   * Generate a comprehensive AI transformation timeline using AI from markdown content.
+   * @param {string} profileMarkdown - Full markdown representation of client profile.
+   * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'.
+   * @returns {Promise<Object>} Generated timeline data.
    */
-  static async generateTimelineFromMarkdown(profileMarkdown, scenarioType = 'balanced', businessProfile = null) {
+  static async generateTimelineFromMarkdown(profileMarkdown, scenarioType = 'balanced') {
     try {
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
-        throw new Error('OpenAI API key not configured. Set OPENAI_API_KEY environment variable.');
+      if (!aiService.getStatus().configured) {
+        throw new Error('AI service is not configured. Please set the required environment variables.');
       }
 
-      // Validate scenario type
-      const validScenarios = ['conservative', 'balanced', 'aggressive'];
-      if (!validScenarios.includes(scenarioType)) {
-        throw new Error(`Invalid scenario type. Must be one of: ${validScenarios.join(', ')}`);
-      }
-      
-      // Initialize OpenAI server provider
-      const openaiProvider = new OpenAIServerProvider();
-      
-      // Generate timeline using LLM with full markdown context
-      const timeline = await openaiProvider.generateTimeline(profileMarkdown, scenarioType);
-      
-      // Validate and enhance the response
+      this.validateScenario(scenarioType);
+
+      const systemPrompt = getTimelineSystemPrompt();
+      const userPrompt = buildTimelineUserPrompt(profileMarkdown, scenarioType);
+
+      const timeline = await aiService.generateJson(systemPrompt, userPrompt);
+
       this.validateTimelineResponse(timeline);
-      
+
       return timeline;
-      
+
     } catch (error) {
       console.error('Timeline generation error:', error);
-      
-      // Provide transparent error information
       throw new Error(`Timeline generation failed: ${error.message}`);
     }
   }
 
   /**
-   * Generate a comprehensive AI transformation timeline using AI
-   * @param {Object} businessProfile - Company profile data
-   * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'
-   * @returns {Promise<Object>} Generated timeline data
+   * Generate a comprehensive AI transformation timeline using AI.
+   * @param {Object} businessProfile - Company profile data.
+   * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'.
+   * @returns {Promise<Object>} Generated timeline data.
    */
   static async generateTimeline(businessProfile, scenarioType = 'balanced') {
     try {
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
-        throw new Error('OpenAI API key not configured. Set OPENAI_API_KEY environment variable.');
-      }
-
-      // Convert profile to markdown for LLM processing
-      const profileMarkdown = markdownService.generateMarkdown(businessProfile);
-      
-      // Validate inputs
       this.validateInputs(businessProfile, scenarioType);
-      
-      // Use the new markdown-based method
-      return await this.generateTimelineFromMarkdown(profileMarkdown, scenarioType, businessProfile);
-      
+
+      const profileMarkdown = markdownService.generateMarkdown(businessProfile);
+
+      return await this.generateTimelineFromMarkdown(profileMarkdown, scenarioType);
+
     } catch (error) {
       console.error('Timeline generation error:', error);
-      
-      // Provide transparent error information
       throw new Error(`Timeline generation failed: ${error.message}`);
     }
   }
 
   /**
-   * Validate input parameters
+   * Validates the scenario type.
+   * @param {string} scenarioType - The scenario to validate.
+   */
+  static validateScenario(scenarioType) {
+    const validScenarios = ['conservative', 'balanced', 'aggressive'];
+    if (!validScenarios.includes(scenarioType)) {
+      throw new Error(`Invalid scenario type. Must be one of: ${validScenarios.join(', ')}`);
+    }
+  }
+
+  /**
+   * Validate input parameters.
+   * @param {Object} businessProfile - The business profile object.
+   * @param {string} scenarioType - The scenario type.
    */
   static validateInputs(businessProfile, scenarioType) {
     if (!businessProfile) {
@@ -90,14 +84,12 @@ export class TimelineService {
       throw new Error('Company name is required in business profile');
     }
 
-    const validScenarios = ['conservative', 'balanced', 'aggressive'];
-    if (!validScenarios.includes(scenarioType)) {
-      throw new Error(`Invalid scenario type. Must be one of: ${validScenarios.join(', ')}`);
-    }
+    this.validateScenario(scenarioType);
   }
 
   /**
-   * Validate the timeline response structure
+   * Validate the timeline response structure.
+   * @param {Object} timeline - The timeline object returned from the AI.
    */
   static validateTimelineResponse(timeline) {
     const requiredFields = ['currentState', 'phases', 'futureState', 'summary'];
@@ -108,48 +100,37 @@ export class TimelineService {
       }
     }
 
-    if (!Array.isArray(timeline.phases)) {
-      throw new Error('Invalid timeline response: phases must be an array');
+    if (!Array.isArray(timeline.phases) || timeline.phases.length === 0) {
+      throw new Error('Invalid timeline response: phases must be an array and non-empty');
     }
 
-    if (timeline.phases.length === 0) {
-      throw new Error('Invalid timeline response: timeline must contain at least one phase');
-    }
-
-    // Validate each phase has required structure
     timeline.phases.forEach((phase, index) => {
-      if (!phase.description) {
-        throw new Error(`Phase ${index + 1} missing description`);
-      }
-      if (!phase.initiatives || !Array.isArray(phase.initiatives)) {
-        throw new Error(`Phase ${index + 1} missing or invalid initiatives`);
+      if (!phase.description || !phase.initiatives || !Array.isArray(phase.initiatives)) {
+        throw new Error(`Phase ${index + 1} is missing description or has invalid initiatives`);
       }
     });
 
-    // Validate summary has required fields
     const summaryFields = ['totalInvestment', 'expectedROI', 'timeToValue', 'riskLevel'];
     for (const field of summaryFields) {
       if (!timeline.summary[field]) {
-        throw new Error(`Timeline summary missing ${field}`);
+        throw new Error(`Timeline summary is missing field: ${field}`);
       }
     }
   }
 
   /**
-   * Check if API key is configured (for environment validation)
+   * Check if the underlying AI service is configured.
+   * @returns {boolean}
    */
   static isConfigured() {
-    return !!process.env.OPENAI_API_KEY;
+    return aiService.getStatus().configured;
   }
 
   /**
-   * Get configuration status for debugging
+   * Get configuration status for debugging.
+   * @returns {Object}
    */
   static getStatus() {
-    return {
-      configured: this.isConfigured(),
-      provider: 'OpenAI GPT-4o',
-      apiKeyStatus: process.env.OPENAI_API_KEY ? 'Set' : 'Missing'
-    };
+    return aiService.getStatus();
   }
 } 
