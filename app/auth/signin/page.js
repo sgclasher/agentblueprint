@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import useAuthStore from '../../store/useAuthStore';
 import GlobalHeader from '../../components/GlobalHeader';
 import { LogIn, Mail, Lock, Zap, ArrowLeft } from 'lucide-react';
+import styles from '../Auth.module.css';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -68,84 +69,27 @@ export default function SignInPage() {
     <div style={{ minHeight: '100vh' }}>
       <GlobalHeader />
       
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 'calc(100vh - 80px)',
-        padding: 'var(--spacing-lg)',
-        background: 'var(--bg-primary)'
-      }}>
-        <div style={{
-          background: 'var(--glass-bg)',
-          backdropFilter: 'blur(var(--backdrop-blur))',
-          border: '1px solid var(--border-primary)',
-          borderRadius: 'var(--border-radius-xl)',
-          padding: 'var(--spacing-xxl)',
-          width: '100%',
-          maxWidth: '400px',
-          boxShadow: 'var(--shadow-xl)'
-        }}>
+      <div className={styles.container}>
+        <div className={styles.formWrapper}>
           {/* Header */}
-          <div style={{ 
-            textAlign: 'center', 
-            marginBottom: 'var(--spacing-xl)'
-          }}>
-            <div style={{
-              backgroundColor: 'var(--accent-blue)',
-              width: '56px',
-              height: '56px',
-              borderRadius: '50%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              margin: '0 auto var(--spacing-md)'
-            }}>
+          <div className={styles.header}>
+            <div className={`${styles.headerIcon} ${styles.signin}`}>
               <LogIn size={24} color="white" />
             </div>
             
-            <h1 style={{
-              fontSize: '1.75rem',
-              fontWeight: 'var(--font-weight-bold)',
-              color: 'var(--text-primary)',
-              margin: '0 0 var(--spacing-sm) 0'
-            }}>Welcome Back</h1>
+            <h1 className={styles.title}>Welcome Back</h1>
             
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '0.95rem'
-            }}>
+            <p className={styles.subtitle}>
               Sign in to access your client profiles and AI timelines
             </p>
           </div>
 
           {/* Auth Mode Toggle */}
-          <div style={{
-            display: 'flex',
-            marginBottom: 'var(--spacing-lg)',
-            background: 'var(--bg-secondary)',
-            borderRadius: 'var(--border-radius)',
-            padding: '4px'
-          }}>
+          <div className={styles.authToggle}>
             <button
               type="button"
               onClick={() => setAuthMode('password')}
-              style={{
-                flex: 1,
-                padding: 'var(--spacing-sm) var(--spacing-md)',
-                background: authMode === 'password' ? 'var(--accent-blue)' : 'transparent',
-                color: authMode === 'password' ? 'white' : 'var(--text-secondary)',
-                border: 'none',
-                borderRadius: 'var(--border-radius-sm)',
-                fontSize: '0.875rem',
-                fontWeight: 'var(--font-weight-medium)',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast) ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 'var(--spacing-xs)'
-              }}
+              className={`${styles.toggleButton} ${authMode === 'password' ? styles.active : ''}`}
             >
               <Lock size={16} />
               Password
@@ -153,22 +97,7 @@ export default function SignInPage() {
             <button
               type="button"
               onClick={() => setAuthMode('magic-link')}
-              style={{
-                flex: 1,
-                padding: 'var(--spacing-sm) var(--spacing-md)',
-                background: authMode === 'magic-link' ? 'var(--accent-blue)' : 'transparent',
-                color: authMode === 'magic-link' ? 'white' : 'var(--text-secondary)',
-                border: 'none',
-                borderRadius: 'var(--border-radius-sm)',
-                fontSize: '0.875rem',
-                fontWeight: 'var(--font-weight-medium)',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast) ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 'var(--spacing-xs)'
-              }}
+              className={`${styles.toggleButton} ${authMode === 'magic-link' ? styles.active : ''}`}
             >
               <Zap size={16} />
               Magic Link
@@ -177,18 +106,7 @@ export default function SignInPage() {
 
           {/* Success Message */}
           {successMessage && (
-            <div style={{
-              background: 'rgba(16, 185, 129, 0.1)',
-              color: 'var(--accent-green)',
-              padding: 'var(--spacing-md)',
-              borderRadius: 'var(--border-radius)',
-              marginBottom: 'var(--spacing-lg)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              fontSize: '0.9rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--spacing-sm)'
-            }}>
+            <div className={`${styles.message} ${styles.success}`}>
               <Mail size={16} />
               {successMessage}
             </div>
@@ -196,29 +114,15 @@ export default function SignInPage() {
 
           {/* Error Message */}
           {error && (
-            <div style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              color: 'var(--accent-red)',
-              padding: 'var(--spacing-md)',
-              borderRadius: 'var(--border-radius)',
-              marginBottom: 'var(--spacing-lg)',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
-              fontSize: '0.9rem'
-            }}>
+            <div className={`${styles.message} ${styles.error}`}>
               {error}
             </div>
           )}
 
           {/* Sign In Form */}
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 'var(--spacing-md)' }}>
-              <label style={{
-                display: 'block',
-                fontWeight: 'var(--font-weight-medium)',
-                color: 'var(--text-primary)',
-                marginBottom: 'var(--spacing-sm)',
-                fontSize: '0.9rem'
-              }}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>
                 Email Address
               </label>
               <input
@@ -228,30 +132,13 @@ export default function SignInPage() {
                 onChange={handleInputChange}
                 required
                 placeholder="your@email.com"
-                style={{
-                  width: '100%',
-                  padding: 'var(--spacing-md)',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-primary)',
-                  borderRadius: 'var(--border-radius)',
-                  color: 'var(--text-primary)',
-                  fontSize: '0.95rem',
-                  transition: 'border-color var(--transition-fast) ease'
-                }}
-                onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
-                onBlur={(e) => e.target.style.borderColor = 'var(--border-primary)'}
+                className={styles.input}
               />
             </div>
 
             {authMode === 'password' && (
-              <div style={{ marginBottom: 'var(--spacing-lg)' }}>
-                <label style={{
-                  display: 'block',
-                  fontWeight: 'var(--font-weight-medium)',
-                  color: 'var(--text-primary)',
-                  marginBottom: 'var(--spacing-sm)',
-                  fontSize: '0.9rem'
-                }}>
+              <div className={styles.formGroup}>
+                <label className={styles.label}>
                   Password
                 </label>
                 <input
@@ -261,18 +148,7 @@ export default function SignInPage() {
                   onChange={handleInputChange}
                   required={authMode === 'password'}
                   placeholder="Enter your password"
-                  style={{
-                    width: '100%',
-                    padding: 'var(--spacing-md)',
-                    background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: 'var(--border-radius)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.95rem',
-                    transition: 'border-color var(--transition-fast) ease'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--accent-blue)'}
-                  onBlur={(e) => e.target.style.borderColor = 'var(--border-primary)'}
+                  className={styles.input}
                 />
               </div>
             )}
@@ -280,24 +156,11 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={isSubmitting || isLoading || (!formData.email || (authMode === 'password' && !formData.password))}
-              className="btn btn-primary"
-              style={{
-                width: '100%',
-                marginBottom: 'var(--spacing-lg)',
-                justifyContent: 'center'
-              }}
+              className={`btn btn-primary ${styles.submitButton}`}
             >
               {isSubmitting || isLoading ? (
                 <>
-                  <div style={{
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid transparent',
-                    borderTop: '2px solid currentColor',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                    marginRight: 'var(--spacing-sm)'
-                  }}></div>
+                  <div className={styles.loader}></div>
                   {authMode === 'password' ? 'Signing In...' : 'Sending Magic Link...'}
                 </>
               ) : (
@@ -310,24 +173,12 @@ export default function SignInPage() {
           </form>
 
           {/* Footer */}
-          <div style={{
-            textAlign: 'center',
-            paddingTop: 'var(--spacing-lg)',
-            borderTop: '1px solid var(--border-secondary)'
-          }}>
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '0.9rem',
-              marginBottom: 'var(--spacing-md)'
-            }}>
+          <div className={styles.footer}>
+            <p className={styles.footerText}>
               Don't have an account?{' '}
               <a 
                 href="/auth/signup" 
-                style={{ 
-                  color: 'var(--accent-blue)', 
-                  textDecoration: 'none',
-                  fontWeight: 'var(--font-weight-medium)'
-                }}
+                className={styles.footerLink}
               >
                 Sign up here
               </a>
@@ -336,22 +187,7 @@ export default function SignInPage() {
             <button
               type="button"
               onClick={() => router.push('/')}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--spacing-xs)',
-                margin: '0 auto',
-                padding: 'var(--spacing-sm)',
-                borderRadius: 'var(--border-radius)',
-                transition: 'color var(--transition-fast) ease'
-              }}
-              onMouseEnter={(e) => e.target.style.color = 'var(--text-secondary)'}
-              onMouseLeave={(e) => e.target.style.color = 'var(--text-muted)'}
+              className={styles.backButton}
             >
               <ArrowLeft size={14} />
               Back to App

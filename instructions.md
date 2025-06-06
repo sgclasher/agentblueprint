@@ -59,6 +59,7 @@ npm test             # Full test suite
 - **ServiceNow Connector Styling**: Fixed login/connector page to use dark theme and display logo properly
 - **Profile Detail Page Updates**: Removed hardcoded colors, added GlobalHeader, uses CSS variables
 - **Profile Page Refactoring**: Fully refactored `profile-detail.css` and the `ProfileWizard` component to use the global design system. Replaced all inline styles and hardcoded values with theme-aware CSS Modules, ensuring consistent, maintainable styling across light and dark modes.
+- **Authentication Page Refactoring**: Refactored the Sign In and Sign Up pages to use a shared CSS Module (`app/auth/Auth.module.css`), eliminating all inline styles and ensuring a consistent, theme-aware user experience.
 - **Next.js Configuration**: Set `experimental.cssChunking` to `'strict'` to prevent inconsistent CSS resolution order between development and production builds.
 - **Button System Standardization**: All buttons now use CSS variables instead of hardcoded colors
 - **Light/Dark Mode Support**: Global theme toggle works across entire application with persistence
@@ -171,7 +172,7 @@ curl http://localhost:3000/api/debug-env
 - **ServiceNow Flow Visualizer**: ✅ Now uses CSS variables, proper logo display, dark theme
 - **Client Profiles**: ✅ GlobalHeader integrated, hardcoded colors removed, consistent styling
 - **Profile Detail Pages**: ✅ Full CSS variable conversion, GlobalHeader, professional navigation
-- **Authentication Pages**: ✅ Consistent styling approach with theme system
+- **Authentication Pages**: ✅ Refactored to use CSS Modules, removing inline styles for a consistent, theme-aware design.
 - **Timeline Page**: ✅ Already was the gold standard, now integrated with global system
 
 ### ✅ **Technical Implementation Details**
@@ -206,6 +207,8 @@ curl http://localhost:3000/api/debug-env
 - Responsive design with mobile menu
 - Authentication integration with useAuthStore
 - Consistent across all pages
+
+**Authentication Pages**: ✅ Fully refactored to use CSS Modules, ensuring a consistent and maintainable design.
 
 ### ✅ **Success Criteria Achieved**
 - ✅ **Consistent theming** across all pages (ServiceNow, Profiles, Auth, Timeline)
