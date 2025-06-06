@@ -2,7 +2,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import AuthProvider from './components/auth/AuthProvider';
 import ThemeProvider from './components/theme/ThemeProvider';
-import DatabaseSetupCheck from './components/migration/DatabaseSetupCheck';
 import { EnvDebugger } from './lib/env-check';
 
 // Initialize the Inter font with the weights we need
@@ -26,7 +25,6 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <AuthProvider>
             {children}
-            <DatabaseSetupCheck />
           </AuthProvider>
         </ThemeProvider>
       </body>

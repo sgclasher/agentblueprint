@@ -2,7 +2,7 @@
 
 ## ✅ **Automated Tests Status**
 - [x] **Smoke Tests**: 9/9 passing ✅
-- [x] **Migration Tests**: 8/8 passing ✅
+- [ ] **Migration Tests**: (Removed - feature is obsolete)
 
 ## 🚀 **Manual Testing Plan**
 
@@ -92,98 +92,47 @@
 
 ---
 
-### **PHASE 4: Client Profile Management (No Auth)**
+### **PHASE 4: Client Profile Management (Authentication Required)**
 
-#### **4.1 Profile List Page (Unauthenticated)**
-- [ ] Navigate to `/profiles` while signed out
-- [ ] Page loads without auth requirement
-- [ ] "No profiles" empty state displays
-- [ ] "Create Your First Profile" button works
-- [ ] "Load Demo Profiles" button works
+#### **4.1 Unauthenticated Access**
+- [ ] Navigate to `/profiles` while signed out.
+- [ ] Verify the "Authentication Required" message appears.
+- [ ] Click the "Sign In" button and verify it navigates to `/auth/signin`.
+- [ ] Go back, click the "Sign Up" button and verify it navigates to `/auth/signup`.
+- [ ] Verify no profile data or creation tools are visible.
 
-#### **4.2 Demo Profile Loading**
-- [ ] Click "Load Demo Profiles"
-- [ ] 4 demo profiles appear:
+#### **4.2 Authenticated Access & Profile Creation**
+- [ ] Sign into an account.
+- [ ] Navigate to `/profiles`.
+- [ ] If no profiles exist, verify the "No Client Profiles Yet" message appears.
+- [ ] Click "Create Your First Profile" or "New Profile".
+- [ ] The ProfileWizard should open.
+- [ ] Complete all 8 steps of the wizard.
+- [ ] Verify the new profile appears on the dashboard after creation.
+- [ ] Verify the profile data is saved correctly by navigating to the detail page.
+
+#### **4.3 Demo Profile Loading**
+- [ ] On the profiles dashboard, click "Load Demo Profiles".
+- [ ] Verify 4 new demo profiles are created and appear in the list.
   - [ ] TechFlow Solutions (Technology)
   - [ ] PrecisionParts Manufacturing
   - [ ] Regional Medical Center (Healthcare)
   - [ ] Community Trust Bank (Finance)
-- [ ] Each profile card shows correct industry icon
-- [ ] Profile metadata displays correctly
-- [ ] "Clear Demo Data" button appears
+- [ ] Verify the profiles are associated with your user account (e.g., they persist after logging out and back in).
 
-#### **4.3 Profile Creation (ProfileWizard)**
-- [ ] Click "New Profile" or "Create Your First Profile"
-- [ ] Profile wizard opens
-- [ ] Step 1: Company Info
-  - [ ] Company name, industry, size fields work
-  - [ ] Revenue and location fields work
-  - [ ] Next button advances to step 2
-- [ ] Step 2: Expected Outcomes
-  - [ ] Strategic initiatives section works
-  - [ ] Contact information fields work
-  - [ ] Add multiple contacts works
-  - [ ] Business objectives textarea works
-- [ ] Continue through all 8 steps
-- [ ] Each step validates required fields
-- [ ] Final step shows summary
-- [ ] "Complete Profile" creates profile
+#### **4.4 Profile Detail & Edit**
+- [ ] Click "View Details" on any profile.
+- [ ] Profile detail page loads (`/profiles/[id]`).
+- [ ] All profile data displays correctly.
+- [ ] (Future) Click "Edit Profile" and verify the wizard opens with the existing data.
+- [ ] "Generate AI Timeline" button works and navigates to the timeline page.
 
-#### **4.4 Profile Detail View**
-- [ ] Click "View Details" on any profile
-- [ ] Profile detail page loads (`/profiles/[id]`)
-- [ ] All profile data displays correctly
-- [ ] Contact information shows properly
-- [ ] Back button returns to profiles list
-- [ ] "Generate AI Timeline" button works
-
-#### **4.5 Demo Data Management**
-- [ ] Load demo profiles
-- [ ] Verify "Clear Demo Data" appears
-- [ ] Click "Clear Demo Data"
-- [ ] All profiles disappear
-- [ ] Returns to empty state
-- [ ] Demo profiles can be reloaded
-
----
-
-### **PHASE 4: Database Migration (With Auth)**
-
-#### **4.6 Migration Banner Testing**
-- [ ] **Setup**: Sign out, create some profiles (localStorage)
-- [ ] Sign in to account
-- [ ] Navigate to `/profiles`
-- [ ] Migration banner appears
-- [ ] Banner shows correct count of local profiles
-- [ ] Banner has clear migration message
-
-#### **4.7 Profile Migration**
-- [ ] Click "Migrate Now" in banner
-- [ ] Migration process shows loading state
-- [ ] Success message appears
-- [ ] Banner disappears after migration
-- [ ] Profiles now show in authenticated state
-- [ ] localStorage profiles are cleared
-
-#### **4.8 Migration Banner Controls**
-- [ ] Click "Skip" - banner disappears
-- [ ] Reload page - banner doesn't reappear (skip persisted)
-- [ ] Click "X" to dismiss
-- [ ] Reload page - banner reappears (temporary dismiss)
-
-#### **4.9 Authenticated Profile Management**
-- [ ] Create new profile while signed in
-- [ ] Profile saves to Supabase (not localStorage)
-- [ ] Sign out and sign back in
-- [ ] Profiles persist across sessions
-- [ ] Multiple users can't see each other's profiles
-
-#### **4.10 Error Handling & Fallbacks**
-- [ ] Disconnect internet briefly
-- [ ] Create profile - should fallback to localStorage
-- [ ] Reconnect internet
-- [ ] App continues working normally
-- [ ] No error messages shown to user
+#### **4.5 Data Persistence & Security**
+- [ ] Create a new profile while signed in.
+- [ ] Sign out and sign back in.
+- [ ] Verify the created profile persists.
+- [ ] Create a second user account.
+- [ ] Verify the second user cannot see the first user's profiles.
 
 ---
 
@@ -215,6 +164,20 @@
 - [ ] Investment amounts display correctly
 - [ ] ROI calculations show properly
 
+#### **5.4 Complete User Journey**
+- [ ] **Complete User Journey**:
+  1. Sign up for account
+  2. Create client profile
+  3. Generate timeline from profile
+  4. Sign out and sign back in
+  5. Verify all data persists
+  
+- [ ] **Demo Data Workflow**:
+  1. Sign into an account.
+  2. Load demo profiles into the account.
+  3. Generate timelines from the created demo profiles.
+  4. Verify everything works as expected.
+
 ---
 
 ### **INTEGRATION TESTING**
@@ -228,12 +191,10 @@
   5. Verify all data persists
   
 - [ ] **Demo Data Workflow**:
-  1. Load demo profiles
-  2. Generate timelines from demo profiles
-  3. Create additional custom profile
-  4. Sign in (migration banner appears)
-  5. Migrate demo data to account
-  6. Verify all profiles and timelines work
+  1. Sign into an account.
+  2. Load demo profiles into the account.
+  3. Generate timelines from the created demo profiles.
+  4. Verify everything works as expected.
 
 #### **6.2 Multi-User Testing**
 - [ ] Create Account A, add profiles
@@ -242,12 +203,9 @@
 - [ ] Verify both accounts work independently
 
 #### **6.3 Data Persistence Testing**
-- [ ] Create profiles in various states:
-  - [ ] Unauthenticated (localStorage)
-  - [ ] Authenticated (Supabase)
-  - [ ] Migrated from localStorage
+- [ ] Create profiles while authenticated in Supabase.
 - [ ] Close browser completely
-- [ ] Reopen and verify all data persists correctly
+- [ ] Reopen and verify all data persists correctly for the logged-in user.
 
 ---
 
@@ -273,10 +231,6 @@
 - [ ] Intermittent connection (disconnect/reconnect)
 - [ ] Offline behavior (graceful degradation)
 
----
-
-### **SECURITY TESTING**
-
 #### **8.1 Authentication Security**
 - [ ] Can't access other users' data
 - [ ] Direct URL access blocked for unauthorized profiles
@@ -285,7 +239,7 @@
 - [ ] SQL injection protection (try malicious inputs)
 
 #### **8.2 Data Privacy**
-- [ ] localStorage cleared after migration
+- [ ] Verify `localStorage` is not used for profile storage.
 - [ ] No sensitive data in browser console
 - [ ] Network requests use HTTPS
 - [ ] No credentials in URL parameters
@@ -303,7 +257,7 @@
 
 #### **9.2 Network Errors**
 - [ ] Offline state handled gracefully
-- [ ] Supabase connection failures fallback to localStorage
+- [ ] Test Supabase connection failures (if possible)
 - [ ] Timeout errors show user-friendly messages
 - [ ] Retry mechanisms work properly
 
@@ -328,8 +282,8 @@
 - [ ] Complete all sections above
 - [ ] Test at least 2 browsers
 - [ ] Test mobile responsiveness
-- [ ] Test both auth and non-auth workflows
-- [ ] Verify database migration works
+- [ ] Test both auth and non-auth workflows for the `/profiles` page.
+- [ ] Verify database persistence works as expected.
 
 ### **Production Readiness**
 - [ ] All automated tests passing
@@ -349,15 +303,13 @@
 4. **Run Tests** to identify specific failures:
    ```bash
    npm run test:smoke
-   npm test -- app/__tests__/features/database-migration.test.js
    npm test -- app/services/__tests__/profileService.test.js
    ```
 
 ### **Common Issues & Solutions**
-- **Migration Banner Not Appearing**: Check localStorage for existing profiles
-- **Profiles Not Persisting**: Verify Supabase environment variables
-- **Auth Issues**: Check Supabase Auth configuration
-- **Performance Issues**: Check for console errors and network failures
+- **Profiles Not Persisting**: Verify Supabase environment variables and RLS policies.
+- **Auth Issues**: Check Supabase Auth configuration.
+- **Performance Issues**: Check for console errors and network failures.
 
 ---
 
@@ -366,8 +318,8 @@
 **All Phases Working** when:
 - ✅ All automated tests pass
 - ✅ Authentication flows work smoothly
-- ✅ Profiles persist correctly
-- ✅ Migration banner functions properly
+- ✅ Profiles persist correctly in Supabase
+- ✅ Unauthenticated users are properly restricted from profile features.
 - ✅ Timeline generation works
 - ✅ No critical errors in any workflow
 - ✅ Multi-user isolation maintained

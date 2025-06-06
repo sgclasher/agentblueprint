@@ -3,8 +3,8 @@
 /**
  * Profile Repository
  * 
- * Abstracts data access for client profiles between localStorage and Supabase.
- * Provides seamless migration from localStorage to database with backwards compatibility.
+ * Abstracts data access for client profiles, exclusively using Supabase.
+ * All methods require an authenticated user.
  */
 
 import { supabase } from '../lib/supabase';
@@ -17,19 +17,11 @@ export class ProfileRepository {
    * @returns {Promise<Object>} Created profile with ID
    */
   static async createProfile(profileData, userId) {
+    if (!userId) {
+      throw new Error('User authentication is required to create a profile.');
+    }
+
     try {
-      if (!userId) {
-        // Fallback to localStorage for non-authenticated users
-        return this.createProfileLocalStorage(profileData);
-      }
-
-      // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.warn('⚠️ Supabase not configured, falling back to localStorage');
-        return this.createProfileLocalStorage(profileData);
-      }
-
-      // Save to Supabase
       const { data, error } = await supabase
         .from('client_profiles')
         .insert([{
@@ -45,31 +37,14 @@ export class ProfileRepository {
         .single();
 
       if (error) {
-        console.error('❌ Supabase create error:', {
-          error: error,
-          code: error?.code,
-          message: error?.message,
-          details: error?.details,
-          hint: error?.hint,
-          userId,
-          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
-          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing'
-        });
-        console.warn('🔄 Falling back to localStorage due to Supabase error');
-        return this.createProfileLocalStorage(profileData);
+        console.error('❌ Supabase create error:', error);
+        throw error;
       }
 
-      // Transform database record to expected format
       return this.transformFromDatabase(data);
     } catch (error) {
-      console.error('❌ Exception in createProfile:', {
-        error: error,
-        message: error?.message,
-        stack: error?.stack,
-        userId
-      });
-      console.warn('🔄 Falling back to localStorage due to exception');
-      return this.createProfileLocalStorage(profileData);
+      console.error('❌ Exception in createProfile:', error);
+      throw new Error('Failed to create profile in Supabase.');
     }
   }
 
@@ -79,19 +54,12 @@ export class ProfileRepository {
    * @returns {Promise<Array>} Array of user profiles
    */
   static async getProfiles(userId) {
+    if (!userId) {
+      // Return empty array for non-authenticated state, as UI might call this before auth check
+      return [];
+    }
+
     try {
-      if (!userId) {
-        // Fallback to localStorage for non-authenticated users
-        return this.getProfilesLocalStorage();
-      }
-
-      // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.warn('⚠️ Supabase not configured, falling back to localStorage');
-        return this.getProfilesLocalStorage();
-      }
-
-      // Get from Supabase
       const { data, error } = await supabase
         .from('client_profiles')
         .select('*')
@@ -99,41 +67,14 @@ export class ProfileRepository {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Supabase getProfiles error:', {
-          error: error,
-          code: error?.code,
-          message: error?.message,
-          details: error?.details,
-          hint: error?.hint,
-          userId,
-          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
-          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing'
-        });
-        console.warn('🔄 Falling back to localStorage due to Supabase error');
-        return this.getProfilesLocalStorage();
-      }
-
-      // Check if we have any profiles in Supabase
-      if (data && data.length > 0) {
-        return data.map(this.transformFromDatabase);
-      }
-
-      // If no Supabase profiles, check for migration opportunity
-      const localProfiles = this.getProfilesLocalStorage();
-      if (localProfiles.length > 0) {
-        console.log('📋 Found localStorage profiles, consider migration');
+        console.error('❌ Supabase getProfiles error:', error);
+        throw error;
       }
 
       return data ? data.map(this.transformFromDatabase) : [];
     } catch (error) {
-      console.error('❌ Exception in getProfiles:', {
-        error: error,
-        message: error?.message,
-        stack: error?.stack,
-        userId
-      });
-      console.warn('🔄 Falling back to localStorage due to exception');
-      return this.getProfilesLocalStorage();
+      console.error('❌ Exception in getProfiles:', error);
+      throw new Error('Failed to fetch profiles from Supabase.');
     }
   }
 
@@ -144,19 +85,11 @@ export class ProfileRepository {
    * @returns {Promise<Object|null>} Profile data or null
    */
   static async getProfile(profileId, userId) {
+    if (!userId) {
+      throw new Error('User authentication is required to fetch a profile.');
+    }
+
     try {
-      if (!userId) {
-        // Fallback to localStorage for non-authenticated users
-        return this.getProfileLocalStorage(profileId);
-      }
-
-      // Check if Supabase is properly configured
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.warn('⚠️ Supabase not configured, falling back to localStorage');
-        return this.getProfileLocalStorage(profileId);
-      }
-
-      // Try Supabase first
       const { data, error } = await supabase
         .from('client_profiles')
         .select('*')
@@ -164,40 +97,19 @@ export class ProfileRepository {
         .eq('user_id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        console.error('❌ Supabase error details:', {
-          error: error,
-          errorType: typeof error,
-          errorKeys: error ? Object.keys(error) : [],
-          code: error?.code,
-          message: error?.message,
-          details: error?.details,
-          hint: error?.hint,
-          profileId,
-          userId,
-          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'set' : 'missing',
-          supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'set' : 'missing'
-        });
-        console.warn('🔄 Falling back to localStorage due to Supabase error');
-        return this.getProfileLocalStorage(profileId);
+      if (error) {
+        // 'PGRST116' is the code for "Not Found", which is not a throw-worthy error.
+        if (error.code !== 'PGRST116') {
+          console.error('❌ Supabase getProfile error:', error);
+          throw error;
+        }
+        return null;
       }
 
-      if (data) {
-        return this.transformFromDatabase(data);
-      }
-
-      // If not found in Supabase, check localStorage
-      return this.getProfileLocalStorage(profileId);
+      return data ? this.transformFromDatabase(data) : null;
     } catch (error) {
-      console.error('❌ Exception in getProfile:', {
-        error: error,
-        message: error?.message,
-        stack: error?.stack,
-        profileId,
-        userId
-      });
-      console.warn('🔄 Falling back to localStorage due to exception');
-      return this.getProfileLocalStorage(profileId);
+      console.error('❌ Exception in getProfile:', error);
+      throw new Error('Failed to fetch profile from Supabase.');
     }
   }
 
@@ -209,13 +121,11 @@ export class ProfileRepository {
    * @returns {Promise<Object>} Updated profile
    */
   static async updateProfile(profileId, updates, userId) {
-    try {
-      if (!userId) {
-        // Fallback to localStorage for non-authenticated users
-        return this.updateProfileLocalStorage(profileId, updates);
-      }
+    if (!userId) {
+      throw new Error('User authentication is required to update a profile.');
+    }
 
-      // Update in Supabase
+    try {
       const { data, error } = await supabase
         .from('client_profiles')
         .update({
@@ -233,14 +143,14 @@ export class ProfileRepository {
         .single();
 
       if (error) {
-        console.error('Supabase error, falling back to localStorage:', error);
-        return this.updateProfileLocalStorage(profileId, updates);
+        console.error('❌ Supabase update error:', error);
+        throw error;
       }
 
       return this.transformFromDatabase(data);
     } catch (error) {
-      console.error('Error updating profile, falling back to localStorage:', error);
-      return this.updateProfileLocalStorage(profileId, updates);
+      console.error('❌ Exception in updateProfile:', error);
+      throw new Error('Failed to update profile in Supabase.');
     }
   }
 
@@ -251,13 +161,11 @@ export class ProfileRepository {
    * @returns {Promise<boolean>} Success status
    */
   static async deleteProfile(profileId, userId) {
-    try {
-      if (!userId) {
-        // Fallback to localStorage for non-authenticated users
-        return this.deleteProfileLocalStorage(profileId);
-      }
+    if (!userId) {
+      throw new Error('User authentication is required to delete a profile.');
+    }
 
-      // Delete from Supabase
+    try {
       const { error } = await supabase
         .from('client_profiles')
         .delete()
@@ -265,175 +173,15 @@ export class ProfileRepository {
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Supabase error, falling back to localStorage:', error);
-        return this.deleteProfileLocalStorage(profileId);
+        console.error('❌ Supabase delete error:', error);
+        throw error;
       }
 
       return true;
     } catch (error) {
-      console.error('Error deleting profile, falling back to localStorage:', error);
-      return this.deleteProfileLocalStorage(profileId);
+      console.error('❌ Exception in deleteProfile:', error);
+      throw new Error('Failed to delete profile from Supabase.');
     }
-  }
-
-  /**
-   * Migrate localStorage profiles to Supabase for authenticated user
-   * @param {string} userId - User ID (from Supabase Auth)
-   * @returns {Promise<Object>} Migration result
-   */
-  static async migrateLocalStorageProfiles(userId) {
-    try {
-      if (!userId) {
-        return { success: false, error: 'User ID required for migration' };
-      }
-
-      const localProfiles = this.getProfilesLocalStorage();
-      if (localProfiles.length === 0) {
-        return { success: true, migrated: 0, message: 'No profiles to migrate' };
-      }
-
-      let migrated = 0;
-      let failed = 0;
-      const errors = [];
-
-      for (const profile of localProfiles) {
-        try {
-          // Create profile in Supabase
-          const { data, error } = await supabase
-            .from('client_profiles')
-            .insert([{
-              user_id: userId,
-              name: profile.companyName,
-              description: `${profile.industry} profile for ${profile.companyName}`,
-              industry: profile.industry,
-              company_size: profile.size,
-              profile_data: profile,
-              markdown_content: profile.markdown || null,
-              created_at: profile.createdAt || new Date().toISOString()
-            }])
-            .select()
-            .single();
-
-          if (error) {
-            failed++;
-            errors.push(`Failed to migrate ${profile.companyName}: ${error.message}`);
-          } else {
-            migrated++;
-          }
-        } catch (profileError) {
-          failed++;
-          errors.push(`Error migrating ${profile.companyName}: ${profileError.message}`);
-        }
-      }
-
-      // If all profiles migrated successfully, clear localStorage
-      if (failed === 0) {
-        localStorage.removeItem('clientProfiles');
-      }
-
-      return {
-        success: migrated > 0,
-        migrated,
-        failed,
-        errors,
-        message: `Migrated ${migrated} profiles${failed > 0 ? `, ${failed} failed` : ''}`
-      };
-    } catch (error) {
-      console.error('Migration error:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  /**
-   * Check if user has profiles that need migration
-   * @param {string} userId - User ID (from Supabase Auth)
-   * @returns {Promise<Object>} Migration status
-   */
-  static async checkMigrationStatus(userId) {
-    try {
-      const localProfiles = this.getProfilesLocalStorage();
-      
-      if (!userId || localProfiles.length === 0) {
-        return { needsMigration: false, localCount: localProfiles.length };
-      }
-
-      // Check if user already has profiles in Supabase
-      const { data, error } = await supabase
-        .from('client_profiles')
-        .select('id')
-        .eq('user_id', userId);
-
-      if (error) {
-        return { needsMigration: false, error: error.message };
-      }
-
-      const supabaseCount = data ? data.length : 0;
-      
-      return {
-        needsMigration: localProfiles.length > 0 && supabaseCount === 0,
-        localCount: localProfiles.length,
-        supabaseCount
-      };
-    } catch (error) {
-      console.error('Error checking migration status:', error);
-      return { needsMigration: false, error: error.message };
-    }
-  }
-
-  // =============================================
-  // localStorage Fallback Methods
-  // =============================================
-
-  static createProfileLocalStorage(profileData) {
-    const profiles = JSON.parse(localStorage.getItem('clientProfiles') || '[]');
-    const newProfile = {
-      id: profileData.id || this.generateProfileId(profileData.companyName),
-      ...profileData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    profiles.push(newProfile);
-    localStorage.setItem('clientProfiles', JSON.stringify(profiles));
-    return newProfile;
-  }
-
-  static getProfilesLocalStorage() {
-    return JSON.parse(localStorage.getItem('clientProfiles') || '[]');
-  }
-
-  static getProfileLocalStorage(profileId) {
-    const profiles = this.getProfilesLocalStorage();
-    return profiles.find(p => p.id === profileId) || null;
-  }
-
-  static updateProfileLocalStorage(profileId, updates) {
-    const profiles = this.getProfilesLocalStorage();
-    const index = profiles.findIndex(p => p.id === profileId);
-    
-    if (index === -1) {
-      throw new Error('Profile not found');
-    }
-
-    profiles[index] = {
-      ...profiles[index],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-
-    localStorage.setItem('clientProfiles', JSON.stringify(profiles));
-    return profiles[index];
-  }
-
-  static deleteProfileLocalStorage(profileId) {
-    const profiles = this.getProfilesLocalStorage();
-    const filteredProfiles = profiles.filter(p => p.id !== profileId);
-    
-    if (filteredProfiles.length === profiles.length) {
-      return false; // Profile not found
-    }
-
-    localStorage.setItem('clientProfiles', JSON.stringify(filteredProfiles));
-    return true;
   }
 
   // =============================================
@@ -460,13 +208,4 @@ export class ProfileRepository {
       _originalId: oldId || null
     };
   }
-
-  /**
-   * Generate profile ID
-   */
-  static generateProfileId(companyName) {
-    const timestamp = Date.now().toString(36);
-    const nameSlug = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 20);
-    return `${nameSlug}-${timestamp}`;
-  }
-} 
+}

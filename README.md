@@ -2,9 +2,13 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional platform with **Phase 6 AI Integration** now complete! Features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific business transformation roadmaps. All four core features have consistent UI theming across all pages with **Phase 5 UI Consistency & Design System** including global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include AI-powered timeline generation, working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, **AI-powered transformation timeline**, comprehensive client profile management system with full edit capability, complete user authentication, and seamless database migration. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional platform with **Phase 6 AI Integration** mostly complete! Features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific business transformation roadmaps. **Client profiles are now exclusively stored in Supabase, requiring user authentication for all profile-related features.** This change removes all `localStorage` fallback and data migration logic, streamlining the architecture. **⚠️ Two urgent issues need fixing: timeline progress bar not updating with scroll, and missing timeline caching (regenerates on every page refresh).** All four core features have consistent UI theming across all pages with **Phase 5 UI Consistency & Design System** including global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include AI-powered timeline generation, working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, **AI-powered transformation timeline**, comprehensive client profile management system with full edit capability, complete user authentication, and a secure Supabase database backend. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
 
-**🚀 Next Steps:** PDF export capabilities, multi-platform connectors, and timeline collaboration features. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
+**🚀 Next Steps:** 
+1. **URGENT**: Fix timeline progress bar not updating with scroll (left sidebar issue)
+2. **URGENT**: Implement timeline caching to prevent regeneration on page refresh + add "Regenerate Timeline" button
+3. PDF export capabilities, multi-platform connectors, and timeline collaboration features
+4. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning
 
 ## Project Overview
 
@@ -13,7 +17,7 @@ A Next.js application that serves five primary functions:
 1. **ServiceNow Agentic AI Visualizer**: Transform ServiceNow agentic AI data into interactive flow diagrams
 2. **AI Transformation Timeline**: Business advisory tool that generates personalized AI adoption roadmaps  
 3. **Client Profile Management**: Comprehensive business intelligence system using structured methodology to create client "digital twins"
-4. **User Authentication & Database Management**: Secure multi-user system with encrypted credential storage, profile management, and seamless localStorage/Supabase migration
+4. **User Authentication & Database Management**: Secure multi-user system with encrypted credential storage and profile management exclusively on Supabase
 5. **User Profile Management**: Complete user account management with profile editing, preferences, and account information
 
 The platform positions itself as a sophisticated enterprise tool for AI transformation planning, providing immediate value through visualization and analysis while capturing comprehensive business intelligence for strategic decision-making.
@@ -46,9 +50,8 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Business Intelligence Capture**: Company overview, strategic issues, quantified impact analysis
 - **Structured Framework**: Expected Outcomes → Problems & Opportunities → Solutions & Value → Architecture Assessment
 - **Smart Validation**: Visual step indicators (completed ✓, current, incomplete) with gentle warnings instead of hard blocks
-- **Database Integration**: Seamless localStorage/Supabase storage based on user authentication
-- **Demo Data System**: 4 realistic industry profiles (Technology, Manufacturing, Healthcare, Finance)
-- **Migration Tools**: One-click migration from localStorage to cloud storage
+- **Secure Database Integration**: All profiles are stored securely in Supabase, requiring user authentication.
+- **Demo Data System**: Load 4 realistic industry profiles directly into your authenticated account.
 - **Visual Indicators**: Cloud tags for Supabase-stored profiles
 
 ### 🔐 **User Authentication & Database Management**
@@ -58,8 +61,7 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Row-Level Security**: Individual user profiles with database-level protection
 - **Professional UI**: Dark-themed auth forms integrated with existing design system
 - **Session Management**: Persistent auth state with automatic token refresh
-- **Migration System**: Automatic detection and migration of localStorage profiles to Supabase
-- **Database Verification**: Built-in tools to verify Supabase configuration and connectivity
+- **Centralized Cloud Storage**: All client profiles are stored exclusively in Supabase, ensuring data integrity and security.
 
 ### 👤 **User Profile Management**
 - **Personal Profile Page**: Dedicated `/profile` page for user account management
@@ -68,6 +70,8 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Clickable User Header**: Navigate to profile page by clicking user info in the global header
 - **Theme-Aware Design**: Consistent styling with the global design system
 - **Account Actions**: Secure sign-out functionality and account management options
+- **Theme-Aware Components**: Profile tags with optimized contrast for both light and dark modes
+- **Responsive Excellence**: Mobile-optimized layouts with professional spacing and hierarchy
 
 ### 🎨 **Design System (ai-2027.com Inspired)**
 - **Professional Dark Theme**: Enterprise-grade #0a0e27 background with sophisticated color palette
@@ -78,7 +82,6 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Enterprise Color Scheme**: Professional slate colors (#f1f5f9, #e2e8f0, #cbd5e1, #94a3b8)
 - **Theme-Aware Components**: Profile tags with optimized contrast for both light and dark modes
 - **Responsive Excellence**: Mobile-optimized layouts with professional spacing and hierarchy
-- **Migration UI**: User-friendly banners and setup verification tools
 
 ## Getting Started
 
@@ -132,12 +135,11 @@ npm test
 
 #### **Option 3: Client Profile Management**
 1. Click "Client Profiles" button or go to `/profiles`
-2. Sign up/sign in for cloud storage (optional - localStorage works without auth)
-3. Create new profile or load demo data (4 industry scenarios available)
-4. Complete 8-step business intelligence assessment (click any step to jump around freely)
-5. **Edit existing profiles** - click "View Details" then "Edit Profile" for full wizard editing
-6. Migrate localStorage profiles to cloud with one-click migration
-7. Generate automatic AI timeline from profile data
+2. **Sign up or sign in** to access your secure profile dashboard.
+3. Create a new profile or load demo data (4 industry scenarios available) into your account.
+4. Complete 8-step business intelligence assessment (click any step to jump around freely).
+5. **Edit existing profiles** - click "View Details" then "Edit Profile" for full wizard editing.
+6. Generate automatic AI timeline from profile data.
 
 ## Business Value & Enterprise Use Cases
 
@@ -149,7 +151,7 @@ npm test
 
 ### **Enterprise Integration Ready**
 - **Authentication**: ✅ Complete Supabase Auth integration with secure multi-user access
-- **Database Migration**: ✅ Seamless localStorage to Supabase migration with user-friendly tools
+- **Database Integration**: ✅ Centralized Supabase database for all profile data.
 - **Row-Level Security**: ✅ Database-level security ensuring user data isolation
 - **AI Integration**: ✅ OpenAI GPT-4o integration with intelligent timeline generation
 - **Export Capabilities**: Ready for PDF generation for executive reporting
@@ -171,9 +173,7 @@ npm test
 ### **Authentication & Data Management**
 - Supabase Authentication with email verification
 - User profiles with encrypted credential storage
-- ProfileService with automatic localStorage/Supabase routing
-- ProfileRepository with fallback mechanisms
-- Migration tools with progress tracking
+- ProfileService using ProfileRepository for direct Supabase interaction
 - Structured markdown for profile storage
 
 ### **AI Integration & LLM Services**
@@ -219,14 +219,14 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 ---
 
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, seamless database migration, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of **Phase 6 AI Integration**, the platform now features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific recommendations. Combined with the structured business intelligence profile system, complete authentication infrastructure, automatic database migration tools, global design system, and enhanced ProfileWizard with full edit capabilities and intuitive navigation, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through **AI-powered timeline generation** and opportunity analysis.
+**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, a centralized Supabase database, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the addition of **Phase 6 AI Integration**, the platform now features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific recommendations. Combined with the structured business intelligence profile system, complete authentication infrastructure, secure cloud database, global design system, and enhanced ProfileWizard with full edit capabilities and intuitive navigation, the platform now captures the depth of business intelligence needed for strategic decision-making while providing immediate value through **AI-powered timeline generation** and opportunity analysis.
 
 **🎨 UI Consistency Status**: Complete global design system with CSS variables, theme provider, and professional theming across all pages. Light/dark mode toggle works globally with localStorage persistence.
 
 **🔐 Authentication Status**: Complete Supabase integration with user management, encrypted credential storage, and enterprise-grade security features.
 
-**🗄️ Database Migration Status**: Completed with ProfileService using ProfileRepository for automatic localStorage/Supabase routing, one-click migration tools, and database setup verification.
+**🗄️ Database Status**: All client profile data is now exclusively stored in Supabase, with all `localStorage` fallbacks and migration code removed. This provides a more secure, scalable, and centralized data architecture.
 
-**🤖 AI Integration Status**: ✅ Complete OpenAI GPT-4o integration with intelligent timeline generation, structured prompt engineering, transparent error handling, and comprehensive validation. Environment configuration verified via debug endpoint.
+**🤖 AI Integration Status**: ✅ Mostly Complete OpenAI GPT-4o integration with intelligent timeline generation, structured prompt engineering, transparent error handling, and comprehensive validation. Environment configuration verified via debug endpoint. **⚠️ Missing timeline caching - regenerates on every page refresh (wasteful). Progress bar scroll sync still broken on left sidebar.**
 
 **🧪 Testing Status**: Simple MVP testing approach with 9 passing smoke tests including Supabase mocking and AI integration error handling. All tests continue to pass with AI integration updates. See `MVP_TESTING_SUMMARY.md` for details.

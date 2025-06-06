@@ -3,10 +3,9 @@
 /**
  * Client Profile Management Service
  * 
- * Handles CRUD operations for client profiles with seamless localStorage/Supabase integration.
+ * Handles CRUD operations for client profiles using Supabase.
  * Integrates with AI services for timeline generation and opportunity analysis.
- * 
- * Migration Status: Updated to use ProfileRepository for database persistence
+ * Requires user authentication for all profile operations.
  */
 
 import { markdownService } from './markdownService';
@@ -35,15 +34,16 @@ export class ProfileService {
    */
   static async createProfile(profileData) {
     try {
-      // Generate unique ID
-      const profileId = this.generateProfileId(profileData.companyName);
-      
+      const userId = await this.getCurrentUserId();
+      if (!userId) {
+        throw new Error("User must be authenticated to create a profile.");
+      }
+
       // Convert form data to structured markdown
       const markdown = markdownService.generateMarkdown(profileData);
       
-      // Prepare profile data
+      // Prepare profile data, omitting client-side ID generation
       const profile = {
-        id: profileId,
         ...profileData,
         markdown,
         createdAt: new Date().toISOString(),
@@ -51,10 +51,7 @@ export class ProfileService {
         status: 'draft'
       };
       
-      // Get current user for database storage
-      const userId = await this.getCurrentUserId();
-      
-      // Use ProfileRepository for storage (handles localStorage fallback)
+      // Use ProfileRepository for storage
       const createdProfile = await ProfileRepository.createProfile(profile, userId);
       return createdProfile;
     } catch (error) {
@@ -70,6 +67,7 @@ export class ProfileService {
   static async getProfiles() {
     try {
       const userId = await this.getCurrentUserId();
+      // The repository will handle the case where userId is null
       return await ProfileRepository.getProfiles(userId);
     } catch (error) {
       console.error('Error getting profiles:', error);
@@ -86,6 +84,7 @@ export class ProfileService {
   static async getProfile(id) {
     try {
       const userId = await this.getCurrentUserId();
+      if (!userId) return null; // No user, no profile
       return await ProfileRepository.getProfile(id, userId);
     } catch (error) {
       console.error('Error getting profile:', error);
@@ -102,6 +101,9 @@ export class ProfileService {
   static async updateProfile(profileId, updates) {
     try {
       const userId = await this.getCurrentUserId();
+      if (!userId) {
+        throw new Error("User must be authenticated to update a profile.");
+      }
       
       // Add updated timestamp
       const updatedData = {
@@ -124,46 +126,13 @@ export class ProfileService {
   static async deleteProfile(profileId) {
     try {
       const userId = await this.getCurrentUserId();
+      if (!userId) {
+        throw new Error("User must be authenticated to delete a profile.");
+      }
       return await ProfileRepository.deleteProfile(profileId, userId);
     } catch (error) {
       console.error('Error deleting profile:', error);
       return false;
-    }
-  }
-
-  /**
-   * Check if user has profiles that need migration from localStorage
-   * @returns {Promise<Object>} Migration status
-   */
-  static async checkMigrationStatus() {
-    try {
-      const userId = await this.getCurrentUserId();
-      return await ProfileRepository.checkMigrationStatus(userId);
-    } catch (error) {
-      console.error('Error checking migration status:', error);
-      return { needsMigration: false, error: error.message };
-    }
-  }
-
-  /**
-   * Migrate localStorage profiles to Supabase for authenticated user
-   * @returns {Promise<Object>} Migration result
-   */
-  static async migrateLocalStorageProfiles() {
-    try {
-      const userId = await this.getCurrentUserId();
-      
-      if (!userId) {
-        return { 
-          success: false, 
-          error: 'User must be authenticated to migrate profiles' 
-        };
-      }
-      
-      return await ProfileRepository.migrateLocalStorageProfiles(userId);
-    } catch (error) {
-      console.error('Error migrating profiles:', error);
-      return { success: false, error: error.message };
     }
   }
 
@@ -373,12 +342,6 @@ export class ProfileService {
   /**
    * Utility methods
    */
-  static generateProfileId(companyName) {
-    const timestamp = Date.now().toString(36);
-    const nameSlug = companyName.toLowerCase().replace(/[^a-z0-9]/g, '-').substring(0, 20);
-    return `${nameSlug}-${timestamp}`;
-  }
-
   static mapCompanySize(size) {
     const mapping = {
       '1-50 employees': 'startup',
@@ -436,4 +399,4 @@ export class ProfileService {
       marketPosition: profile.industry === 'Technology' ? 'Fast-moving' : 'Traditional'
     };
   }
-} 
+}

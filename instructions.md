@@ -2,16 +2,13 @@
 
 ## 🚀 Current Status & Recent Updates
 
-### ✅ COMPLETED: Phase 4 - Database Migration (December 2024)
+### ✅ COMPLETED: Phase 4 - Centralized Database (December 2024)
 **What was implemented:**
-- **ProfileService Migration**: Updated to use ProfileRepository with seamless localStorage/Supabase integration
-- **Automatic User Context**: ProfileService automatically detects authenticated users and routes data correctly
-- **Migration UI**: MigrationBanner component provides one-click migration from localStorage to Supabase
-- **Backwards Compatibility**: Full support for non-authenticated users with localStorage fallback
-- **Database Setup Verification**: DatabaseSetupCheck component helps users verify Supabase configuration
-- **Row-Level Security**: Users can only access their own profiles with database-level security
-- **Visual Indicators**: Profile cards show "☁️ Cloud" tags for Supabase-stored profiles
-- **Authentication Integration**: ProfilesPage shows user context and migration prompts when appropriate
+- **Supabase-Only Architecture**: Refactored the data layer to exclusively use Supabase for all client profile storage.
+- **Authentication Required**: User authentication is now mandatory for creating, viewing, or managing any client profiles.
+- **Removed `localStorage`**: Eliminated all `localStorage` fallbacks, storage logic, and migration tools.
+- **Simplified Data Layer**: `ProfileRepository` and `ProfileService` were streamlined for direct Supabase interaction.
+- **Secure by Default**: Row-level security in Supabase ensures users can only access their own data.
 
 ### ✅ COMPLETED: MVP Testing Setup (Phase 1 - Simplified)
 **What was implemented:**
@@ -53,15 +50,6 @@ npm run test:features # All feature tests
 npm test             # Full test suite
 ```
 
-**Database Migration Features:**
-- ✅ Seamless localStorage → Supabase migration
-- ✅ Automatic user context detection  
-- ✅ Row-level security for user profiles
-- ✅ Backwards compatibility for non-authenticated users
-- ✅ Migration UI with progress tracking
-- ✅ Database setup verification tools
-- ✅ Visual indicators for cloud-stored profiles
-
 ### ✅ COMPLETED: Phase 5 - UI Consistency & Design System (January 2025)
 **What was implemented:**
 - **Global CSS Variables System**: Extended timeline's professional CSS variables across entire application
@@ -79,10 +67,10 @@ npm test             # Full test suite
 - **Profile Tag Readability**: Improved contrast for profile cards tags in both light and dark modes
 - **Enhanced Navigation**: Clickable user profile in header for easy access to account management
 
-### ✅ COMPLETED: Phase 6 - AI Integration (January 2025)
+### ✅ MOSTLY COMPLETED: Phase 6 - AI Integration (January 2025)
 **What was implemented:**
 - **OpenAI GPT-4o Integration**: Real LLM-powered timeline generation using OpenAI's GPT-4o model
-- **LLM Provider Architecture**: Extensible provider pattern with OpenAIProvider class implementation
+- **Server-Side Provider Architecture**: Fixed client/server-side issues with OpenAIServerProvider for API routes
 - **Timeline Service Refactor**: Replaced mock data generation with real AI integration using profile markdown
 - **Structured Prompt Engineering**: Comprehensive prompts for industry-specific, scenario-based timeline generation
 - **Profile-to-Markdown Pipeline**: Enhanced markdownService to convert rich profile data to structured LLM input
@@ -100,6 +88,18 @@ npm test             # Full test suite
 - **Comprehensive Validation**: Validates timeline structure, required fields, and response format
 - **Configuration Status**: Easy verification of AI integration setup via debug endpoint
 
+**⚠️ REMAINING ISSUES TO RESOLVE:**
+1. **Timeline Progress Bar Bug**: Left sidebar progress line not updating with scroll (right sidebar works fine)
+   - Issue: Scroll event handling dependency array was causing problems
+   - Attempted fix: Removed activeSection from dependency array, added useRef pattern
+   - Status: Still needs debugging - may be CSS-related or calculation timing issue
+
+2. **Timeline Caching Missing**: AI generation happens on every page refresh
+   - Current: Regenerates timeline every time, wasting API calls and time
+   - Needed: Cache generated timelines in localStorage/Supabase with user profiles
+   - Needed: "Regenerate Timeline" button for when users want fresh generation
+   - Impact: Cost savings and better UX
+
 **Environment Setup Required:**
 ```bash
 # Required environment variable
@@ -109,49 +109,49 @@ OPENAI_API_KEY=your_openai_api_key_here
 curl http://localhost:3000/api/debug-env
 ```
 
-### 🎯 READY FOR: Next Implementation Phase
+### 🎯 IMMEDIATE PRIORITIES (Next Session)
 
-**Current Priority Order:**
-1. **PDF Export** (Phase 7) - Professional document generation ⬅️ **NEXT PRIORITY**
-2. **Multi-Platform Connectors** (Phase 8) - Expand beyond ServiceNow
+**URGENT FIXES NEEDED:**
+1. **Fix Timeline Progress Bar** (15-30 minutes) 🔧
+   - Left sidebar blue progress line not updating with scroll
+   - Right sidebar metrics work fine, so activeSection updates are working
+   - Issue likely in TimelineSidebar useLayoutEffect or CSS calculations
+   - Check: timing of ref updates, DOM measurement timing, CSS transition conflicts
+
+2. **Implement Timeline Caching** (1-2 hours) 💾
+   - Save generated timelines in ProfileService alongside profiles
+   - Add cache invalidation logic (profile changes, manual regeneration)
+   - Add "Regenerate Timeline" button to timeline page
+   - Update API to check cache before calling OpenAI
+   - Significant cost savings and UX improvement
+
+**AFTER URGENT FIXES - Next Implementation Phase:**
+1. **PDF Export** (Phase 7) - Professional document generation
+2. **Multi-Platform Connectors** (Phase 8) - Expand beyond ServiceNow  
 3. **Timeline Collaboration** (Phase 9) - Multi-user timeline editing
 
-**Recommended Next Steps:**
-1. Begin Phase 7: Professional PDF export generation with branded templates
-2. Implement timeline visualization export with charts and metrics
-3. Add multiple export formats (PDF, DOCX, PNG)
-4. Run `npm run test:smoke` after any major changes (currently 9/9 passing ✅)
+**Recommended Session Flow:**
+1. Debug timeline progress bar issue (check TimelineSidebar.js calculations)
+2. Implement timeline caching in ProfileService + API routes
+3. Test both fixes thoroughly
+4. Update smoke tests if needed
+5. Run `npm run test:smoke` to verify nothing broke (currently 9/9 passing ✅)
 
 ---
 
-## 🗄️ Database Migration Summary (Phase 4 - Completed)
+## 🗄️ Database Architecture Summary (Phase 4 - Completed)
 
 ### What Changed
-- **ProfileService**: Now uses ProfileRepository internally with user authentication
-- **Data Storage**: Authenticated users → Supabase, Non-authenticated → localStorage  
-- **Migration Tool**: One-click migration from localStorage to secure cloud storage
-- **User Experience**: Seamless experience regardless of authentication status
+- **Data Storage**: All client profiles are now stored exclusively in Supabase.
+- **Authentication**: User authentication is now required to access any profile features.
+- **`localStorage` Removed**: Eliminated all `localStorage` code, including fallbacks and migration logic, has been deleted.
+- **Simplified Services**: `ProfileService` and `ProfileRepository` are now simpler, with no branching logic for different storage backends.
 
-### Migration Features
-```javascript
-// Automatic user detection and data routing
-const profiles = await ProfileService.getProfiles(); // Works for any user
-
-// Migration checking
-const status = await ProfileService.checkMigrationStatus();
-// { needsMigration: true, localCount: 3, supabaseCount: 0 }
-
-// One-click migration
-const result = await ProfileService.migrateLocalStorageProfiles();
-// { success: true, migrated: 3, failed: 0 }
-```
-
-### User Experience Improvements
-- **Migration Banner**: Friendly prompt when localStorage profiles are detected
-- **Database Setup Check**: Floating widget to verify Supabase configuration  
-- **Visual Indicators**: Cloud tags on profiles stored in Supabase
-- **Authentication Context**: Welcome messages and user-specific content
-- **Backwards Compatibility**: Non-authenticated users continue using localStorage
+### Key Benefits
+- **Enhanced Security**: Centralized data with Supabase's row-level security.
+- **Data Integrity**: Single source of truth for all profile data.
+- **Reduced Complexity**: Simplified codebase is easier to maintain and extend.
+- **Scalability**: Positioned for future features like collaboration and sharing.
 
 ---
 
@@ -466,11 +466,11 @@ Transform Agent Blueprint into a robust, scalable platform that serves as a comp
 - [ ] API route protection middleware
 - [ ] Session management with refresh tokens
 
-### Phase 4: Database Migration (Week 4-5)
-**Goal**: Migrate from localStorage to Supabase with full data persistence
+### Phase 4: Centralized Database (Week 4-5)
+**Goal**: Centralize all profile data in Supabase, requiring user authentication and removing all localStorage dependencies.
 
 #### 4.1 Database Schema Design
-- [ ] Design normalized schema
+- [x] Design normalized schema
   ```sql
   -- Core tables
   users, organizations, user_organizations
@@ -478,18 +478,12 @@ Transform Agent Blueprint into a robust, scalable platform that serves as a comp
   timelines, timeline_phases, timeline_metrics
   service_now_connections, flow_visualizations
   ```
-- [ ] Implement database migrations with Supabase CLI
-- [ ] Create database indexes for performance
-- [ ] Set up database backups and recovery
+- [x] Implement database migrations with Supabase CLI
+- [x] Create database indexes for performance
+- [x] Set up database backups and recovery
 
-#### 4.2 Data Migration Service
-- [ ] Build localStorage to Supabase migration tool
-- [ ] Implement data validation and sanitization
-- [ ] Create rollback mechanism
-- [ ] Progress tracking for large migrations
-
-#### 4.3 Repository Implementation
-- [ ] ProfileRepository with Supabase client
+#### 4.2 Repository Implementation
+- [x] ProfileRepository with Supabase client, removing all localStorage fallbacks.
 - [ ] TimelineRepository with caching layer
 - [ ] FlowDataRepository for ServiceNow data
 - [ ] Implement optimistic updates for better UX

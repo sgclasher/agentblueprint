@@ -1,24 +1,79 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
 import { demoDataService } from '../services/demoDataService';
 import ProfileWizard from './components/ProfileWizard';
-import MigrationBanner from '../components/migration/MigrationBanner';
-import SupabaseSetupCheck from '../components/migration/SupabaseSetupCheck';
 import useAuthStore from '../store/useAuthStore';
 import GlobalHeader from '../components/GlobalHeader';
-import { ArrowLeft, Plus, Users, BarChart, Building2, Briefcase, GraduationCap, Home, Truck, Zap, Store, TrendingUp, Eye, FileText, User } from 'lucide-react';
+import { Plus, Users, BarChart, Building2, Briefcase, GraduationCap, Home, Truck, Zap, Store, TrendingUp, Eye, Lock } from 'lucide-react';
+
+function AuthRequiredMessage() {
+  const router = useRouter();
+  return (
+    <div style={{
+      textAlign: 'center',
+      padding: 'var(--spacing-xxl)',
+      background: 'var(--glass-bg)',
+      backdropFilter: 'blur(var(--backdrop-blur))',
+      border: '1px solid var(--border-primary)',
+      borderRadius: 'var(--border-radius-xl)',
+      margin: 'var(--spacing-xl) auto',
+      maxWidth: '600px'
+    }}>
+      <Lock size={48} style={{ color: 'var(--text-muted)', marginBottom: 'var(--spacing-lg)' }} />
+      <h2 style={{
+        fontSize: '2rem',
+        color: 'var(--text-primary)',
+        marginBottom: 'var(--spacing-md)',
+        fontWeight: 'var(--font-weight-semibold)'
+      }}>Authentication Required</h2>
+      <p style={{
+        color: 'var(--text-secondary)',
+        fontSize: '1.1rem',
+        lineHeight: '1.6',
+        marginBottom: 'var(--spacing-xl)',
+        maxWidth: '500px',
+        marginLeft: 'auto',
+        marginRight: 'auto'
+      }}>
+        Please sign in or create an account to manage your client profiles. All your data will be securely stored in the cloud.
+      </p>
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+        <button 
+          className="btn btn-primary btn-large"
+          onClick={() => router.push('/auth/signin')}
+        >
+          Sign In
+        </button>
+        <button 
+          className="btn btn-secondary btn-large"
+          onClick={() => router.push('/auth/signup')}
+        >
+          Sign Up
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilesPage() {
   const [profiles, setProfiles] = useState([]);
   const [showWizard, setShowWizard] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuthStore();
+  const router = useRouter();
 
   useEffect(() => {
-    loadProfiles();
-  }, [isAuthenticated]); // Reload when auth state changes
+    if (!isAuthLoading) {
+      if (isAuthenticated) {
+        loadProfiles();
+      } else {
+        setIsLoading(false);
+      }
+    }
+  }, [isAuthenticated, isAuthLoading]);
 
   const loadProfiles = async () => {
     try {
@@ -40,29 +95,15 @@ export default function ProfilesPage() {
     try {
       const demoProfiles = demoDataService.getDemoProfiles();
       
-      // Convert demo data to saved profiles
+      // Convert demo data to saved profiles for the authenticated user
       for (const demoData of demoProfiles) {
-        const profile = await ProfileService.createProfile(demoData);
-        setProfiles(prev => [...prev, profile]);
+        await ProfileService.createProfile(demoData);
       }
+      // Reload from Supabase to get all profiles including new demo ones
+      await loadProfiles();
     } catch (error) {
       console.error('Error loading demo profiles:', error);
     }
-  };
-
-  const clearDemoData = async () => {
-    try {
-      // Clear localStorage profiles and reload from database
-      localStorage.removeItem('clientProfiles');
-      await loadProfiles();
-    } catch (error) {
-      console.error('Error clearing demo data:', error);
-    }
-  };
-
-  const hasDemoProfiles = () => {
-    const demoCompanyNames = ['TechFlow Solutions', 'PrecisionParts Manufacturing', 'Regional Medical Center', 'Community Trust Bank'];
-    return profiles.some(profile => demoCompanyNames.includes(profile.companyName));
   };
 
   const handleWizardComplete = (profile) => {
@@ -75,16 +116,11 @@ export default function ProfilesPage() {
   };
 
   const handleViewProfile = (profileId) => {
-    window.location.href = `/profiles/${profileId}`;
+    router.push(`/profiles/${profileId}`);
   };
 
   const handleGenerateTimeline = async (profile) => {
-    try {
-      // Navigate to timeline with profile context
-      window.location.href = `/timeline?profileId=${profile.id}`;
-    } catch (error) {
-      console.error('Error generating timeline:', error);
-    }
+    router.push(`/timeline?profileId=${profile.id}`);
   };
 
   if (showWizard) {
@@ -96,11 +132,107 @@ export default function ProfilesPage() {
     );
   }
 
+  const renderContent = () => {
+    if (isLoading || isAuthLoading) {
+      return (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 'var(--spacing-xxl)',
+          textAlign: 'center',
+          minHeight: '50vh'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid var(--border-secondary)',
+            borderTop: '3px solid var(--accent-blue)',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginBottom: 'var(--spacing-md)'
+          }}></div>
+          <p style={{ color: 'var(--text-secondary)' }}>Loading profiles...</p>
+        </div>
+      );
+    }
+
+    if (!isAuthenticated) {
+      return <AuthRequiredMessage />;
+    }
+
+    if (profiles.length === 0) {
+      return (
+        <div style={{
+          textAlign: 'center',
+          padding: 'var(--spacing-xxl)',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(var(--backdrop-blur))',
+          border: '1px solid var(--border-primary)',
+          borderRadius: 'var(--border-radius-xl)',
+          margin: 'var(--spacing-xl) auto',
+          maxWidth: '600px'
+        }}>
+          <Users size={48} style={{ color: 'var(--text-muted)', marginBottom: 'var(--spacing-lg)' }} />
+          <h2 style={{
+            fontSize: '2rem',
+            color: 'var(--text-primary)',
+            marginBottom: 'var(--spacing-md)',
+            fontWeight: 'var(--font-weight-semibold)'
+          }}>No Client Profiles Yet</h2>
+          <p style={{
+            color: 'var(--text-secondary)',
+            fontSize: '1.1rem',
+            lineHeight: '1.6',
+            marginBottom: 'var(--spacing-xl)',
+            maxWidth: '500px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
+          }}>
+            Create your first client profile to start building comprehensive business intelligence and AI transformation roadmaps. Your profiles will be securely stored in your cloud account.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
+            <button 
+              className="btn btn-primary btn-large"
+              onClick={handleCreateProfile}
+            >
+              Create Your First Profile
+            </button>
+            <button 
+              className="btn btn-secondary btn-large"
+              onClick={loadDemoProfiles}
+            >
+              <BarChart size={20} style={{ marginRight: '0.5rem' }} /> Load Demo Profiles
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+        gap: 'var(--spacing-xl)',
+        marginBottom: 'var(--spacing-xxl)'
+      }}>
+        {profiles.map((profile) => (
+          <ProfileCard
+            key={profile.id}
+            profile={profile}
+            onView={() => handleViewProfile(profile.id)}
+            onGenerateTimeline={() => handleGenerateTimeline(profile)}
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div style={{ minHeight: '100vh' }}>
       <GlobalHeader />
       
-      {/* Page Title and Controls */}
       <div style={{
         background: 'var(--glass-bg)',
         backdropFilter: 'blur(var(--backdrop-blur))',
@@ -129,29 +261,23 @@ export default function ProfilesPage() {
               color: 'var(--text-secondary)'
             }}>
               {isAuthenticated ? 
-                `Welcome back, ${user?.email?.split('@')[0] || 'User'}! Manage your client intelligence and AI transformation roadmaps` :
+                `Welcome back, ${user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}! Manage your client intelligence.` :
                 'Manage your client intelligence and AI transformation roadmaps'
               }
             </p>
           </div>
           
-          <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
-            {hasDemoProfiles() && (
+          {isAuthenticated && (
+            <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
               <button 
-                className="btn btn-secondary"
-                onClick={clearDemoData}
+                className="btn btn-primary"
+                onClick={handleCreateProfile}
               >
-                Clear Demo Data
+                <Plus size={18} />
+                New Profile
               </button>
-            )}
-            <button 
-              className="btn btn-primary"
-              onClick={handleCreateProfile}
-            >
-              <Plus size={18} />
-              New Profile
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -160,144 +286,13 @@ export default function ProfilesPage() {
         margin: '0 auto',
         padding: 'var(--spacing-xl) var(--spacing-lg)'
       }}>
-        {/* Show migration banner for authenticated users with localStorage profiles */}
-        {isAuthenticated && <MigrationBanner />}
-        
-        {/* Show Supabase setup status */}
-        <SupabaseSetupCheck />
-        
-        {isLoading ? (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 'var(--spacing-xxl)',
-            textAlign: 'center'
-          }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              border: '3px solid var(--border-secondary)',
-              borderTop: '3px solid var(--accent-blue)',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              marginBottom: 'var(--spacing-md)'
-            }}></div>
-            <p style={{ color: 'var(--text-secondary)' }}>Loading profiles...</p>
-          </div>
-        ) : profiles.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: 'var(--spacing-xxl)',
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(var(--backdrop-blur))',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 'var(--border-radius-xl)',
-            margin: 'var(--spacing-xl) auto',
-            maxWidth: '600px'
-          }}>
-            <Users size={48} style={{ color: 'var(--text-muted)', marginBottom: 'var(--spacing-lg)' }} />
-            <h2 style={{
-              fontSize: '2rem',
-              color: 'var(--text-primary)',
-              marginBottom: 'var(--spacing-md)',
-              fontWeight: 'var(--font-weight-semibold)'
-            }}>No Client Profiles Yet</h2>
-            <p style={{
-              color: 'var(--text-secondary)',
-              fontSize: '1.1rem',
-              lineHeight: '1.6',
-              marginBottom: 'var(--spacing-xl)',
-              maxWidth: '500px',
-              marginLeft: 'auto',
-              marginRight: 'auto'
-            }}>
-              {isAuthenticated ? 
-                'Create your first client profile to start building comprehensive business intelligence and AI transformation roadmaps. Your profiles will be securely stored in your cloud account.' :
-                'Create your first client profile to start building comprehensive business intelligence and AI transformation roadmaps.'
-              }
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
-              <button 
-                className="btn btn-primary btn-large"
-                onClick={handleCreateProfile}
-              >
-                Create Your First Profile
-              </button>
-              <button 
-                className="btn btn-secondary btn-large"
-                onClick={loadDemoProfiles}
-              >
-                <BarChart size={20} style={{ marginRight: '0.5rem' }} /> Load Demo Profiles
-              </button>
-            </div>
-            
-            {!isAuthenticated && (
-              <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-                <p style={{ 
-                  color: 'var(--text-secondary)', 
-                  fontSize: '0.9rem', 
-                  marginTop: 'var(--spacing-xl)',
-                  padding: 'var(--spacing-md)',
-                  background: 'var(--glass-bg)',
-                  borderRadius: 'var(--border-radius)',
-                  border: '1px solid var(--border-primary)'
-                }}>
-                  💡 <strong>Tip:</strong> Sign in to securely store your profiles in the cloud and access them from any device.
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-              gap: 'var(--spacing-xl)',
-              marginBottom: 'var(--spacing-xxl)'
-            }}>
-              {profiles.map((profile) => (
-                <ProfileCard
-                  key={profile.id}
-                  profile={profile}
-                  onView={() => handleViewProfile(profile.id)}
-                  onGenerateTimeline={() => handleGenerateTimeline(profile)}
-                  isAuthenticated={isAuthenticated}
-                />
-              ))}
-            </div>
-            
-            {hasDemoProfiles() && (
-              <div style={{ 
-                textAlign: 'center', 
-                marginTop: 'var(--spacing-xxl)', 
-                padding: 'var(--spacing-md)',
-                borderTop: '1px solid var(--border-primary)'
-              }}>
-                <p style={{ 
-                  color: 'var(--text-secondary)', 
-                  marginBottom: 'var(--spacing-md)', 
-                  fontSize: '0.9rem' 
-                }}>
-                  Demo profiles are currently loaded
-                </p>
-                <button 
-                  className="btn btn-secondary"
-                  onClick={clearDemoData}
-                >
-                  Clear Demo Data
-                </button>
-              </div>
-            )}
-          </>
-        )}
+        {renderContent()}
       </div>
     </div>
   );
 }
 
-function ProfileCard({ profile, onView, onGenerateTimeline, isAuthenticated }) {
+function ProfileCard({ profile, onView, onGenerateTimeline }) {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',

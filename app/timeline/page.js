@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import useBusinessProfileStore from '../store/useBusinessProfileStore';
 import { ProfileService } from '../services/profileService';
@@ -33,6 +33,12 @@ export default function TimelinePage() {
   const [isInitializing, setIsInitializing] = useState(true);
   const contentRef = useRef(null);
   const sectionRefs = useRef({});
+  const activeSectionRef = useRef(activeSection);
+  
+  // Keep the ref in sync with the state
+  useEffect(() => {
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
   
   // Generate timeline sections based on business journey
   const timelineSections = timelineData ? [
@@ -172,7 +178,7 @@ export default function TimelinePage() {
         }
       }
 
-      if (newActiveSection && newActiveSection !== activeSection) {
+      if (newActiveSection && newActiveSection !== activeSectionRef.current) {
         setActiveSection(newActiveSection);
       }
     };
@@ -188,7 +194,7 @@ export default function TimelinePage() {
         contentElement.removeEventListener('scroll', handleScroll);
       }
     };
-  }, [timelineData, activeSection, timelineSections]);
+  }, [timelineData, timelineSections]);
   
   const handleSectionClick = (sectionId) => {
     const element = sectionRefs.current[sectionId];
