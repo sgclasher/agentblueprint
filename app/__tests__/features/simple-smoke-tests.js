@@ -72,7 +72,7 @@ describe('MVP Smoke Tests', () => {
       expect(typeof TimelineService.generateTimeline).toBe('function');
     });
     
-    it('should generate timeline structure', async () => {
+    it('should handle timeline generation with proper error handling', async () => {
       const { TimelineService } = require('../../services/timelineService');
       
       const businessProfile = {
@@ -82,13 +82,30 @@ describe('MVP Smoke Tests', () => {
         aiMaturity: 'beginner'
       };
       
-      const timeline = await TimelineService.generateTimeline(businessProfile, 'balanced');
+      // Test configuration check methods exist
+      expect(TimelineService.isConfigured).toBeDefined();
+      expect(TimelineService.getStatus).toBeDefined();
       
-      expect(timeline).toBeDefined();
-      expect(timeline.currentState).toBeDefined();
-      expect(timeline.phases).toBeDefined();
-      expect(Array.isArray(timeline.phases)).toBe(true);
-      expect(timeline.phases.length).toBeGreaterThan(0);
+      const status = TimelineService.getStatus();
+      expect(status).toBeDefined();
+      expect(status.provider).toBe('OpenAI GPT-4o');
+      expect(typeof status.configured).toBe('boolean');
+      
+      // In test environment (no API key), verify proper error handling
+      // This ensures transparent error reporting without fallback data
+      const originalEnv = process.env.OPENAI_API_KEY;
+      delete process.env.OPENAI_API_KEY;
+      
+      try {
+        await expect(TimelineService.generateTimeline(businessProfile, 'balanced'))
+          .rejects
+          .toThrow(/OpenAI API key not configured/);
+      } finally {
+        // Restore original env if it existed
+        if (originalEnv) {
+          process.env.OPENAI_API_KEY = originalEnv;
+        }
+      }
     });
     
     it('should have timeline store', () => {

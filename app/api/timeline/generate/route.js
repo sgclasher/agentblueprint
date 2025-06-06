@@ -4,6 +4,18 @@ import { TimelineService } from '../../../services/timelineService';
 
 export async function POST(request) {
   try {
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { 
+          error: 'AI timeline generation not available', 
+          details: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.',
+          configured: false
+        },
+        { status: 503 }
+      );
+    }
+
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || 
                      request.headers.get('x-real-ip') || 
@@ -51,7 +63,7 @@ export async function POST(request) {
       );
     }
 
-    // Generate timeline using the service
+    // Generate timeline using the AI-powered service
     try {
       const timelineData = await TimelineService.generateTimeline(
         profileValidation.sanitized,
@@ -61,13 +73,20 @@ export async function POST(request) {
       return NextResponse.json({
         success: true,
         timeline: timelineData,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
+        provider: 'OpenAI GPT-4o'
       });
 
     } catch (serviceError) {
       console.error('Timeline generation service error:', serviceError);
+      
+      // Provide transparent error information
       return NextResponse.json(
-        { error: 'Failed to generate timeline', details: serviceError.message },
+        { 
+          error: 'AI timeline generation failed', 
+          details: serviceError.message,
+          timestamp: new Date().toISOString()
+        },
         { status: 500 }
       );
     }
@@ -75,7 +94,11 @@ export async function POST(request) {
   } catch (error) {
     console.error('Timeline API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }

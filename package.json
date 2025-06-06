@@ -28,13 +28,17 @@
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.49.10",
+    "ai": "^3.4.32",
+    "@ai-sdk/openai": "^0.0.66",
     "dagre": "^0.8.5",
     "lucide-react": "^0.511.0",
     "nanoid": "^5.1.5",
     "next": "^15.2.4",
+    "openai": "^4.73.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "reactflow": "^11.11.4",
+    "zod": "^3.23.8",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
