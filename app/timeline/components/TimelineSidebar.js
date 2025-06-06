@@ -1,6 +1,23 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState } from 'react';
+import {
+  MapPin,
+  Building,
+  Rocket,
+  TrendingUp,
+  Zap,
+  Target
+} from 'lucide-react';
+
+const iconMap = {
+  MapPin: <MapPin size={24} />,
+  Building: <Building size={24} />,
+  Rocket: <Rocket size={24} />,
+  TrendingUp: <TrendingUp size={24} />,
+  Zap: <Zap size={24} />,
+  Target: <Target size={24} />,
+};
 
 export default function TimelineSidebar({ sections, activeSection, onSectionClick, theme, onThemeToggle }) {
   const navRef = useRef(null); // Ref for the main navigation container
@@ -133,7 +150,7 @@ export default function TimelineSidebar({ sections, activeSection, onSectionClic
             onClick={() => onSectionClick(section.id)}
             style={{ zIndex: 2, position: 'relative' }} 
           >
-            <div className="timeline-nav-dot"></div> 
+            <div className="timeline-nav-dot">{iconMap[section.iconId]}</div> 
             <div className="timeline-nav-content">
               <div className="timeline-nav-year">{section.year}</div>
               <div className="timeline-nav-title">{section.title}</div>

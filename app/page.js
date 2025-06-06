@@ -6,7 +6,7 @@ import ServiceNowConnector from './components/ServiceNowConnector';
 import FlowVisualizer from './components/FlowVisualizer';
 import GlobalHeader from './components/GlobalHeader';
 import { ReactFlowProvider } from 'reactflow';
-import { Users, TrendingUp, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 export default function Home() {
   const agenticData = useAgenticStore((state) => state.agenticData);
