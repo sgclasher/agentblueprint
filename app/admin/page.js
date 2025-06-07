@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import useAuthStore from '../store/useAuthStore';
 import GlobalHeader from '../components/GlobalHeader';
 import { CredentialsRepository } from '../repositories/credentialsRepository';
+import { supabase } from '../lib/supabase';
 import {
   Settings,
   Key,
@@ -27,8 +28,6 @@ import styles from './Admin.module.css';
 
 // ServiceForm Component
 function ServiceForm({ isOpen, onClose, onSave, editingCredential = null, selectedServiceType = 'ai_provider' }) {
-  console.log('🏗️ ServiceForm rendered with:', { isOpen, hasOnSave: !!onSave, editingCredential: !!editingCredential, selectedServiceType });
-  
   const [formData, setFormData] = useState({
     serviceType: selectedServiceType,
     serviceName: '',
@@ -40,6 +39,8 @@ function ServiceForm({ isOpen, onClose, onSave, editingCredential = null, select
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
 
   // Service configurations
   const serviceConfigs = {
@@ -155,6 +156,48 @@ function ServiceForm({ isOpen, onClose, onSave, editingCredential = null, select
       ...prev,
       [key]: value
     }));
+  };
+
+  const handleTestConnection = async () => {
+    if (!formData.serviceName || !formData.credentials || Object.keys(formData.credentials).length === 0) {
+      setTestResult({ success: false, error: 'Please fill in service and credentials before testing' });
+      return;
+    }
+
+    setIsTesting(true);
+    setTestResult(null);
+    
+    try {
+      // Get authentication headers
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('🔐 Client session check:', { hasSession: !!session, hasToken: !!session?.access_token });
+      
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+        console.log('✅ Adding auth header to test request');
+      } else {
+        console.warn('⚠️ No access token found in session');
+      }
+
+      const response = await fetch('/api/admin/test-credentials', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          serviceType: formData.serviceType,
+          serviceName: formData.serviceName,
+          credentials: formData.credentials,
+          configuration: formData.configuration
+        })
+      });
+      
+      const result = await response.json();
+      setTestResult(result);
+    } catch (error) {
+      setTestResult({ success: false, error: error.message });
+    } finally {
+      setIsTesting(false);
+    }
   };
 
   const validateForm = () => {
@@ -480,6 +523,46 @@ function ServiceForm({ isOpen, onClose, onSave, editingCredential = null, select
             </div>
           </div>
 
+          {/* Test Connection */}
+          {currentConfig && Object.keys(formData.credentials).length > 0 && (
+            <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+              <button
+                type="button"
+                onClick={handleTestConnection}
+                disabled={isTesting}
+                className="btn btn-secondary"
+                style={{ marginBottom: 'var(--spacing-md)' }}
+              >
+                {isTesting ? (
+                  <>
+                    <div style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid #ccc', borderTop: '2px solid #007bff', borderRadius: '50%', animation: 'spin 1s linear infinite', marginRight: '8px' }}></div>
+                    Testing...
+                  </>
+                ) : (
+                  'Test Connection'
+                )}
+              </button>
+              
+              {testResult && (
+                <div style={{
+                  padding: 'var(--spacing-md)',
+                  borderRadius: 'var(--border-radius)',
+                  background: testResult.success ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  border: `1px solid ${testResult.success ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                  color: testResult.success ? '#22c55e' : '#ef4444'
+                }}>
+                  <strong>{testResult.success ? '✅ Success: ' : '❌ Error: '}</strong>
+                  {testResult.message || testResult.error}
+                  {testResult.details && (
+                    <div style={{ marginTop: '8px', fontSize: '0.9rem', opacity: 0.8 }}>
+                      {JSON.stringify(testResult.details, null, 2)}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Actions */}
           <div className={styles.modalActions}>
             <button type="button" onClick={onClose} className="btn btn-secondary">
@@ -489,13 +572,6 @@ function ServiceForm({ isOpen, onClose, onSave, editingCredential = null, select
               type="submit" 
               disabled={isSubmitting} 
               className="btn btn-primary"
-              onClick={(e) => {
-                console.log('🖱️ Save button clicked!');
-                console.log('📝 Button type:', e.currentTarget.type);
-                console.log('🚫 Is submitting:', isSubmitting);
-                console.log('📋 Current form data:', { ...formData, credentials: '[HIDDEN]' });
-                // Don't prevent default - let form submission happen naturally
-              }}
             >
               {isSubmitting ? (editingCredential ? 'Updating...' : 'Saving...') : (editingCredential ? 'Update Service' : 'Save Service')}
             </button>
@@ -586,20 +662,22 @@ export default function AdminPage() {
   };
 
   const handleSaveCredential = async (formData) => {
-    console.log('🎯 handleSaveCredential called with formData:', { ...formData, credentials: '[HIDDEN]' });
-    console.log('👤 User ID:', user?.id);
-    
     try {
-      console.log('📞 Calling CredentialsRepository.saveCredentials...');
+      setError(null); // Clear previous errors
       const result = await CredentialsRepository.saveCredentials(user.id, formData);
-      console.log('✅ CredentialsRepository.saveCredentials completed:', { resultId: result?.id });
       
-      console.log('🔄 Calling loadCredentials to refresh...');
+      // Close the form only on success
+      setShowAddForm(false);
+      setEditingCredential(null);
+      
+      // Refresh the credentials list
       await loadCredentials();
-      console.log('✅ loadCredentials completed');
+      
+      return result;
     } catch (err) {
-      console.error('💥 handleSaveCredential error:', err);
-      throw new Error(err.message);
+      console.error('Failed to save credential:', err);
+      setError(err.message); // Display the error to the user
+      throw err; // Don't close the form on error
     }
   };
 

@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '../../../lib/supabase';
-import { supabase } from '../../../lib/supabase';
 import { decryptCredential } from '../../../utils/encryption';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for server-side database operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export async function POST(request) {
   console.log('🔍 test-connection route called');
@@ -47,7 +53,7 @@ export async function POST(request) {
     console.log('🗃️ Querying database for credential...');
     
     // First, let's see what credentials exist for this user
-    const { data: allCredentials, error: allCredsError } = await supabase
+    const { data: allCredentials, error: allCredsError } = await supabaseAdmin
       .from('external_service_credentials')
       .select('id, display_name, service_type, service_name, created_at')
       .eq('user_id', user.id);
@@ -58,7 +64,7 @@ export async function POST(request) {
     });
     
     // Now try to get the specific credential
-    const { data: credential, error: dbError } = await supabase
+    const { data: credential, error: dbError } = await supabaseAdmin
       .from('external_service_credentials')
       .select('*')
       .eq('id', credentialId)

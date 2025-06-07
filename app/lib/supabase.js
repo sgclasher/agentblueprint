@@ -20,17 +20,21 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export const getServerUser = async (request) => {
   try {
     if (!request) {
+      console.log('🔐 getServerUser: No request provided');
       return { id: 'server-context' }
     }
 
     // Extract authorization header
     const authHeader = request.headers.get('authorization')
+    console.log('🔑 getServerUser: Auth header check:', { hasHeader: !!authHeader, startsWithBearer: authHeader?.startsWith('Bearer ') });
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ getServerUser: Missing or invalid auth header');
       return null
     }
 
     const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    console.log('🎫 getServerUser: Token extracted:', { tokenLength: token.length, tokenPrefix: token.substring(0, 10) + '...' });
 
     // Create a server-side Supabase client with the token
     const serverClient = createClient(supabaseUrl, supabaseAnonKey, {
@@ -47,13 +51,14 @@ export const getServerUser = async (request) => {
     const { data: { user }, error } = await serverClient.auth.getUser()
     
     if (error) {
-      console.error('Server auth error:', error)
+      console.error('❌ getServerUser: Server auth error:', error)
       return null
     }
 
+    console.log('✅ getServerUser: User authenticated:', { userId: user?.id, email: user?.email });
     return user
   } catch (error) {
-    console.error('Error in server authentication:', error)
+    console.error('💥 getServerUser: Exception in server authentication:', error)
     return null
   }
 }

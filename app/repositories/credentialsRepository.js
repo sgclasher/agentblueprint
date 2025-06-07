@@ -110,90 +110,38 @@ export class CredentialsRepository {
       console.log('🔑 Extracting credentials for encryption...');
       console.log('📋 Extracted data:', { id, serviceType, serviceName, displayName, hasCredentials: !!credentials, configuration, isActive, isDefault });
 
-      // Encrypt credentials on server-side via API
-      console.log('🔐 Calling encryption API...');
+      // Encrypt credentials first
       const encryptionResponse = await this._encryptCredentials(credentials);
-      console.log('✅ Encryption response received:', { hasEncrypted: !!encryptionResponse.encrypted, hasMetadata: !!encryptionResponse.metadata });
       
-      const recordData = {
-        user_id: userId,
-        service_type: serviceType,
-        service_name: serviceName,
-        display_name: displayName,
-        credentials_encrypted: encryptionResponse.encrypted,
-        encryption_metadata: encryptionResponse.metadata,
-        configuration,
-        is_active: isActive,
-        is_default: isDefault,
-        updated_at: new Date().toISOString()
-      };
-
-      console.log('📦 Prepared record data:', { ...recordData, credentials_encrypted: '[HIDDEN]', encryption_metadata: '[HIDDEN]' });
-
-      let result;
-      if (id) {
-        console.log('🔄 Updating existing credential with ID:', id);
-        // Update existing
-        const { data, error } = await supabase
-          .from('external_service_credentials')
-          .update(recordData)
-          .eq('id', id)
-          .eq('user_id', userId)
-          .select()
-          .single();
-
-        console.log('📊 Update result:', { success: !error, error: error?.message, hasData: !!data });
-        if (error) {
-          console.error('❌ Update error details:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
-          });
-          throw error;
-        }
-        result = data;
-      } else {
-        console.log('➕ Creating new credential...');
-        console.log('💾 About to insert record:', { 
-          ...recordData, 
-          credentials_encrypted: '[HIDDEN]', 
-          encryption_metadata: '[HIDDEN]' 
-        });
-        
-        // Create new
-        const { data, error } = await supabase
-          .from('external_service_credentials')
-          .insert([{
-            ...recordData,
-            created_at: new Date().toISOString()
-          }])
-          .select()
-          .single();
-
-        console.log('📊 Insert result:', { 
-          success: !error, 
-          error: error?.message,
-          errorCode: error?.code,
-          errorDetails: error?.details,
-          errorHint: error?.hint,
-          hasData: !!data, 
-          newId: data?.id 
-        });
-        
-        if (error) {
-          console.error('❌ Insert error details:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint,
-            recordData: { ...recordData, credentials_encrypted: '[HIDDEN]', encryption_metadata: '[HIDDEN]' }
-          });
-          throw error;
-        }
-        result = data;
+      // Save via API route (server-side database operation)
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers = { 'Content-Type': 'application/json' };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
+      const response = await fetch('/api/admin/save-credentials', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          id,
+          serviceType,
+          serviceName,
+          displayName,
+          encryptedCredentials: encryptionResponse.encrypted,
+          encryptionMetadata: encryptionResponse.metadata,
+          configuration,
+          isActive,
+          isDefault
+        })
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(errorResponse.details || errorResponse.error || 'Failed to save credentials');
+      }
+
+      const result = await response.json();
       console.log('🎉 saveCredentials completed successfully with result ID:', result?.id);
       return result;
     } catch (error) {
