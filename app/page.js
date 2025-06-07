@@ -7,6 +7,7 @@ import FlowVisualizer from './components/FlowVisualizer';
 import GlobalHeader from './components/GlobalHeader';
 import { ReactFlowProvider } from 'reactflow';
 import { Info } from 'lucide-react';
+import styles from './Home.module.css';
 
 export default function Home() {
   const agenticData = useAgenticStore((state) => state.agenticData);
@@ -57,51 +58,19 @@ export default function Home() {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      width: '100vw',
-      margin: 0,
-      padding: 0,
-    }}>
+    <div className={styles.container}>
       <GlobalHeader />
-      <main style={{ 
-        minHeight: 'calc(100vh - 64px)', // Subtract header height
-        width: '100vw',
-        margin: 0,
-        padding: 0,
-        overflow: 'hidden'
-      }}>
+      <main className={styles.main}>
         {agenticData && (
-          <div className="flow-controls" style={{
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(var(--backdrop-blur))',
-            borderBottom: '1px solid var(--border-primary)',
-            padding: 'var(--spacing-md) var(--spacing-lg)'
-          }}>
-            <div style={{
-              maxWidth: '1400px',
-              margin: '0 auto',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 'var(--spacing-lg)'
-            }}>
-              <div>
-                <h2 style={{
-                  margin: 0,
-                  fontSize: '1.25rem',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  color: 'var(--text-primary)'
-                }}>ServiceNow Agentic AI Flow</h2>
-                <p style={{
-                  margin: 0,
-                  fontSize: '0.9rem',
-                  color: 'var(--text-secondary)'
-                }}>Interactive visualization of AI agents, use cases, and tools</p>
+          <div className={styles.flowControls}>
+            <div className={styles.controlsContainer}>
+              <div className={styles.titleContainer}>
+                <h2>ServiceNow Agentic AI Flow</h2>
+                <p>Interactive visualization of AI agents, use cases, and tools</p>
               </div>
               
-              <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
-                <div className="button-group">
+              <div className={styles.actionsContainer}>
+                <div className={styles.buttonGroup}>
                   <button className="btn btn-secondary" onClick={handleCollapseAll}>
                     Collapse All
                   </button>
@@ -133,20 +102,10 @@ export default function Home() {
             </div>
             
             {showDebug && (
-              <div className="debug-info" style={{
-                marginTop: 'var(--spacing-md)',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-primary)',
-                borderRadius: 'var(--border-radius)',
-                padding: 'var(--spacing-md)'
-              }}>
+              <div className={styles.debugInfo}>
                 <details open>
                   <summary>Debug Information</summary>
-                  <pre style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '0.85rem',
-                    marginTop: 'var(--spacing-sm)'
-                  }}>
+                  <pre>
                     {JSON.stringify({
                       dataPresent: !!agenticData,
                       useCases: agenticData?.use_cases?.length || 0,
@@ -159,34 +118,15 @@ export default function Home() {
           </div>
         )}
       
-      <div style={{ flex: 1, width: '100%' }}>
+      <div className={styles.contentContainer}>
         {!agenticData ? (
-          <div style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '100%', 
-            padding: 'var(--spacing-lg)' 
-          }}>
+          <div className={styles.connectorContainer}>
             <ServiceNowConnector />
           </div>
         ) : error ? (
-          <div style={{
-            color: 'var(--accent-red)',
-            padding: 'var(--spacing-lg)',
-            border: '1px solid var(--accent-red)',
-            borderRadius: 'var(--border-radius)',
-            background: 'var(--bg-secondary)',
-            margin: 'var(--spacing-lg)',
-            maxWidth: '600px',
-            marginLeft: 'auto',
-            marginRight: 'auto'
-          }}>
-            <h3 style={{ fontWeight: 'var(--font-weight-bold)', marginBottom: 'var(--spacing-sm)' }}>
-              Error Displaying Flow
-            </h3>
-            <p style={{ marginBottom: 'var(--spacing-md)' }}>{error}</p>
+          <div className={styles.errorContainer}>
+            <h3>Error Displaying Flow</h3>
+            <p>{error}</p>
             <button 
               onClick={clearAgenticData}
               className="btn btn-danger"
@@ -195,7 +135,7 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div style={{ height: 'calc(100vh - 120px)', width: '100%', position: 'relative' }}>
+          <div className={styles.flowContainer}>
             <ReactFlowProvider>
               <FlowVisualizer 
                 onError={handleError} 

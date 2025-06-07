@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import useAgenticStore from '../store/useAgenticStore';
 import { useTheme } from './theme/ThemeProvider';
 import Image from 'next/image';
@@ -20,6 +21,7 @@ const get = (obj, path, defaultValue = undefined) => {
 
 export default function ServiceNowConnector() {
   const { theme } = useTheme();
+  const router = useRouter();
   
   // Fetch non-sensitive connection details from API on mount
   const [instanceUrl, setInstanceUrl] = useState('');
@@ -348,7 +350,7 @@ export default function ServiceNowConnector() {
           }}>
             <button
               type="button"
-              onClick={() => window.location.href = '/profiles'}
+              onClick={() => router.push('/profiles')}
               className="btn btn-secondary"
               style={{
                 display: 'inline-flex',
@@ -366,7 +368,7 @@ export default function ServiceNowConnector() {
             </button>
             <button
               type="button"
-              onClick={() => window.location.href = '/timeline'}
+              onClick={() => router.push('/timeline')}
               className="btn btn-success"
               style={{
                 display: 'inline-flex',

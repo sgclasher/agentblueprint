@@ -2,12 +2,15 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Production-ready platform with **comprehensive admin interface for multi-provider AI credential management** and **production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** with **intelligent database-backed timeline caching** and **full credential management system**. The platform supports **latest AI models** including **OpenAI o3-mini, o1, GPT-4o**, **Google Gemini 2.5 Flash/Pro**, and **Anthropic Claude Opus 4/Sonnet 4** through secure, user-managed credentials. **✅ Complete Admin Interface**: Users can securely manage AI provider credentials, test connections before saving, and configure preferred providers through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: Database-backed caching provides 80-90% cost reduction with cache-first architecture and instant loading. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: Complete edit profile functionality, ProfileWizard with clickable step navigation and free exploration, professional cache status widgets, and working test-before-save credential functionality. The platform features **consistent professional theming** across all pages with global CSS variables, theme provider, and standardized UI components. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for enterprise deployment** with scalable, secure, and user-friendly AI transformation planning capabilities.
+**🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (currently with an OpenAI implementation) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers (OpenAI, Gemini, Claude) and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: Database-backed caching provides 80-90% cost reduction with cache-first architecture and instant loading. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: Complete edit profile functionality, ProfileWizard with clickable step navigation and free exploration, professional cache status widgets, and working test-before-save credential functionality. The platform features **consistent professional theming** across all pages with global CSS variables, theme provider, and standardized UI components. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for the next phase of development** to enable multi-provider AI timeline generation.
 
 **🚀 Next Steps:** 
-1. ✅ **COMPLETED**: Database-backed timeline caching implemented with intelligent cache-first architecture, 80-90% cost reduction, and instant loading.
-2. **NEXT PRIORITIES**: PDF export capabilities, multi-platform connectors, and timeline collaboration features.
-3. Focus on creating a scalable, secure platform for enterprise business intelligence and AI transformation planning.
+1. ✅ **COMPLETED**: Admin interface for secure, multi-service credential management.
+2. ✅ **COMPLETED**: Database-backed timeline caching implemented with intelligent cache-first architecture.
+3. **NEXT PRIORITIES**:
+    - Implement Gemini and Claude providers to enable multi-provider AI support.
+    - Add PDF export capabilities for timelines.
+    - Expand to other enterprise connectors beyond ServiceNow.
 
 ## Project Overview
 
@@ -68,10 +71,7 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 
 ### 🔧 **Admin Interface for AI Credential Management** ✨ **(Completed Phase 6.1.5)**
 - **Multi-Provider Support**: Full management of credentials for OpenAI, Google Gemini, Anthropic Claude, ServiceNow, and HubSpot
-- **Latest AI Models**: Complete support for cutting-edge models including:
-  - **OpenAI**: o3-mini, o1, o1-mini, o1-preview, GPT-4o, GPT-4o-mini, GPT-4-turbo
-  - **Google Gemini**: 2.5 Flash (Hybrid), 2.5 Pro (Advanced Thinking), 2.0 Flash, 1.5 Pro/Flash
-  - **Anthropic Claude**: Opus 4 (Most Capable), Sonnet 4 (High Performance), 3.7 Sonnet (Hybrid Reasoning)
+- **Extensible Architecture**: Ready to support the latest AI models including OpenAI GPT-4o, Google Gemini 2.5, and Anthropic Claude 4.
 - **Production Security Architecture**: Application-level authentication with JWT verification and user-scoped data access
 - **AES-256-GCM Encryption**: All credentials encrypted with user-specific keys before secure database storage
 - **Test-Before-Save Functionality**: Real-time credential validation for both saved and unsaved credentials
@@ -196,16 +196,12 @@ npm test
 
 ### **AI Integration & LLM Services**
 - **Centralized `aiService`**: A single, reusable service (`app/services/aiService.js`) that acts as the entry point for all LLM interactions.
-- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, with support for multiple providers including OpenAI, Google Gemini, and Anthropic Claude.
-- **Admin Interface**: Comprehensive `/admin` dashboard for managing AI credentials with support for:
-  - **Latest OpenAI Models**: o3-mini, o1 series, GPT-4o family with reasoning capabilities
-  - **Google Gemini 2.5**: Flash (Hybrid), Pro (Advanced Thinking), and legacy 2.0/1.5 models
-  - **Anthropic Claude 4**: Opus 4 (Most Capable), Sonnet 4 (High Performance), 3.7 Sonnet (Hybrid Reasoning)
+- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, currently implemented with an OpenAI provider. It's ready to be extended with support for Google Gemini, Anthropic Claude, and more.
+- **Admin Interface**: Comprehensive `/admin` dashboard for managing service credentials.
 - **Secure Server-Side Execution**: All LLM calls are handled securely on the server, with no client-side exposure of API keys.
-- **User-Level Credential Management**: AES-256-GCM encrypted storage replacing environment variables
-- **Live Connection Testing**: Real-time validation of API credentials before saving
+- **User-Level Credential Management**: AES-256-GCM encrypted storage replacing environment variables.
+- **Live Connection Testing**: Real-time validation of API credentials before saving.
 - **Centralized Prompt Management**: Prompts are stored and managed in a dedicated directory (`app/lib/llm/prompts`) for better organization and reusability.
-- **Multi-Provider Timeline Generation**: Dynamic provider selection for AI-powered timeline generation
 - **JSON Response Validation**: Services that consume the `aiService` are responsible for validating the structure of the returned JSON data.
 - **Environment Configuration**: Easy setup verification via the `/api/debug-env` endpoint.
 
@@ -244,7 +240,7 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 ---
 
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, a centralized Supabase database, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the completion of **Phase 6.1.5 Admin Interface**, the platform now features a **production-ready credential management system** with multi-provider AI support, enterprise-grade security, and user-friendly admin interface. The combination of **real AI-powered timeline generation**, **intelligent database caching**, **secure credential management**, and **comprehensive business intelligence collection** creates a complete enterprise solution for AI transformation planning and strategic decision-making.
+**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, a centralized Supabase database, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the completion of **Phase 6.1.5 Admin Interface**, the platform now features a **production-ready credential management system** with an architecture ready for multi-provider AI support, enterprise-grade security, and a user-friendly admin interface. The combination of **real AI-powered timeline generation (via OpenAI)**, **intelligent database caching**, **secure credential management**, and **comprehensive business intelligence collection** creates a complete enterprise solution for AI transformation planning and strategic decision-making.
 
 **🔒 Production Security Summary**: The platform implements industry-standard security practices with JWT authentication, user-scoped data access, AES-256-GCM encryption, and application-level security controls. This approach follows patterns used by leading SaaS platforms and provides robust protection while maintaining development simplicity and operational reliability.
 
@@ -254,6 +250,6 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 **🗄️ Database Status**: All client profile data is now exclusively stored in Supabase, with all `localStorage` fallbacks and migration code removed. This provides a more secure, scalable, and centralized data architecture.
 
-**🤖 AI Integration Status**: ✅ **Production-Ready with Complete Admin Interface!** The AI integration features a centralized, provider-agnostic `aiService` with comprehensive admin interface for multi-provider credential management and intelligent database-backed caching. The production-grade `/admin` dashboard supports the latest AI models including OpenAI o3-mini/o1, Google Gemini 2.5, and Anthropic Claude 4, with enterprise-level security, AES-256-GCM encrypted storage, test-before-save functionality, and user-level configuration. Timeline generation uses cache-first architecture with 80-90% cost reduction, instant loading from cache, and cross-device persistence. All LLM calls are handled securely server-side with JWT authentication, proper error handling, and dynamic configuration checking. Users have complete control over their AI provider credentials through the secure admin interface, eliminating environment variable dependencies for scalable, multi-user deployment.
+**🤖 AI Integration Status**: ✅ **Foundation Complete with Admin Interface!** The AI integration features a centralized, provider-agnostic `aiService` (with OpenAI as the initial provider) and a comprehensive admin interface for multi-provider credential management. The production-grade `/admin` dashboard is built to support the latest AI models, with enterprise-level security, AES-256-GCM encrypted storage, and test-before-save functionality. Timeline generation uses a cache-first architecture with 80-90% cost reduction and cross-device persistence. The next step is to implement the Gemini and Claude providers to enable full multi-provider support.
 
 **🧪 Testing Status**: Simple MVP testing approach with 9 passing smoke tests including Supabase mocking and AI integration error handling. All tests continue to pass with AI integration updates. See `MVP_TESTING_SUMMARY.md` for details.

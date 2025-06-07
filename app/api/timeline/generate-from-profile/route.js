@@ -1,13 +1,9 @@
 import { NextResponse } from 'next/server';
 import { markdownService } from '../../../services/markdownService';
 import { TimelineService } from '../../../services/timelineService';
+import { ProfileRepository } from '../../../repositories/profileRepository';
 import { createClient } from '@supabase/supabase-js';
-
-// Create server-side Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { getUser } from '../../../lib/supabase';
 
 /**
  * Generate Timeline from Client Profile with Database Caching
@@ -45,9 +41,28 @@ export async function POST(request) {
       );
     }
 
-    const { profileId, profile, forceRegenerate = false, scenarioType, userId } = body;
-    
+    const { profileId, profile, forceRegenerate = false, scenarioType } = body;
+    const user = await getUser(request);
+    const userId = user?.id;
+
     console.log(`📝 Request: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}`);
+
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Create a new Supabase client authenticated with the user's token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        global: {
+          headers: {
+            Authorization: request.headers.get('authorization')
+          }
+        }
+      }
+    );
 
     if (!profile && !profileId) {
       return NextResponse.json(
@@ -60,29 +75,22 @@ export async function POST(request) {
 
     // If profileId is provided but no profile data, fetch it
     if (profileId && !profile) {
-      if (!userId) {
-        return NextResponse.json(
-          { error: 'Authentication required to fetch saved profiles' },
-          { status: 401 }
-        );
-      }
-      
       try {
-        const { data, error } = await supabase
+        // Use the authenticated client to respect RLS
+        const { data: profileFromDb, error } = await supabase
           .from('client_profiles')
           .select('*')
           .eq('id', profileId)
-          .eq('user_id', userId)
           .single();
         
-        if (error || !data) {
+        if (error || !profileFromDb) {
           return NextResponse.json(
             { error: 'Profile not found' },
             { status: 404 }
           );
         }
         
-        targetProfile = transformFromDatabase(data);
+        targetProfile = ProfileRepository.transformFromDatabase(profileFromDb);
       } catch (error) {
         return NextResponse.json(
           { 
@@ -125,15 +133,14 @@ export async function POST(request) {
       const hasProfileId = targetProfile && targetProfile.id;
       
       // Try to get cached timeline first (only for saved profiles with authentication and unless forced to regenerate)
-      if (hasProfileId && userId && !forceRegenerate) {
+      if (hasProfileId && !forceRegenerate) {
         try {
-          console.log(`🔍 Checking cache for profile ${targetProfile.id} with user ${userId}`);
+          console.log(`🔍 Checking cache for profile ${targetProfile.id}`);
           
           const { data, error } = await supabase
             .from('client_profiles')
             .select('timeline_data, last_timeline_generated_at')
             .eq('id', targetProfile.id)
-            .eq('user_id', userId)
             .single();
             
           if (!error && data?.timeline_data) {
@@ -150,6 +157,9 @@ export async function POST(request) {
               console.log(`🔄 Cache exists but scenario mismatch: requested ${scenarioType}, cached ${cachedScenarioType}`);
             }
           } else {
+            if (error && error.code !== 'PGRST116') { // Don't log "not found" as an error
+                console.error('Cache check error:', error);
+            }
             console.log(`💾 No cached timeline found for profile ${targetProfile.id}`);
           }
         } catch (cacheError) {
@@ -176,11 +186,10 @@ export async function POST(request) {
         timeline = enhanceTimelineWithProfile(timeline, targetProfile);
 
         // Save to database only if profile has an ID and user is authenticated
-        if (hasProfileId && userId) {
+        if (hasProfileId) {
           try {
             console.log(`💾 Saving timeline to cache for profile ${targetProfile.id}`);
             
-            // Add metadata to timeline data
             const timelineWithMeta = {
               ...timeline,
               scenarioType: finalScenarioType,
@@ -194,8 +203,7 @@ export async function POST(request) {
                 timeline_data: timelineWithMeta,
                 last_timeline_generated_at: new Date().toISOString()
               })
-              .eq('id', targetProfile.id)
-              .eq('user_id', userId);
+              .eq('id', targetProfile.id);
               
             if (error) {
               console.error('❌ Failed to save timeline to cache:', error);
@@ -252,8 +260,6 @@ export async function POST(request) {
 /**
  * Server-side helper functions
  */
-
-// Removed getCurrentUserId function - now using userId from request body
 
 function determineScenarioType(profile) {
   const aiReadiness = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;

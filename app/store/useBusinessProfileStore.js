@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { getCurrentUser } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 const useBusinessProfileStore = create(
   persist(
@@ -117,21 +118,24 @@ const useBusinessProfileStore = create(
         set({ isGenerating: true });
         
         try {
-          // Get current user for authentication
-          const user = await getCurrentUser();
+          // Get current user session for authentication token
+          const { data: { session } } = await supabase.auth.getSession();
+
+          const headers = { 'Content-Type': 'application/json' };
+          if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+          }
           
           // Call server-side API for profile-based timeline generation with caching
           const response = await fetch('/api/timeline/generate-from-profile', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify({
               profileId: profile.id || null,
               profile: profile,
               forceRegenerate,
-              scenarioType,
-              userId: user?.id || null
+              scenarioType
+              // No longer need to pass userId, it's derived from token on server
             })
           });
 

@@ -1,38 +1,19 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '../../../lib/supabase';
-import { decryptCredential } from '../../../utils/encryption';
 import { createClient } from '@supabase/supabase-js';
+import { decryptCredential } from '../../../utils/encryption';
 
-// Create service role client for server-side database operations
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export async function POST(request) {
-  console.log('🔍 test-connection route called');
-  
   try {
-    // Parse request body first for debugging
-    let body;
-    try {
-      body = await request.json();
-      console.log('📝 Request body:', JSON.stringify(body, null, 2));
-    } catch (error) {
-      console.log('❌ JSON parse error:', error.message);
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      );
-    }
-
-    // Verify user authentication
-    console.log('🔐 Checking authentication...');
+    const body = await request.json();
     const user = await getUser(request);
-    console.log('👤 User result:', user ? `User ID: ${user.id}` : 'No user');
-    
+
     if (!user) {
-      console.log('🚫 Authentication failed - returning 401');
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -40,61 +21,42 @@ export async function POST(request) {
     }
 
     const { credentialId, serviceType, serviceName } = body;
-    console.log('🔧 Extracted params:', { credentialId, serviceType, serviceName });
 
     if (!credentialId || !serviceType || !serviceName) {
-      console.log('❌ Missing required parameters');
       return NextResponse.json(
         { error: 'Credential ID, service type, and service name are required' },
         { status: 400 }
       );
     }
 
-    console.log('🗃️ Querying database for credential...');
-    
-    // First, let's see what credentials exist for this user
-    const { data: allCredentials, error: allCredsError } = await supabaseAdmin
-      .from('external_service_credentials')
-      .select('id, display_name, service_type, service_name, created_at')
-      .eq('user_id', user.id);
-    
-    console.log('📊 All credentials for user:', {
-      count: allCredentials?.length || 0,
-      credentials: allCredentials?.map(c => ({ id: c.id, name: c.display_name, type: c.service_type, service: c.service_name })) || []
-    });
-    
-    // Now try to get the specific credential
+    // Use admin client to fetch the record, bypassing RLS
     const { data: credential, error: dbError } = await supabaseAdmin
       .from('external_service_credentials')
       .select('*')
       .eq('id', credentialId)
-      .eq('user_id', user.id)
       .single();
 
-    console.log('💾 Database query result:', {
-      found: !!credential,
-      error: dbError?.message,
-      credentialId,
-      searchingForId: credentialId,
-      availableIds: allCredentials?.map(c => c.id) || []
-    });
-
     if (dbError || !credential) {
-      console.log('🚫 Credential not found - returning 404');
       return NextResponse.json(
-        { error: 'Credential not found or access denied' },
+        { error: 'Credential not found' },
         { status: 404 }
       );
     }
 
-    console.log('🔓 Decrypting credentials...');
+    // **CRITICAL SECURITY CHECK**: Ensure the fetched credential belongs to the authenticated user
+    if (credential.user_id !== user.id) {
+        return NextResponse.json(
+            { error: 'Access denied' },
+            { status: 403 }
+        );
+    }
+    
     // Decrypt credentials
     const decryptedCredentials = await decryptStoredCredentials(
       credential.credentials_encrypted,
       credential.encryption_metadata
     );
 
-    console.log('🧪 Starting connection test...');
     // Test connection based on service type
     let testResult;
     switch (serviceType) {
@@ -105,14 +67,12 @@ export async function POST(request) {
         testResult = await testCRMSystem(serviceName, decryptedCredentials, credential.configuration);
         break;
       default:
-        console.log('❌ Unsupported service type:', serviceType);
         return NextResponse.json(
           { error: `Unsupported service type: ${serviceType}` },
           { status: 400 }
         );
     }
 
-    console.log('✅ Test completed:', testResult.success ? 'SUCCESS' : 'FAILED');
     return NextResponse.json(testResult);
 
   } catch (error) {

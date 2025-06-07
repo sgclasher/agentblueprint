@@ -93,8 +93,6 @@ export class CredentialsRepository {
       throw new Error('User authentication required.');
     }
 
-    console.log('🚀 saveCredentials called with:', { userId, credentialData: { ...credentialData, credentials: '[HIDDEN]' } });
-
     try {
       const {
         id,
@@ -107,42 +105,68 @@ export class CredentialsRepository {
         isDefault = false
       } = credentialData;
 
-      console.log('🔑 Extracting credentials for encryption...');
-      console.log('📋 Extracted data:', { id, serviceType, serviceName, displayName, hasCredentials: !!credentials, configuration, isActive, isDefault });
-
-      // Encrypt credentials first
+      // Encrypt credentials on server-side via API
       const encryptionResponse = await this._encryptCredentials(credentials);
       
-      // Save via API route (server-side database operation)
-      const { data: { session } } = await supabase.auth.getSession();
-      const headers = { 'Content-Type': 'application/json' };
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
+      const recordData = {
+        user_id: userId,
+        service_type: serviceType,
+        service_name: serviceName,
+        display_name: displayName,
+        credentials_encrypted: encryptionResponse.encrypted,
+        encryption_metadata: encryptionResponse.metadata,
+        configuration,
+        is_active: isActive,
+        is_default: isDefault,
+        updated_at: new Date().toISOString()
+      };
+
+      let result;
+      if (id) {
+        // Update existing
+        const { data, error } = await supabase
+          .from('external_service_credentials')
+          .update(recordData)
+          .eq('id', id)
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (error) {
+          console.error('❌ Update error details:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          });
+          throw error;
+        }
+        result = data;
+      } else {
+        
+        // Create new
+        const { data, error } = await supabase
+          .from('external_service_credentials')
+          .insert([{
+            ...recordData,
+            created_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('❌ Insert error details:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            recordData: { ...recordData, credentials_encrypted: '[HIDDEN]', encryption_metadata: '[HIDDEN]' }
+          });
+          throw error;
+        }
+        result = data;
       }
 
-      const response = await fetch('/api/admin/save-credentials', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          id,
-          serviceType,
-          serviceName,
-          displayName,
-          encryptedCredentials: encryptionResponse.encrypted,
-          encryptionMetadata: encryptionResponse.metadata,
-          configuration,
-          isActive,
-          isDefault
-        })
-      });
-
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.details || errorResponse.error || 'Failed to save credentials');
-      }
-
-      const result = await response.json();
-      console.log('🎉 saveCredentials completed successfully with result ID:', result?.id);
       return result;
     } catch (error) {
       console.error('💥 Exception in saveCredentials:', error);
@@ -301,25 +325,19 @@ export class CredentialsRepository {
    * @private
    */
   static async _encryptCredentials(credentials) {
-    console.log('🔐 _encryptCredentials called with credentials keys:', Object.keys(credentials || {}));
-    
     // Get current session for authentication
     const { data: { session } } = await supabase.auth.getSession();
-    console.log('🎫 Session check:', { hasSession: !!session, hasAccessToken: !!session?.access_token });
     
     const headers = { 'Content-Type': 'application/json' };
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`;
     }
     
-    console.log('🌐 Making encryption API call...');
     const response = await fetch('/api/admin/encrypt-credentials', {
       method: 'POST',
       headers,
       body: JSON.stringify({ credentials })
     });
-
-    console.log('📡 Encryption API response:', { status: response.status, ok: response.ok });
     
     if (!response.ok) {
       try {
@@ -341,7 +359,6 @@ export class CredentialsRepository {
     }
 
     const result = await response.json();
-    console.log('✅ Encryption API success:', { hasEncrypted: !!result.encrypted, hasMetadata: !!result.metadata });
     return result;
   }
 

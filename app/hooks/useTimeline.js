@@ -72,11 +72,16 @@ export function useTimeline() {
 
   const contentRef = useRef(null);
   const sectionRefs = useRef({});
+  const effectRan = useRef(false);
 
   const timelineSections = getTimelineSections(timelineData);
 
   // Effect to initialize timeline from profile ID
   useEffect(() => {
+    if (effectRan.current === true && process.env.NODE_ENV === 'development') {
+      return;
+    }
+
     const initializeTimeline = async () => {
       if (profileIdFromUrl) {
         setIsLoading(true);
@@ -101,6 +106,10 @@ export function useTimeline() {
       }
     };
     initializeTimeline();
+
+    return () => {
+      effectRan.current = true;
+    }
   }, [profileIdFromUrl, generateTimelineFromProfile]);
 
 
