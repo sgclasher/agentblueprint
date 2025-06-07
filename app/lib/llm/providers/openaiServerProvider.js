@@ -6,14 +6,15 @@
  */
 export class OpenAIServerProvider {
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY;
     this.baseUrl = 'https://api.openai.com/v1';
     this.model = 'gpt-4o';
     
-    if (!this.apiKey) {
-      // This check is important for ensuring the service doesn't start in a misconfigured state.
-      throw new Error('OpenAI API key not found. Set OPENAI_API_KEY environment variable.');
-    }
+    // Don't cache the API key - check it dynamically to handle environment changes
+    // This is important for testing where the environment variable might be changed
+  }
+
+  get apiKey() {
+    return process.env.OPENAI_API_KEY;
   }
 
   /**
@@ -24,6 +25,11 @@ export class OpenAIServerProvider {
    * @returns {Promise<object>} The generated JSON object.
    */
   async generateJson(systemPrompt, userPrompt, options = {}) {
+    // Check for API key before making the request
+    if (!this.apiKey) {
+      throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
+    }
+    
     try {
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',

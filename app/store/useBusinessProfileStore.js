@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { getCurrentUser } from '../lib/supabase';
 
 const useBusinessProfileStore = create(
   persist(
@@ -27,6 +28,11 @@ const useBusinessProfileStore = create(
       // Generated timeline data
       timelineData: null,
       isGenerating: false,
+      
+      // Timeline cache metadata
+      timelineCached: false,
+      timelineGeneratedAt: null,
+      timelineScenarioType: null,
       
       // Actions
       setBusinessProfile: (profile) => 
@@ -107,11 +113,14 @@ const useBusinessProfileStore = create(
         }
       },
       
-      generateTimelineFromProfile: async (profile) => {
+      generateTimelineFromProfile: async (profile, forceRegenerate = false, scenarioType = null) => {
         set({ isGenerating: true });
         
         try {
-          // Call server-side API for profile-based timeline generation
+          // Get current user for authentication
+          const user = await getCurrentUser();
+          
+          // Call server-side API for profile-based timeline generation with caching
           const response = await fetch('/api/timeline/generate-from-profile', {
             method: 'POST',
             headers: {
@@ -119,7 +128,10 @@ const useBusinessProfileStore = create(
             },
             body: JSON.stringify({
               profileId: profile.id || null,
-              profile: profile
+              profile: profile,
+              forceRegenerate,
+              scenarioType,
+              userId: user?.id || null
             })
           });
 
@@ -129,7 +141,16 @@ const useBusinessProfileStore = create(
           }
 
           const data = await response.json();
-          set({ timelineData: data.timeline, isGenerating: false });
+          
+          // Update state with timeline and cache metadata
+          set({ 
+            timelineData: data.timeline, 
+            isGenerating: false,
+            timelineCached: data.cached || false,
+            timelineGeneratedAt: data.generatedAt,
+            timelineScenarioType: data.scenarioType || 'balanced'
+          });
+          
           return data.timeline;
         } catch (error) {
           console.error('Error generating timeline from profile:', error);
@@ -137,8 +158,19 @@ const useBusinessProfileStore = create(
           throw error;
         }
       },
+
+      regenerateTimelineFromProfile: async (profile, scenarioType = null) => {
+        // Force regeneration by setting forceRegenerate = true
+        return await get().generateTimelineFromProfile(profile, true, scenarioType);
+      },
       
-      clearTimeline: () => set({ timelineData: null, expandedSections: {} }),
+      clearTimeline: () => set({ 
+        timelineData: null, 
+        expandedSections: {},
+        timelineCached: false,
+        timelineGeneratedAt: null,
+        timelineScenarioType: null
+      }),
     }),
     {
       name: 'business-profile-storage',

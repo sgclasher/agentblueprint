@@ -1,13 +1,24 @@
 import { NextResponse } from 'next/server';
-import { ProfileRepository } from '../../../repositories/profileRepository';
 import { markdownService } from '../../../services/markdownService';
 import { TimelineService } from '../../../services/timelineService';
+import { createClient } from '@supabase/supabase-js';
+
+// Create server-side Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 /**
- * Generate Timeline from Client Profile
+ * Generate Timeline from Client Profile with Database Caching
  * 
  * This endpoint generates AI timelines using the full client profile context
- * including all the rich markdown data for better AI recommendations.
+ * with intelligent caching to avoid unnecessary API calls.
+ * 
+ * Supports:
+ * - Cache-first timeline loading
+ * - Force regeneration with forceRegenerate parameter
+ * - Scenario type override
  */
 export async function POST(request) {
   try {
@@ -34,7 +45,9 @@ export async function POST(request) {
       );
     }
 
-    const { profileId, profile } = body;
+    const { profileId, profile, forceRegenerate = false, scenarioType, userId } = body;
+    
+    console.log(`📝 Request: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}`);
 
     if (!profile && !profileId) {
       return NextResponse.json(
@@ -47,15 +60,29 @@ export async function POST(request) {
 
     // If profileId is provided but no profile data, fetch it
     if (profileId && !profile) {
+      if (!userId) {
+        return NextResponse.json(
+          { error: 'Authentication required to fetch saved profiles' },
+          { status: 401 }
+        );
+      }
+      
       try {
-        // Use ProfileRepository directly for server-side access
-        targetProfile = await ProfileRepository.getProfile(profileId, null); // null userId for now
-        if (!targetProfile) {
+        const { data, error } = await supabase
+          .from('client_profiles')
+          .select('*')
+          .eq('id', profileId)
+          .eq('user_id', userId)
+          .single();
+        
+        if (error || !data) {
           return NextResponse.json(
             { error: 'Profile not found' },
             { status: 404 }
           );
         }
+        
+        targetProfile = transformFromDatabase(data);
       } catch (error) {
         return NextResponse.json(
           { 
@@ -65,6 +92,14 @@ export async function POST(request) {
           { status: 500 }
         );
       }
+    }
+
+    // For direct profile data (from ProfileWizard), ensure we have the data we need
+    if (!targetProfile) {
+      return NextResponse.json(
+        { error: 'No valid profile data provided' },
+        { status: 400 }
+      );
     }
 
     // Validate profile has minimum required data
@@ -78,31 +113,113 @@ export async function POST(request) {
       );
     }
 
-    // Generate timeline using server-side logic
+    // Generate timeline with server-side caching logic
     try {
-      // Generate full markdown representation of the client profile
-      const profileMarkdown = markdownService.generateMarkdown(targetProfile);
+      let timeline;
+      let cached = false;
+      let generatedAt = new Date().toISOString();
+      let finalScenarioType = scenarioType || determineScenarioType(targetProfile);
+      let unsavedProfile = !targetProfile.id;
+
+      // Check if profile has an ID (is saved to database)
+      const hasProfileId = targetProfile && targetProfile.id;
       
-      // Extract business profile data for metadata and scenario determination
-      const businessProfile = extractBusinessProfile(targetProfile);
-      
-      // Determine scenario type based on profile characteristics
-      const scenarioType = determineScenarioType(targetProfile);
-      
-      // Generate timeline using the full markdown for richer context
-      const timeline = await TimelineService.generateTimelineFromMarkdown(profileMarkdown, scenarioType, businessProfile);
-      
-      // Enhance timeline with profile-specific insights
-      const enhancedTimeline = enhanceTimelineWithProfile(timeline, targetProfile);
+      // Try to get cached timeline first (only for saved profiles with authentication and unless forced to regenerate)
+      if (hasProfileId && userId && !forceRegenerate) {
+        try {
+          console.log(`🔍 Checking cache for profile ${targetProfile.id} with user ${userId}`);
+          
+          const { data, error } = await supabase
+            .from('client_profiles')
+            .select('timeline_data, last_timeline_generated_at')
+            .eq('id', targetProfile.id)
+            .eq('user_id', userId)
+            .single();
+            
+          if (!error && data?.timeline_data) {
+            const cachedScenarioType = data.timeline_data.scenarioType || 'balanced';
+            
+            // Check if scenario matches (if specified)
+            if (!scenarioType || cachedScenarioType === scenarioType) {
+              console.log(`✅ Using cached timeline for profile ${targetProfile.id} (scenario: ${cachedScenarioType})`);
+              timeline = data.timeline_data;
+              cached = true;
+              generatedAt = data.last_timeline_generated_at;
+              finalScenarioType = cachedScenarioType;
+            } else {
+              console.log(`🔄 Cache exists but scenario mismatch: requested ${scenarioType}, cached ${cachedScenarioType}`);
+            }
+          } else {
+            console.log(`💾 No cached timeline found for profile ${targetProfile.id}`);
+          }
+        } catch (cacheError) {
+          console.warn('⚠️ Could not access timeline cache:', cacheError.message);
+          // Continue with generation if cache access fails
+        }
+      }
+
+      // Generate new timeline if not cached
+      if (!timeline) {
+        if (hasProfileId) {
+          console.log(`🔄 Generating new timeline for profile ${targetProfile.id}`);
+        } else {
+          console.log(`🔄 Generating timeline for unsaved profile (${targetProfile.companyName || 'unnamed'})`);
+        }
+
+        // Generate full markdown representation of the client profile
+        const profileMarkdown = markdownService.generateMarkdown(targetProfile);
+        
+        // Generate timeline using the full markdown for richer context
+        timeline = await TimelineService.generateTimelineFromMarkdown(profileMarkdown, finalScenarioType);
+        
+        // Enhance timeline with profile-specific insights
+        timeline = enhanceTimelineWithProfile(timeline, targetProfile);
+
+        // Save to database only if profile has an ID and user is authenticated
+        if (hasProfileId && userId) {
+          try {
+            console.log(`💾 Saving timeline to cache for profile ${targetProfile.id}`);
+            
+            // Add metadata to timeline data
+            const timelineWithMeta = {
+              ...timeline,
+              scenarioType: finalScenarioType,
+              generatedAt: new Date().toISOString(),
+              version: '1.0'
+            };
+
+            const { error } = await supabase
+              .from('client_profiles')
+              .update({
+                timeline_data: timelineWithMeta,
+                last_timeline_generated_at: new Date().toISOString()
+              })
+              .eq('id', targetProfile.id)
+              .eq('user_id', userId);
+              
+            if (error) {
+              console.error('❌ Failed to save timeline to cache:', error);
+            } else {
+              console.log(`✅ Timeline cached successfully for profile ${targetProfile.id}`);
+            }
+          } catch (saveError) {
+            console.warn('⚠️ Could not save timeline to cache:', saveError.message);
+            // Don't fail the entire operation if caching fails
+          }
+        }
+      }
 
       return NextResponse.json({
         success: true,
-        timeline: enhancedTimeline,
-        profileId: targetProfile.id,
+        timeline: timeline,
+        profileId: targetProfile.id || null,
         profileName: targetProfile.companyName,
-        generatedAt: new Date().toISOString(),
-        provider: 'OpenAI GPT-4o',
-        method: 'Full Profile Markdown Context'
+        cached: cached,
+        generatedAt: generatedAt,
+        scenarioType: finalScenarioType,
+        unsavedProfile: unsavedProfile,
+        provider: cached ? 'Database Cache' : 'OpenAI GPT-4o',
+        method: unsavedProfile ? 'Profile-Based Generation (Unsaved)' : 'Profile-Based Generation with Caching'
       });
 
     } catch (serviceError) {
@@ -133,79 +250,10 @@ export async function POST(request) {
 }
 
 /**
- * Server-side helper functions (copied from ProfileService for server-side use)
+ * Server-side helper functions
  */
 
-function extractBusinessProfile(profile) {
-  return {
-    companyName: profile.companyName,
-    industry: profile.industry,
-    companySize: mapCompanySize(profile.size),
-    aiMaturityLevel: calculateAIMaturity(profile),
-    primaryGoals: extractPrimaryGoals(profile),
-    currentTechStack: profile.currentTechnology || [],
-    budget: estimateBudgetRange(profile),
-    timeframe: extractTimeframe(profile)
-  };
-}
-
-function mapCompanySize(size) {
-  const sizeMap = {
-    'Small (50-500)': 'small',
-    'Mid-Market (500-5K)': 'medium',
-    'Enterprise (5K+)': 'large',
-    'Small': 'small',
-    'Medium': 'medium',
-    'Large': 'large'
-  };
-  return sizeMap[size] || 'medium';
-}
-
-function calculateAIMaturity(profile) {
-  const score = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;
-  if (score >= 8) return 'advanced';
-  if (score >= 6) return 'intermediate';
-  if (score >= 4) return 'beginner';
-  return 'minimal';
-}
-
-function extractPrimaryGoals(profile) {
-  const goals = [];
-  if (profile.valueSellingFramework?.businessIssues) {
-    goals.push(...profile.valueSellingFramework.businessIssues);
-  }
-  if (profile.primaryBusinessIssue) {
-    goals.push(profile.primaryBusinessIssue);
-  }
-  return goals.slice(0, 3); // Limit to top 3 goals
-}
-
-function estimateBudgetRange(profile) {
-  const budget = profile.valueSellingFramework?.decisionMakers?.economicBuyer?.budget;
-  if (budget) {
-    return budget;
-  }
-  
-  // Estimate based on company size and impact
-  const impact = profile.valueSellingFramework?.impact?.totalAnnualImpact || 0;
-  if (impact > 5000000) return '>5m';
-  if (impact > 1000000) return '1m-5m';
-  if (impact > 500000) return '500k-1m';
-  if (impact > 100000) return '100k-500k';
-  return '<100k';
-}
-
-function extractTimeframe(profile) {
-  const timeline = profile.valueSellingFramework?.buyingProcess?.timeline;
-  if (timeline) {
-    const months = parseInt(timeline);
-    if (months <= 3) return '3months';
-    if (months <= 6) return '6months';
-    if (months <= 12) return '1year';
-    return '2years+';
-  }
-  return '1year'; // Default
-}
+// Removed getCurrentUserId function - now using userId from request body
 
 function determineScenarioType(profile) {
   const aiReadiness = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;
@@ -257,13 +305,22 @@ function getPhaseOpportunities(profile, phaseIndex) {
 
 function identifyRiskFactors(profile) {
   const risks = [];
+  const aiReadiness = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;
   
-  if (profile.aiOpportunityAssessment?.aiReadinessScore < 5) {
-    risks.push('Low AI readiness may slow adoption');
+  if (aiReadiness < 4) {
+    risks.push({
+      type: 'Technical Readiness',
+      level: 'High',
+      description: 'Low AI readiness score may slow implementation'
+    });
   }
   
-  if (profile.valueSellingFramework?.buyingProcess?.timeline > 12) {
-    risks.push('Extended decision timeline may impact momentum');
+  if (profile.changeManagementCapability === 'Low') {
+    risks.push({
+      type: 'Change Management',
+      level: 'Medium',
+      description: 'Limited change management capability requires extra support'
+    });
   }
   
   return risks;
@@ -271,8 +328,26 @@ function identifyRiskFactors(profile) {
 
 function getCompetitiveContext(profile) {
   return {
-    industry: profile.industry,
-    competitivePressure: 'Moderate',
-    marketPosition: 'Stable'
+    urgency: profile.competitivePressure ? 'High' : 'Medium',
+    differentiators: profile.differentiationRequirements || [],
+    marketPosition: profile.industry === 'Technology' ? 'Fast-moving' : 'Traditional'
+  };
+}
+
+function transformFromDatabase(dbRecord) {
+  // Extract profile data and ensure Supabase ID takes precedence
+  const { id: oldId, ...profileDataWithoutId } = dbRecord.profile_data || {};
+  
+  return {
+    id: dbRecord.id, // Always use the Supabase UUID as the primary ID
+    ...profileDataWithoutId, // Spread profile data but exclude any old ID
+    markdown: dbRecord.markdown_content,
+    createdAt: dbRecord.created_at,
+    updatedAt: dbRecord.updated_at,
+    // Add database-specific fields
+    _supabaseRecord: true,
+    _userId: dbRecord.user_id,
+    // Store the original localStorage ID for reference if needed
+    _originalId: oldId || null
   };
 } 

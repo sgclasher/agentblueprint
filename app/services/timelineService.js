@@ -19,7 +19,7 @@ export class TimelineService {
   static async generateTimelineFromMarkdown(profileMarkdown, scenarioType = 'balanced') {
     try {
       if (!aiService.getStatus().configured) {
-        throw new Error('AI service is not configured. Please set the required environment variables.');
+        throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
       }
 
       this.validateScenario(scenarioType);

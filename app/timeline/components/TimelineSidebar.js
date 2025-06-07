@@ -19,7 +19,20 @@ const iconMap = {
   Target: <Target size={24} />,
 };
 
-export default function TimelineSidebar({ sections, activeSection, onSectionClick, theme, onThemeToggle }) {
+export default function TimelineSidebar({ 
+  sections, 
+  activeSection, 
+  onSectionClick, 
+  theme, 
+  onThemeToggle,
+  // New props for cache functionality
+  timelineCached,
+  timelineGeneratedAt,
+  timelineScenarioType,
+  onRegenerateTimeline,
+  isGenerating = false,
+  currentProfile = null
+}) {
   const navRef = useRef(null); // Ref for the main navigation container
   const itemRefs = useRef({}); // Refs for individual navigation items
   
@@ -31,6 +44,33 @@ export default function TimelineSidebar({ sections, activeSection, onSectionClic
   const TIMELINE_SPACING_MD_PX = 16; // From --timeline-spacing-md, used as padding in .timeline-nav-item
   const DOT_HALF_HEIGHT_PX = 12;     // Half of the .timeline-nav-dot height (24px)
   const DOT_FULL_HEIGHT_PX = 24;     // Full height of the .timeline-nav-dot
+
+  // Helper function to format cache timestamp
+  const formatGeneratedTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const handleRegenerateClick = async () => {
+    if (onRegenerateTimeline && currentProfile) {
+      try {
+        await onRegenerateTimeline(currentProfile, timelineScenarioType);
+      } catch (error) {
+        console.error('Error regenerating timeline:', error);
+      }
+    }
+  };
 
   useLayoutEffect(() => {
     if (navRef.current && sections && sections.length > 0) {
@@ -159,6 +199,68 @@ export default function TimelineSidebar({ sections, activeSection, onSectionClic
           </button>
         ))}
       </nav>
+
+      {/* Cache Status and Regeneration Controls */}
+      {timelineGeneratedAt && (
+        <div style={{
+          padding: 'var(--timeline-spacing-md)',
+          marginTop: 'var(--timeline-spacing-lg)',
+          background: 'var(--timeline-glass-bg)',
+          backdropFilter: 'blur(var(--timeline-backdrop-blur))',
+          borderRadius: 'var(--timeline-border-radius-lg)',
+          border: '1px solid var(--timeline-border-secondary)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--timeline-spacing-xs)',
+            marginBottom: 'var(--timeline-spacing-sm)',
+            fontSize: '0.85rem',
+            color: 'var(--timeline-text-muted)'
+          }}>
+            {timelineCached ? '💾' : '✨'} 
+            <span>
+              {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
+            </span>
+          </div>
+          
+          {timelineScenarioType && (
+            <div style={{
+              fontSize: '0.8rem',
+              color: 'var(--timeline-text-muted)',
+              marginBottom: 'var(--timeline-spacing-sm)'
+            }}>
+              Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
+            </div>
+          )}
+
+          <button
+            className="btn-secondary"
+            onClick={handleRegenerateClick}
+            disabled={isGenerating}
+            style={{
+              width: '100%',
+              fontSize: '0.85rem',
+              padding: 'var(--timeline-spacing-sm) var(--timeline-spacing-md)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 'var(--timeline-spacing-xs)'
+            }}
+          >
+            {isGenerating ? (
+              <>
+                <span style={{ animation: 'spin 1s linear infinite' }}>⟳</span>
+                Regenerating...
+              </>
+            ) : (
+              <>
+                🔄 Regenerate Timeline
+              </>
+            )}
+          </button>
+        </div>
+      )}
       
       <div className="timeline-sidebar-footer">
         <button 

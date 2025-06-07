@@ -196,12 +196,27 @@ export default function ProfileWizard({ onComplete, onCancel, initialData, isEdi
   const generateTimelineFromProfile = async () => {
     try {
       setIsGeneratingTimeline(true);
+      
+      // Validate that we have minimum required data
+      if (!profileData.companyName) {
+        alert('Please enter a company name before generating a timeline.');
+        return;
+      }
+      
       const timeline = await ProfileService.generateTimelineFromProfile(profileData);
       
-      // Navigate to timeline page with profile data
-      window.location.href = `/profiles/${profileData.id || 'new'}/timeline`;
+      // For unsaved profiles, we can't navigate to a profile-specific timeline
+      // Instead, we'll store the timeline in the browser and navigate to the general timeline page
+      if (!profileData.id) {
+        // Navigate to timeline page and let it handle the unsaved profile scenario
+        window.location.href = `/timeline`;
+      } else {
+        // Navigate to profile-specific timeline page
+        window.location.href = `/timeline?profileId=${profileData.id}`;
+      }
     } catch (error) {
       console.error('Error generating timeline:', error);
+      alert(`Failed to generate timeline: ${error.message}`);
     } finally {
       setIsGeneratingTimeline(false);
     }

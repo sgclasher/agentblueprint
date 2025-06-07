@@ -185,6 +185,128 @@ export class ProfileRepository {
   }
 
   // =============================================
+  // Timeline Caching Methods
+  // =============================================
+
+  /**
+   * Get cached timeline for a profile
+   * @param {string} profileId - Profile ID
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<Object|null>} Cached timeline data or null
+   */
+  static async getCachedTimeline(profileId, userId) {
+    if (!userId) {
+      console.warn('⚠️ No userId provided to getCachedTimeline');
+      return null;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('client_profiles')
+        .select('timeline_data, last_timeline_generated_at')
+        .eq('id', profileId)
+        .eq('user_id', userId)
+        .single();
+        
+      if (error) {
+        if (error.code !== 'PGRST116') { // Not a "not found" error
+          console.error('❌ Supabase getCachedTimeline error:', error);
+        }
+        return null;
+      }
+      
+      if (!data?.timeline_data) {
+        return null; // No cached timeline exists
+      }
+      
+      return {
+        timeline: data.timeline_data,
+        generatedAt: data.last_timeline_generated_at,
+        scenarioType: data.timeline_data.scenarioType || 'balanced'
+      };
+    } catch (error) {
+      console.error('❌ Exception in getCachedTimeline:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save timeline to database
+   * @param {string} profileId - Profile ID
+   * @param {Object} timelineData - Timeline data to save
+   * @param {string} scenarioType - Scenario type used for generation
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<boolean>} Success status
+   */
+  static async saveTimeline(profileId, timelineData, scenarioType, userId) {
+    if (!userId) {
+      throw new Error('User authentication is required to save timeline.');
+    }
+    
+    try {
+      // Add metadata to timeline data
+      const timelineWithMeta = {
+        ...timelineData,
+        scenarioType,
+        generatedAt: new Date().toISOString(),
+        version: '1.0'
+      };
+
+      const { error } = await supabase
+        .from('client_profiles')
+        .update({
+          timeline_data: timelineWithMeta,
+          last_timeline_generated_at: new Date().toISOString()
+        })
+        .eq('id', profileId)
+        .eq('user_id', userId);
+        
+      if (error) {
+        console.error('❌ Supabase saveTimeline error:', error);
+        throw error;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Exception in saveTimeline:', error);
+      throw new Error('Failed to save timeline to database.');
+    }
+  }
+
+  /**
+   * Clear cached timeline for a profile
+   * @param {string} profileId - Profile ID
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<boolean>} Success status
+   */
+  static async clearTimelineCache(profileId, userId) {
+    if (!userId) {
+      throw new Error('User authentication is required to clear timeline cache.');
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('client_profiles')
+        .update({
+          timeline_data: null,
+          last_timeline_generated_at: null
+        })
+        .eq('id', profileId)
+        .eq('user_id', userId);
+        
+      if (error) {
+        console.error('❌ Supabase clearTimelineCache error:', error);
+        throw error;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Exception in clearTimelineCache:', error);
+      throw new Error('Failed to clear timeline cache.');
+    }
+  }
+
+  // =============================================
   // Utility Methods
   // =============================================
 

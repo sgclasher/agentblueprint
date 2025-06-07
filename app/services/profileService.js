@@ -137,20 +137,106 @@ export class ProfileService {
   }
 
   /**
-   * Generate AI timeline from profile data
+   * Get timeline for profile (cached or generated)
+   * @param {Object} profile - Client profile
+   * @param {boolean} forceRegenerate - Force new generation instead of using cache
+   * @param {string} scenarioType - Override scenario type (optional)
+   * @returns {Promise<Object>} Timeline data with cache metadata
+   */
+  static async getTimelineFromProfile(profile, forceRegenerate = false, scenarioType = null) {
+    try {
+      const userId = await this.getCurrentUserId();
+      if (!userId) {
+        throw new Error("User authentication is required for timeline generation.");
+      }
+      
+      // Check if profile has an ID (is saved to database)
+      const hasProfileId = profile && profile.id;
+      
+      // Try to get cached timeline first (only for saved profiles and unless forced to regenerate)
+      if (hasProfileId && !forceRegenerate) {
+        const cached = await ProfileRepository.getCachedTimeline(profile.id, userId);
+        if (cached && cached.timeline) {
+          // Check if scenario matches (if specified)
+          if (!scenarioType || cached.scenarioType === scenarioType) {
+            console.log(`✅ Using cached timeline for profile ${profile.id}`);
+            return {
+              ...cached.timeline,
+              _cached: true,
+              _generatedAt: cached.generatedAt,
+              _scenarioType: cached.scenarioType
+            };
+          }
+        }
+      }
+      
+      if (hasProfileId) {
+        console.log(`🔄 Generating new timeline for profile ${profile.id}`);
+      } else {
+        console.log(`🔄 Generating timeline for unsaved profile (${profile.companyName || 'unnamed'})`);
+      }
+      
+      // Generate new timeline
+      const finalScenarioType = scenarioType || this.determineScenarioType(profile);
+      const timeline = await this._generateTimelineFromProfile(profile, finalScenarioType);
+      
+      // Save to database only if profile has an ID
+      if (hasProfileId) {
+        try {
+          await ProfileRepository.saveTimeline(profile.id, timeline, finalScenarioType, userId);
+        } catch (saveError) {
+          console.warn('⚠️ Could not save timeline to cache:', saveError.message);
+          // Don't fail the entire operation if caching fails
+        }
+      }
+      
+      return {
+        ...timeline,
+        _cached: false,
+        _generatedAt: new Date().toISOString(),
+        _scenarioType: finalScenarioType,
+        _unsavedProfile: !hasProfileId
+      };
+    } catch (error) {
+      console.error('Error getting timeline from profile:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Force regenerate timeline for profile
+   * @param {Object} profile - Client profile
+   * @param {string} scenarioType - Scenario type for generation
+   * @returns {Promise<Object>} Newly generated timeline data
+   */
+  static async regenerateTimelineFromProfile(profile, scenarioType = 'balanced') {
+    return await this.getTimelineFromProfile(profile, true, scenarioType);
+  }
+
+  /**
+   * Legacy method - now redirects to cache-aware method
    * @param {Object} profile - Client profile
    * @returns {Promise<Object>} Timeline data
+   * @deprecated Use getTimelineFromProfile instead
    */
   static async generateTimelineFromProfile(profile) {
+    return await this.getTimelineFromProfile(profile, false);
+  }
+
+  /**
+   * Generate AI timeline from profile data (private method)
+   * @param {Object} profile - Client profile
+   * @param {string} scenarioType - Scenario type for generation
+   * @returns {Promise<Object>} Timeline data
+   * @private
+   */
+  static async _generateTimelineFromProfile(profile, scenarioType = 'balanced') {
     try {
       // Generate full markdown representation of the client profile
       const profileMarkdown = markdownService.generateMarkdown(profile);
       
       // Extract business profile data for metadata and scenario determination
       const businessProfile = this.extractBusinessProfile(profile);
-      
-      // Determine scenario type based on profile characteristics
-      const scenarioType = this.determineScenarioType(profile);
       
       // Use existing timeline service but pass the full markdown for richer context
       const { TimelineService } = await import('./timelineService');

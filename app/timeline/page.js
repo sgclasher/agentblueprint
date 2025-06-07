@@ -48,6 +48,7 @@ export default function TimelinePage() {
   const {
     timelineData,
     businessProfile,
+    currentProfile,
     isLoading,
     activeSection,
     scrollProgress,
@@ -57,7 +58,12 @@ export default function TimelinePage() {
     sectionRefs,
     handleSectionClick,
     toggleTheme,
-    isProfileTimeline
+    regenerateTimeline,
+    isProfileTimeline,
+    // Cache metadata
+    timelineCached,
+    timelineGeneratedAt,
+    timelineScenarioType
   } = useTimeline();
 
   const router = useRouter();
@@ -94,6 +100,13 @@ export default function TimelinePage() {
           onSectionClick={handleSectionClick}
           theme={theme}
           onThemeToggle={toggleTheme}
+          // Cache functionality props
+          timelineCached={timelineCached}
+          timelineGeneratedAt={timelineGeneratedAt}
+          timelineScenarioType={timelineScenarioType}
+          onRegenerateTimeline={regenerateTimeline}
+          isGenerating={isLoading}
+          currentProfile={currentProfile}
         />
         
         <div className="timeline-main" ref={contentRef}>

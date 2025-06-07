@@ -53,9 +53,13 @@ export function useTimeline() {
     isGenerating,
     generateTimeline,
     generateTimelineFromProfile,
+    regenerateTimelineFromProfile,
     hasValidProfile,
     theme,
-    toggleTheme
+    toggleTheme,
+    timelineCached,
+    timelineGeneratedAt,
+    timelineScenarioType
   } = useBusinessProfileStore();
 
   const searchParams = useSearchParams();
@@ -64,6 +68,7 @@ export function useTimeline() {
   const [activeSection, setActiveSection] = useState('current-state');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentProfile, setCurrentProfile] = useState(null);
 
   const contentRef = useRef(null);
   const sectionRefs = useRef({});
@@ -78,17 +83,21 @@ export function useTimeline() {
         try {
           const loadedProfile = await ProfileService.getProfile(profileIdFromUrl);
           if (loadedProfile) {
+            setCurrentProfile(loadedProfile);
             await generateTimelineFromProfile(loadedProfile);
           } else {
             console.warn(`Profile with ID ${profileIdFromUrl} not found.`);
+            setCurrentProfile(null);
           }
         } catch (error) {
           console.error("Error loading profile for timeline:", error);
+          setCurrentProfile(null);
         } finally {
           setIsLoading(false);
         }
       } else {
         setIsLoading(false);
+        setCurrentProfile(null);
       }
     };
     initializeTimeline();
@@ -156,15 +165,27 @@ export function useTimeline() {
     }
   }, []);
 
+  const regenerateTimeline = useCallback(async (profile, scenarioType = null) => {
+    if (profile) {
+      return await regenerateTimelineFromProfile(profile, scenarioType);
+    }
+  }, [regenerateTimelineFromProfile]);
+
   return {
     // State
     timelineData,
     businessProfile,
+    currentProfile,
     isLoading: isLoading || isGenerating,
     activeSection,
     scrollProgress,
     timelineSections,
     theme,
+
+    // Cache metadata
+    timelineCached,
+    timelineGeneratedAt,
+    timelineScenarioType,
 
     // Refs
     contentRef,
@@ -174,6 +195,7 @@ export function useTimeline() {
     handleSectionClick,
     toggleTheme,
     generateTimeline,
+    regenerateTimeline,
     hasValidProfile,
 
     // Contextual flags
