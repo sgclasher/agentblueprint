@@ -2,7 +2,7 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Fully functional platform with a **centralized, provider-agnostic `aiService`** and **intelligent database-backed timeline caching**. The AI architecture is scalable, secure, and ready for future features. Features real OpenAI GPT-4o powered timeline generation with intelligent, industry-specific business transformation roadmaps. **Client profiles are now exclusively stored in Supabase, requiring user authentication for all profile-related features.** This change removes all `localStorage` fallback and data migration logic, streamlining the architecture. **✅ Timeline caching is now fully implemented** with cache-first architecture, 80-90% cost reduction, and instant loading from database. All core features have consistent UI theming across all pages with **Phase 5 UI Consistency & Design System** including global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include database-backed timeline caching, professional cache status widget, AI-powered timeline generation, working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, **AI-powered transformation timeline with intelligent caching**, comprehensive client profile management system with full edit capability, complete user authentication, and a secure Supabase database backend. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
+**🎯 Current State:** Fully functional platform with a **centralized, provider-agnostic `aiService`** with **comprehensive admin interface for AI credential management** and **intelligent database-backed timeline caching**. The AI architecture is scalable, secure, and ready for future features. Features real AI-powered timeline generation with intelligent, industry-specific business transformation roadmaps using the latest models including **OpenAI o3-mini, o1, GPT-4o**, **Google Gemini 2.5 Flash/Pro**, and **Anthropic Claude Opus 4/Sonnet 4**. **Client profiles are now exclusively stored in Supabase, requiring user authentication for all profile-related features.** This change removes all `localStorage` fallback and data migration logic, streamlining the architecture. **✅ Timeline caching is now fully implemented** with cache-first architecture, 80-90% cost reduction, and instant loading from database. All core features have consistent UI theming across all pages with **Phase 5 UI Consistency & Design System** including global CSS variables, theme provider, and standardized GlobalHeader. All pages (ServiceNow, Profiles, Timeline, Auth) have consistent professional theming with working light/dark mode toggle. The core `ProfileWizard` component has been refactored to use CSS Modules, eliminating inline styles for robust, theme-aware consistency. **Latest enhancements include comprehensive admin interface for multi-provider AI credential management, database-backed timeline caching, professional cache status widget, AI-powered timeline generation with latest models, working edit profile functionality, ProfileWizard UX improvements with clickable step navigation and free exploration, and enhanced visual indicators for completion status.** Recent updates include user profile management page, improved tag readability in light mode, and enhanced header navigation with clickable user profiles. Complete with ServiceNow visualization, **AI-powered transformation timeline with intelligent caching**, comprehensive client profile management system with full edit capability, complete user authentication, and a secure Supabase database backend. The platform features sophisticated UI inspired by ai-2027.com with backdrop blur effects, gradient backgrounds, professional typography, and responsive mobile-optimized layouts. Architecture includes robust service layers with secure multi-user authentication and row-level security. Ready for production deployment and enterprise use.
 
 **🚀 Next Steps:** 
 1. ✅ **COMPLETED**: Database-backed timeline caching implemented with intelligent cache-first architecture, 80-90% cost reduction, and instant loading.
@@ -65,6 +65,20 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Professional UI**: Dark-themed auth forms integrated with existing design system
 - **Session Management**: Persistent auth state with automatic token refresh
 - **Centralized Cloud Storage**: All client profiles are stored exclusively in Supabase, ensuring data integrity and security.
+
+### 🔧 **Admin Interface for AI Credential Management** ✨ **(New Phase 6.1.5)**
+- **Multi-Provider Support**: Manage credentials for OpenAI, Google Gemini, and Anthropic Claude
+- **Latest AI Models**: Support for cutting-edge models including:
+  - **OpenAI**: o3-mini, o1, o1-mini, o1-preview, GPT-4o, GPT-4o-mini, GPT-4-turbo
+  - **Google Gemini**: 2.5 Flash (Hybrid), 2.5 Pro (Advanced Thinking), 2.0 Flash, 1.5 Pro/Flash
+  - **Anthropic Claude**: Opus 4 (Most Capable), Sonnet 4 (High Performance), 3.7 Sonnet (Hybrid Reasoning)
+- **Encrypted Storage**: AES-256-GCM encryption for all API keys and credentials stored per user
+- **Live Connection Testing**: Real-time credential validation before saving
+- **Professional UI**: Service-specific cards with connection status indicators
+- **ServiceNow Integration**: Secure credential storage for CRM system connections
+- **Default Provider Management**: Set preferred AI providers for timeline generation
+- **CRUD Operations**: Complete create, read, update, delete functionality for all service credentials
+- **User-Level Configuration**: Replace environment variables with secure, user-specific AI configurations
 
 ### 👤 **User Profile Management**
 - **Personal Profile Page**: Dedicated `/profile` page for user account management
@@ -181,10 +195,16 @@ npm test
 
 ### **AI Integration & LLM Services**
 - **Centralized `aiService`**: A single, reusable service (`app/services/aiService.js`) that acts as the entry point for all LLM interactions.
-- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, with `openaiServerProvider.js` as the first implementation. This allows for easy extension to other models or providers in the future.
+- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, with support for multiple providers including OpenAI, Google Gemini, and Anthropic Claude.
+- **Admin Interface**: Comprehensive `/admin` dashboard for managing AI credentials with support for:
+  - **Latest OpenAI Models**: o3-mini, o1 series, GPT-4o family with reasoning capabilities
+  - **Google Gemini 2.5**: Flash (Hybrid), Pro (Advanced Thinking), and legacy 2.0/1.5 models
+  - **Anthropic Claude 4**: Opus 4 (Most Capable), Sonnet 4 (High Performance), 3.7 Sonnet (Hybrid Reasoning)
 - **Secure Server-Side Execution**: All LLM calls are handled securely on the server, with no client-side exposure of API keys.
+- **User-Level Credential Management**: AES-256-GCM encrypted storage replacing environment variables
+- **Live Connection Testing**: Real-time validation of API credentials before saving
 - **Centralized Prompt Management**: Prompts are stored and managed in a dedicated directory (`app/lib/llm/prompts`) for better organization and reusability.
-- **OpenAI GPT-4o Integration**: Uses GPT-4o for timeline generation, managed through the central `aiService`.
+- **Multi-Provider Timeline Generation**: Dynamic provider selection for AI-powered timeline generation
 - **JSON Response Validation**: Services that consume the `aiService` are responsible for validating the structure of the returned JSON data.
 - **Environment Configuration**: Easy setup verification via the `/api/debug-env` endpoint.
 
@@ -231,6 +251,6 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 **🗄️ Database Status**: All client profile data is now exclusively stored in Supabase, with all `localStorage` fallbacks and migration code removed. This provides a more secure, scalable, and centralized data architecture.
 
-**🤖 AI Integration Status**: ✅ **Complete with Database Caching!** The AI integration features a centralized, provider-agnostic `aiService` with intelligent database-backed caching. Timeline generation now uses cache-first architecture with 80-90% cost reduction, instant loading from cache, and cross-device persistence. All LLM calls are handled securely server-side with proper error handling and dynamic configuration checking.
+**🤖 AI Integration Status**: ✅ **Complete with Admin Interface & Database Caching!** The AI integration features a centralized, provider-agnostic `aiService` with comprehensive admin interface for multi-provider credential management and intelligent database-backed caching. The `/admin` dashboard supports the latest AI models including OpenAI o3-mini/o1, Google Gemini 2.5, and Anthropic Claude 4, with AES-256-GCM encrypted storage, live connection testing, and user-level configuration. Timeline generation uses cache-first architecture with 80-90% cost reduction, instant loading from cache, and cross-device persistence. All LLM calls are handled securely server-side with proper error handling and dynamic configuration checking. Users can now configure their preferred AI providers through the admin interface, replacing the need for environment variables.
 
 **🧪 Testing Status**: Simple MVP testing approach with 9 passing smoke tests including Supabase mocking and AI integration error handling. All tests continue to pass with AI integration updates. See `MVP_TESTING_SUMMARY.md` for details.

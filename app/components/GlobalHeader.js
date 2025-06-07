@@ -14,7 +14,8 @@ import {
   X,
   LogIn,
   LogOut,
-  User
+  User,
+  Settings
 } from 'lucide-react';
 
 export default function GlobalHeader() {
@@ -40,6 +41,12 @@ export default function GlobalHeader() {
       href: '/timeline',
       icon: TrendingUp,
       description: 'Generate transformation roadmaps'
+    },
+    {
+      name: 'Settings',
+      href: '/admin',
+      icon: Settings,
+      description: 'Configure services and credentials'
     }
   ];
 

@@ -66,8 +66,7 @@ function encryptCredential(plaintext) {
     const key = getEncryptionKey();
     const iv = crypto.randomBytes(IV_LENGTH);
     
-    const cipher = crypto.createCipher(ALGORITHM, key);
-    cipher.setIV(iv);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
     
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -101,8 +100,7 @@ function decryptCredential(encrypted, ivHex, authTagHex) {
     const iv = Buffer.from(ivHex, 'hex');
     const authTag = Buffer.from(authTagHex, 'hex');
     
-    const decipher = crypto.createDecipher(ALGORITHM, key);
-    decipher.setIV(iv);
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAuthTag(authTag);
     
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');

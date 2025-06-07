@@ -16,6 +16,48 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 })
 
+// Server-side helper for getting authenticated user from Authorization header
+export const getServerUser = async (request) => {
+  try {
+    if (!request) {
+      return { id: 'server-context' }
+    }
+
+    // Extract authorization header
+    const authHeader = request.headers.get('authorization')
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null
+    }
+
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+
+    // Create a server-side Supabase client with the token
+    const serverClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: false,
+      },
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    })
+
+    const { data: { user }, error } = await serverClient.auth.getUser()
+    
+    if (error) {
+      console.error('Server auth error:', error)
+      return null
+    }
+
+    return user
+  } catch (error) {
+    console.error('Error in server authentication:', error)
+    return null
+  }
+}
+
 // Client-side only helper for getting the current session
 export const getSession = async () => {
   if (typeof window === 'undefined') return null
@@ -28,4 +70,13 @@ export const getCurrentUser = async () => {
   if (typeof window === 'undefined') return null
   const { data: { user } } = await supabase.auth.getUser()
   return user
+}
+
+// Universal helper that works on both client and server
+export const getUser = async (request = null) => {
+  if (typeof window === 'undefined') {
+    return await getServerUser(request)
+  } else {
+    return await getCurrentUser()
+  }
 } 
