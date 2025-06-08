@@ -54,22 +54,11 @@
   --timeline-accent-red: #dc2626;
 }
 
-/* Reset and Base Styles */
+/* Base Styles & Resets */
 .timeline-container * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-.timeline-container {
-  display: flex;
-  height: 100vh;
-  width: 100vw;
-  background-color: var(--timeline-bg);
-  color: var(--timeline-text-primary);
-  font-family: var(--timeline-font-family);
-  overflow: hidden; /* Prevent body scroll */
-  position: relative;
 }
 
 /* Global Button Styles (can be refined per component) */
@@ -101,59 +90,12 @@
   background-color: rgba(255, 255, 255, 0.15);
 }
 
-
-/* Main Content Area */
-.timeline-main {
-  flex: 1;
-  padding: var(--timeline-spacing-xl) var(--timeline-spacing-xxl); /* More horizontal padding */
-  overflow-y: auto;
-  height: 100vh; /* Ensure it takes full height to scroll */
-  background-color: var(--timeline-content-bg);
-  scroll-behavior: smooth;
-}
-
-.timeline-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  color: var(--timeline-text-secondary);
-}
-.timeline-empty h2 {
-  font-size: 1.75rem;
-  color: var(--timeline-text-primary);
-  margin-bottom: var(--timeline-spacing-md);
-}
-.timeline-empty p {
-  font-size: 1rem;
-  margin-bottom: var(--timeline-spacing-lg);
-  max-width: 450px;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--timeline-border-secondary);
-  border-top: 4px solid var(--timeline-accent-blue);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto var(--timeline-spacing-lg);
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Animations */
+/* Animations & Form Error Styles */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Error styling for form inputs */
 .form-group input.error,
 .form-group select.error {
   border-color: var(--timeline-accent-red);
@@ -163,53 +105,4 @@
   color: var(--timeline-accent-red);
   font-size: 0.8rem;
   margin-top: var(--timeline-spacing-xs);
-}
-
-/* Small screen adjustments */
-@media (max-width: 1200px) {
-  .timeline-main {
-    padding: var(--timeline-spacing-xl);
-  }
-}
-
-@media (max-width: 992px) {
-  .timeline-container {
-    flex-direction: column;
-  }
-  .timeline-main {
-    height: calc(100vh - var(--sidebar-height-mobile, 100px)); /* Adjust based on actual mobile sidebar height */
-    padding: var(--timeline-spacing-lg);
-  }
-}
-
-@media (max-width: 768px) {
-
-}
-
-/* Custom Scrollbar for .timeline-main */
-.timeline-main::-webkit-scrollbar {
-  width: 8px;
-  height: 8px; /* For horizontal scrollbar, if ever needed */
-}
-
-.timeline-main::-webkit-scrollbar-track {
-  background: var(--timeline-content-bg); /* Make track blend with content background */
-  border-radius: 10px;
-}
-
-.timeline-main::-webkit-scrollbar-thumb {
-  background-color: var(--timeline-text-muted); /* Use a subtle color from your palette */
-  border-radius: 10px;
-  /* Add a border to create a visual separation from the track, making the thumb appear thinner */
-  border: 2px solid var(--timeline-content-bg);
-}
-
-.timeline-main::-webkit-scrollbar-thumb:hover {
-  background-color: var(--timeline-text-secondary); /* Slightly more prominent on hover */
-}
-
-/* Firefox specific scrollbar styling */
-.timeline-main {
-  scrollbar-width: thin; /* "auto" or "thin" */
-  scrollbar-color: var(--timeline-text-muted) var(--timeline-content-bg); /* thumb color, track color */
 } 

@@ -57,3 +57,21 @@ This plan outlines key areas for improving the codebase of the agentic-ai-flow a
     *   **Status:**
         *   **[x]** Implemented session-based authentication for the `/api/timeline/generate` route using Supabase.
         *   **[x]** Removed the hardcoded user ID and security warnings.
+
+---
+
+### **Phase 4: Codebase Sanitization & Styling Refactor (Current)**
+
+*   **Objective:** To eliminate obsolete code and fully standardize the styling approach according to the project's established best practices.
+*   **Tasks:**
+    *   **[x] Remove Redundant JavaScript Files:** Systematically delete all `.js` files that have a corresponding `.ts` version (`aiService.js`, `profileRepository.js`, etc.) to clean up the codebase and prevent confusion.
+    *   **[x] Complete CSS Module Migration:** Deconstruct `timeline.css` and `profile-detail.css`. Move all component-specific styles into new or existing CSS Modules. Consolidate any truly global styles and theme variables into `globals.css` to create a single source of truth for theming.
+
+---
+
+### **Phase 5: Comprehensive TypeScript Migration (Upcoming)**
+
+*   **Objective:** To achieve full type safety across the application by converting the remaining JavaScript files to TypeScript.
+*   **Tasks:**
+    *   **[ ] Convert Core UI Components:** Prioritize migrating shared components and major feature components (e.g., in `app/components/`, `app/timeline/components/`, `app/profiles/components/`) from `.js` to `.tsx`.
+    *   **[ ] Convert Remaining Services & API Routes:** Migrate any remaining JavaScript files in `app/services/` and `app/api/` to TypeScript.

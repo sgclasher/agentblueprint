@@ -2,6 +2,7 @@ Directory structure:
 └── sgclasher-agentblueprint/
     ├── README.md
     ├── AI_INTEGRATION_SETUP.md
+    ├── best-practice-instructions.md
     ├── CLIENT_PROFILE_SYSTEM.md
     ├── COMPREHENSIVE_TESTING_CHECKLIST.md
     ├── ENVIRONMENT_SETUP.md
@@ -10,10 +11,12 @@ Directory structure:
     ├── jest.setup.js
     ├── MODULAR_FORMS_COMPLETE.md
     ├── MVP_TESTING_SUMMARY.md
+    ├── next-env.d.ts
     ├── next.config.js
     ├── package.json
     ├── project-summary.md
     ├── SUPABASE_SETUP.md
+    ├── tsconfig.json
     ├── .cursorignore
     ├── .cursorrules
     ├── app/
@@ -64,7 +67,7 @@ Directory structure:
     │   │   │   └── route.js
     │   │   └── timeline/
     │   │       ├── generate/
-    │   │       │   └── route.js
+    │   │       │   └── route.ts
     │   │       ├── generate-from-profile/
     │   │       │   └── route.js
     │   │       └── stream/
@@ -91,7 +94,9 @@ Directory structure:
     │   │   │   ├── SignupForm.js
     │   │   │   └── UserMenu.js
     │   │   ├── flow/
-    │   │   │   └── FlowCanvas.js
+    │   │   │   ├── FlowCanvas.tsx
+    │   │   │   ├── SelectedNodePanel.module.css
+    │   │   │   └── SelectedNodePanel.tsx
     │   │   ├── migration/
     │   │   │   └── SupabaseSetupCheck.js
     │   │   ├── nodes/
@@ -105,6 +110,7 @@ Directory structure:
     │   │   ├── admin-credentials-schema.sql
     │   │   ├── fix-rls-policies-proper.sql
     │   │   ├── fix-rls-policies.sql
+    │   │   ├── rate-limiting-schema.sql
     │   │   ├── restore-rls-secure.sql
     │   │   └── schema.sql
     │   ├── hooks/
@@ -121,7 +127,9 @@ Directory structure:
     │   │       │   └── timelinePrompts.js
     │   │       └── providers/
     │   │           ├── claudeServerProvider.js
-    │   │           └── openaiServerProvider.js
+    │   │           ├── claudeServerProvider.ts
+    │   │           ├── openaiServerProvider.js
+    │   │           └── openaiServerProvider.ts
     │   ├── profile/
     │   │   └── page.js
     │   ├── profiles/
@@ -142,9 +150,12 @@ Directory structure:
     │   │           └── ProfileWizard.test.js
     │   ├── repositories/
     │   │   ├── credentialsRepository.js
-    │   │   └── profileRepository.js
+    │   │   ├── credentialsRepository.ts
+    │   │   ├── profileRepository.js
+    │   │   └── profileRepository.ts
     │   ├── services/
     │   │   ├── aiService.js
+    │   │   ├── aiService.ts
     │   │   ├── demoDataService.js
     │   │   ├── markdownService.js
     │   │   ├── profileService.js
@@ -161,24 +172,45 @@ Directory structure:
     │   │   ├── layout.js
     │   │   ├── page.js
     │   │   ├── timeline.css
+    │   │   ├── Timeline.module.css
     │   │   └── components/
     │   │       ├── BusinessProfileForm.js
     │   │       ├── BusinessProfileModal.js
+    │   │       ├── BusinessProfileModal.module.css
     │   │       ├── MetricsCards.js
     │   │       ├── MetricsWidget.js
+    │   │       ├── MetricsWidget.module.css
     │   │       ├── ScenarioSelector.js
     │   │       ├── TimelineContent.js
+    │   │       ├── TimelineContent.module.css
     │   │       ├── TimelineHeader.js
     │   │       ├── TimelineSidebar.js
+    │   │       ├── TimelineSidebar.module.css
     │   │       └── TimelineVisualization.js
     │   └── utils/
     │       ├── encryption.js
     │       ├── layoutGraph.js
     │       ├── nodeUtils.js
     │       ├── transformAgenticData.js
-    │       └── validation.js
+    │       ├── validation.js
+    │       └── validation.ts
     ├── public/
     │   └── images/
-    └── .github/
-        └── workflows/
-            └── test.yml
+    ├── stories/
+    │   ├── button.css
+    │   ├── Button.stories.ts
+    │   ├── Button.tsx
+    │   ├── header.css
+    │   ├── Header.stories.ts
+    │   ├── Header.tsx
+    │   ├── page.css
+    │   ├── Page.stories.ts
+    │   ├── Page.tsx
+    │   └── assets/
+    │       └── avif-test-image.avif
+    ├── .github/
+    │   └── workflows/
+    │       └── test.yml
+    └── .storybook/
+        ├── main.ts
+        └── preview.ts

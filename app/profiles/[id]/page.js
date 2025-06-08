@@ -6,6 +6,7 @@ import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
 import GlobalHeader from '../../components/GlobalHeader';
 import { ArrowLeft, FileEdit, TrendingUp, Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap } from 'lucide-react';
+import styles from './ProfileDetail.module.css';
 
 export default function ProfileDetailPage() {
   const params = useParams();
@@ -31,8 +32,8 @@ export default function ProfileDetailPage() {
       }
       
       setProfile(profileData);
-    } catch (error) {
-      console.error('Error loading profile:', error);
+    } catch (err) {
+      console.error('Error loading profile:', err);
       setError('Failed to load profile');
     } finally {
       setIsLoading(false);
@@ -53,7 +54,7 @@ export default function ProfileDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="profile-detail-page">
+      <div className={styles.profilePage}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading profile...</p>
@@ -64,7 +65,7 @@ export default function ProfileDetailPage() {
 
   if (error) {
     return (
-      <div className="profile-detail-page">
+      <div className={styles.profilePage}>
         <div className="error-container">
           <h2>Error</h2>
           <p>{error}</p>
@@ -78,7 +79,7 @@ export default function ProfileDetailPage() {
 
   if (!profile) {
     return (
-      <div className="profile-detail-page">
+      <div className={styles.profilePage}>
         <div className="error-container">
           <h2>Profile Not Found</h2>
           <p>The requested profile could not be found.</p>
@@ -117,96 +118,34 @@ export default function ProfileDetailPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div className={styles.profilePage}>
       <GlobalHeader />
       
-      {/* Profile Header */}
-      <div style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(var(--backdrop-blur))',
-        borderBottom: '1px solid var(--border-primary)',
-        padding: 'var(--spacing-lg)'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--spacing-lg)'
-        }}>
+      <div className={styles.profileHeader}>
+        <div className={styles.headerContent}>
           <button 
             onClick={handleBack}
             aria-label="Back to Profiles"
-            className="btn btn-secondary"
-            style={{
-              padding: 'var(--spacing-sm)',
-              minWidth: '48px',
-              height: '48px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
+            className={`btn btn-secondary ${styles.backButton}`}
           >
             <ArrowLeft size={20} />
           </button>
           
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 'var(--spacing-md)',
-            flex: 1
-          }}>
-            <div style={{
-              fontSize: '2.2rem',
-              width: '60px',
-              height: '60px',
-              borderRadius: 'var(--border-radius-lg)',
-              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-green))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white'
-            }}>
+          <div className={styles.profileInfo}>
+            <div className={styles.profileIcon}>
               {getIndustryIcon(profile.industry)}
             </div>
             <div>
-              <h1 style={{
-                margin: 0,
-                fontSize: '2rem',
-                fontWeight: 'var(--font-weight-bold)',
-                color: 'var(--text-primary)',
-                marginBottom: 'var(--spacing-sm)'
-              }}>{profile.companyName}</h1>
-              <div style={{ display: 'flex', gap: 'var(--spacing-sm)', flexWrap: 'wrap' }}>
-                <span style={{
-                  padding: '0.3rem 0.75rem',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  color: 'var(--accent-blue)',
-                  borderRadius: 'var(--border-radius)',
-                  fontSize: '0.85rem',
-                  fontWeight: 'var(--font-weight-medium)'
-                }}>{profile.industry}</span>
-                <span style={{
-                  padding: '0.3rem 0.75rem',
-                  background: 'rgba(16, 185, 129, 0.1)',
-                  color: 'var(--accent-green)',
-                  borderRadius: 'var(--border-radius)',
-                  fontSize: '0.85rem',
-                  fontWeight: 'var(--font-weight-medium)'
-                }}>{profile.size}</span>
-                <span style={{
-                  padding: '0.3rem 0.75rem',
-                  background: 'rgba(245, 158, 11, 0.1)',
-                  color: 'var(--accent-yellow)',
-                  borderRadius: 'var(--border-radius)',
-                  fontSize: '0.85rem',
-                  fontWeight: 'var(--font-weight-medium)'
-                }}>{profile.status}</span>
+              <h1 className={styles.companyName}>{profile.companyName}</h1>
+              <div className={styles.industrySizeStatus}>
+                <span className={styles.industry}>{profile.industry}</span>
+                <span className={styles.size}>{profile.size}</span>
+                <span className={styles.status}>{profile.status}</span>
               </div>
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+          <div className={styles.editButtons}>
             <button 
               className="btn btn-secondary"
               onClick={handleEdit}
@@ -225,74 +164,28 @@ export default function ProfileDetailPage() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div style={{
-        borderBottom: '1px solid var(--border-primary)',
-        background: 'var(--bg-secondary)',
-        padding: '0 var(--spacing-lg)'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          gap: 'var(--spacing-lg)'
-        }}>
+      <div className={styles.tabBar}>
+        <div className={styles.tabContent}>
           <button 
-            style={{
-              padding: 'var(--spacing-md) var(--spacing-lg)',
-              background: activeTab === 'overview' ? 'var(--accent-blue)' : 'transparent',
-              color: activeTab === 'overview' ? 'white' : 'var(--text-secondary)',
-              border: 'none',
-              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
-              cursor: 'pointer',
-              fontWeight: 'var(--font-weight-medium)',
-              transition: 'all var(--transition-fast) ease'
-            }}
+            className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('overview')}
           >
             Overview
           </button>
           <button 
-            style={{
-              padding: 'var(--spacing-md) var(--spacing-lg)',
-              background: activeTab === 'analysis' ? 'var(--accent-blue)' : 'transparent',
-              color: activeTab === 'analysis' ? 'white' : 'var(--text-secondary)',
-              border: 'none',
-              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
-              cursor: 'pointer',
-              fontWeight: 'var(--font-weight-medium)',
-              transition: 'all var(--transition-fast) ease'
-            }}
+            className={`${styles.tabButton} ${activeTab === 'analysis' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('analysis')}
           >
             Analysis
           </button>
           <button 
-            style={{
-              padding: 'var(--spacing-md) var(--spacing-lg)',
-              background: activeTab === 'opportunities' ? 'var(--accent-blue)' : 'transparent',
-              color: activeTab === 'opportunities' ? 'white' : 'var(--text-secondary)',
-              border: 'none',
-              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
-              cursor: 'pointer',
-              fontWeight: 'var(--font-weight-medium)',
-              transition: 'all var(--transition-fast) ease'
-            }}
+            className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('opportunities')}
           >
             AI Opportunities
           </button>
           <button 
-            style={{
-              padding: 'var(--spacing-md) var(--spacing-lg)',
-              background: activeTab === 'markdown' ? 'var(--accent-blue)' : 'transparent',
-              color: activeTab === 'markdown' ? 'white' : 'var(--text-secondary)',
-              border: 'none',
-              borderRadius: 'var(--border-radius) var(--border-radius) 0 0',
-              cursor: 'pointer',
-              fontWeight: 'var(--font-weight-medium)',
-              transition: 'all var(--transition-fast) ease'
-            }}
+            className={`${styles.tabButton} ${activeTab === 'markdown' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('markdown')}
           >
             Markdown
@@ -300,12 +193,7 @@ export default function ProfileDetailPage() {
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: 'var(--spacing-xl) var(--spacing-lg)'
-      }}>
+      <div className={styles.content}>
         {activeTab === 'overview' && (
           <ProfileOverviewTab profile={profile} />
         )}
@@ -323,22 +211,8 @@ export default function ProfileDetailPage() {
         )}
       </div>
 
-      {/* Footer Info */}
-      <div style={{
-        borderTop: '1px solid var(--border-primary)',
-        background: 'var(--bg-secondary)',
-        padding: 'var(--spacing-md) var(--spacing-lg)',
-        marginTop: 'var(--spacing-xxl)'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          display: 'flex',
-          gap: 'var(--spacing-lg)',
-          fontSize: '0.85rem',
-          color: 'var(--text-muted)',
-          justifyContent: 'center'
-        }}>
+      <div className={styles.footer}>
+        <div className={styles.footerContent}>
           <span>Created: {formatDate(profile.createdAt)}</span>
           <span>•</span>
           <span>Updated: {formatDate(profile.updatedAt)}</span>
@@ -350,52 +224,49 @@ export default function ProfileDetailPage() {
   );
 }
 
-// Tab Components
 function ProfileOverviewTab({ profile }) {
   return (
-    <div className="tab-content overview-tab">
-      <div className="overview-grid">
-        {/* Company Information */}
-        <div className="info-card">
+    <div className={styles.tabContent}>
+      <div className={styles.overviewGrid}>
+        <div className={styles.infoCard}>
           <h3>Company Information</h3>
-          <div className="info-grid">
-            <div className="info-item">
+          <div className={styles.infoGrid}>
+            <div className={styles.infoItem}>
               <label>Company Name</label>
               <span>{profile.companyName}</span>
             </div>
-            <div className="info-item">
+            <div className={styles.infoItem}>
               <label>Industry</label>
               <span>{profile.industry}</span>
             </div>
-            <div className="info-item">
+            <div className={styles.infoItem}>
               <label>Size</label>
               <span>{profile.size}</span>
             </div>
-            <div className="info-item">
+            <div className={styles.infoItem}>
               <label>Annual Revenue</label>
               <span>{profile.annualRevenue ? `$${profile.annualRevenue}` : 'Not specified'}</span>
             </div>
-            <div className="info-item">
+            <div className={styles.infoItem}>
               <label>Employee Count</label>
               <span>{profile.employeeCount || 'Not specified'}</span>
             </div>
-            <div className="info-item">
+            <div className={styles.infoItem}>
               <label>Location</label>
               <span>{profile.primaryLocation || 'Not specified'}</span>
             </div>
           </div>
         </div>
 
-        {/* Strategic Initiatives */}
         {profile.expectedOutcome?.strategicInitiatives?.length > 0 && (
-          <div className="info-card">
+          <div className={styles.infoCard}>
             <h3>Strategic Initiatives</h3>
-            <div className="initiatives-list">
+            <div className={styles.initiativesList}>
               {profile.expectedOutcome.strategicInitiatives.map((initiative, index) => (
-                <div key={index} className="initiative-item">
-                  <div className="initiative-description">{initiative.initiative}</div>
+                <div key={index} className={styles.initiativeItem}>
+                  <div className={styles.initiativeDescription}>{initiative.initiative}</div>
                   {initiative.contact && (
-                    <div className="initiative-contact">
+                    <div className={styles.initiativeContact}>
                       <strong>{initiative.contact.name}</strong> ({initiative.contact.title})
                       <br />
                       <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a>
@@ -407,12 +278,11 @@ function ProfileOverviewTab({ profile }) {
           </div>
         )}
 
-        {/* Business Problems & Opportunities */}
         {(profile.problems?.businessProblems?.length > 0 || profile.problems?.agenticOpportunities?.length > 0) && (
-          <div className="info-card">
+          <div className={styles.infoCard}>
             <h3>Problems & Agentic AI Opportunities</h3>
             {profile.problems.businessProblems?.length > 0 && (
-              <div className="problems-section">
+              <div className={styles.problemsSection}>
                 <h4>Current Problems:</h4>
                 <ul>
                   {profile.problems.businessProblems.map((problem, index) => (
@@ -422,7 +292,7 @@ function ProfileOverviewTab({ profile }) {
               </div>
             )}
             {profile.problems.agenticOpportunities?.length > 0 && (
-              <div className="opportunities-section">
+              <div className={styles.opportunitiesSection}>
                 <h4>Agentic Opportunities:</h4>
                 <ul>
                   {profile.problems.agenticOpportunities.map((opportunity, index) => (
@@ -434,29 +304,28 @@ function ProfileOverviewTab({ profile }) {
           </div>
         )}
 
-        {/* Business Value */}
         {profile.value?.businessValue && (
-          <div className="info-card">
+          <div className={styles.infoCard}>
             <h3>Business Value</h3>
-            <div className="value-content">
+            <div className={styles.valueContent}>
               {profile.value.businessValue.totalAnnualImpact && (
-                <div className="metric-item highlight">
+                <div className={`${styles.metricItem} ${styles.highlight}`}>
                   <label>Total Annual Impact</label>
-                  <span className="metric-value">{profile.value.businessValue.totalAnnualImpact}</span>
+                  <span className={styles.metricValue}>{profile.value.businessValue.totalAnnualImpact}</span>
                 </div>
               )}
               {profile.value.businessValue.revenueImpact && (
-                <div className="value-item">
+                <div className={styles.valueItem}>
                   <strong>Revenue Impact:</strong> {profile.value.businessValue.revenueImpact}
                 </div>
               )}
               {profile.value.businessValue.costReduction && (
-                <div className="value-item">
+                <div className={styles.valueItem}>
                   <strong>Cost Reduction:</strong> {profile.value.businessValue.costReduction}
                 </div>
               )}
               {profile.value.businessValue.operationalEfficiency && (
-                <div className="value-item">
+                <div className={styles.valueItem}>
                   <strong>Operational Efficiency:</strong> {profile.value.businessValue.operationalEfficiency}
                 </div>
               )}
@@ -464,24 +333,23 @@ function ProfileOverviewTab({ profile }) {
           </div>
         )}
 
-        {/* AI Readiness */}
         {profile.aiOpportunityAssessment && (
-          <div className="info-card">
+          <div className={styles.infoCard}>
             <h3>AI Readiness</h3>
-            <div className="ai-readiness-display">
-              <div className="readiness-score">
-                <span className="score-value">{profile.aiOpportunityAssessment.aiReadinessScore || profile.aiReadinessScore || 'N/A'}</span>
-                <span className="score-label">/ 10</span>
+            <div className={styles.aiReadinessDisplay}>
+              <div className={styles.readinessScore}>
+                <span className={styles.scoreValue}>{profile.aiOpportunityAssessment.aiReadinessScore || profile.aiReadinessScore || 'N/A'}</span>
+                <span className={styles.scoreLabel}>/ 10</span>
               </div>
               {profile.aiOpportunityAssessment.currentTechnology && (
-                <div className="tech-stack">
+                <div className={styles.techStack}>
                   <label>Current Technology</label>
-                  <div className="tech-items">
+                  <div className={styles.techItems}>
                     {Object.entries(profile.aiOpportunityAssessment.currentTechnology).map(([key, value]) => (
                       value && (
-                        <div key={key} className="tech-item">
-                          <span className="tech-label">{key}:</span>
-                          <span className="tech-value">{value}</span>
+                        <div key={key} className={styles.techItem}>
+                          <span className={styles.techLabel}>{key}:</span>
+                          <span className={styles.techValue}>{value}</span>
                         </div>
                       )
                     ))}
@@ -498,20 +366,19 @@ function ProfileOverviewTab({ profile }) {
 
 function ProfileAnalysisTab({ profile }) {
   return (
-    <div className="tab-content analysis-tab">
-      <div className="analysis-sections">
-        {/* Key Contacts */}
+    <div className={styles.tabContent}>
+      <div className={styles.analysisSections}>
         {profile.expectedOutcome?.strategicInitiatives?.length > 0 && (
-          <div className="analysis-card">
+          <div className={styles.analysisCard}>
             <h3>Key Executive Contacts</h3>
-            <div className="contacts-grid">
+            <div className={styles.contactsGrid}>
               {profile.expectedOutcome.strategicInitiatives.map((initiative, index) => (
                 initiative.contact && (
-                  <div key={index} className="contact-card">
+                  <div key={index} className={styles.contactCard}>
                     <h4>{initiative.contact.name}</h4>
-                    <p className="contact-title">{initiative.contact.title}</p>
-                    <p className="contact-initiative"><strong>Initiative:</strong> {initiative.initiative}</p>
-                    <div className="contact-details">
+                    <p className={styles.contactTitle}>{initiative.contact.title}</p>
+                    <p className={styles.contactInitiative}><strong>Initiative:</strong> {initiative.initiative}</p>
+                    <div className={styles.contactDetails}>
                       <p><strong>Email:</strong> <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a></p>
                       {initiative.contact.phone && (
                         <p><strong>Phone:</strong> <a href={`tel:${initiative.contact.phone}`}>{initiative.contact.phone}</a></p>
@@ -527,17 +394,16 @@ function ProfileAnalysisTab({ profile }) {
           </div>
         )}
 
-        {/* Solutions & Capabilities */}
         {(profile.solutions?.capabilities?.length > 0 || profile.solutions?.differentiators?.length > 0) && (
-          <div className="analysis-card">
+          <div className={styles.analysisCard}>
             <h3>Solutions & Capabilities</h3>
             {profile.solutions.capabilities?.length > 0 && (
-              <div className="capabilities-section">
+              <div className={styles.capabilitiesSection}>
                 <h4>Required Capabilities:</h4>
-                <div className="capabilities-list">
+                <div className={styles.capabilitiesList}>
                   {profile.solutions.capabilities.map((capability, index) => (
-                    <div key={index} className="capability-item">
-                      <span className="capability-icon">✓</span>
+                    <div key={index} className={styles.capabilityItem}>
+                      <span className={styles.capabilityIcon}>✓</span>
                       <span>{capability}</span>
                     </div>
                   ))}
@@ -545,12 +411,12 @@ function ProfileAnalysisTab({ profile }) {
               </div>
             )}
             {profile.solutions.differentiators?.length > 0 && (
-              <div className="differentiators-section">
+              <div className={styles.differentiatorsSection}>
                 <h4>Key Differentiators:</h4>
-                <div className="differentiators-list">
+                <div className={styles.differentiatorsList}>
                   {profile.solutions.differentiators.map((differentiator, index) => (
-                    <div key={index} className="differentiator-item">
-                      <span className="differentiator-icon">⭐</span>
+                    <div key={index} className={styles.differentiatorItem}>
+                      <span className={styles.differentiatorIcon}>⭐</span>
                       <span>{differentiator}</span>
                     </div>
                   ))}
@@ -560,14 +426,13 @@ function ProfileAnalysisTab({ profile }) {
           </div>
         )}
 
-        {/* ROI Expectations */}
         {profile.valueSellingFramework?.roiExpectations && (
-          <div className="analysis-card">
+          <div className={styles.analysisCard}>
             <h3>ROI Expectations</h3>
-            <div className="roi-grid">
+            <div className={styles.roiGrid}>
               {Object.entries(profile.valueSellingFramework.roiExpectations).map(([key, value]) => (
                 value && (
-                  <div key={key} className="roi-item">
+                  <div key={key} className={styles.roiItem}>
                     <label>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
                     <span>{value}</span>
                   </div>
@@ -587,17 +452,17 @@ function ProfileOpportunitiesTab({ profile }) {
   const currentArchitecture = profile.currentArchitecture || {};
 
   return (
-    <div className="tab-content opportunities-tab">
+    <div className={styles.tabContent}>
       {(businessProblems.length > 0 || agenticOpportunities.length > 0) && (
-        <div className="problems-opportunities-section">
-          <div className="problems-opportunities-grid">
+        <div className={styles.problemsOpportunitiesSection}>
+          <div className={styles.problemsOpportunitiesGrid}>
             {businessProblems.length > 0 && (
-              <div className="problems-section">
+              <div className={styles.problemsSection}>
                 <h3>Current Business Problems</h3>
-                <div className="problems-list">
+                <div className={styles.problemsList}>
                   {businessProblems.map((problem, index) => (
-                    <div key={index} className="problem-card">
-                      <div className="problem-text">{problem}</div>
+                    <div key={index} className={styles.problemCard}>
+                      <div className={styles.problemText}>{problem}</div>
                     </div>
                   ))}
                 </div>
@@ -605,12 +470,12 @@ function ProfileOpportunitiesTab({ profile }) {
             )}
 
             {agenticOpportunities.length > 0 && (
-              <div className="opportunities-section">
+              <div className={styles.opportunitiesSection}>
                 <h3>Agentic AI Opportunities</h3>
-                <div className="opportunities-list">
+                <div className={styles.opportunitiesList}>
                   {agenticOpportunities.map((opportunity, index) => (
-                    <div key={index} className="opportunity-card">
-                      <div className="opportunity-text">{opportunity}</div>
+                    <div key={index} className={styles.opportunityCard}>
+                      <div className={styles.opportunityText}>{opportunity}</div>
                     </div>
                   ))}
                 </div>
@@ -620,13 +485,12 @@ function ProfileOpportunitiesTab({ profile }) {
         </div>
       )}
 
-      {/* Current Architecture */}
       {(currentArchitecture.coreSystems?.length > 0 || currentArchitecture.aiReadiness) && (
-        <div className="architecture-section">
+        <div className={styles.architectureSection}>
           <h3>Current Architecture & AI Readiness</h3>
-          <div className="architecture-content">
+          <div className={styles.architectureContent}>
             {currentArchitecture.coreSystems?.length > 0 && (
-              <div className="systems-list">
+              <div className={styles.systemsList}>
                 <h4>Core Systems:</h4>
                 <ul>
                   {currentArchitecture.coreSystems.map((system, index) => (
@@ -636,13 +500,13 @@ function ProfileOpportunitiesTab({ profile }) {
               </div>
             )}
             {currentArchitecture.aiReadiness && (
-              <div className="readiness-assessment">
+              <div className={styles.readinessAssessment}>
                 <h4>AI Readiness:</h4>
                 <p>{currentArchitecture.aiReadiness}</p>
               </div>
             )}
             {currentArchitecture.technicalDebt && (
-              <div className="technical-debt">
+              <div className={styles.technicalDebt}>
                 <h4>Technical Debt:</h4>
                 <p>{currentArchitecture.technicalDebt}</p>
               </div>
@@ -652,7 +516,7 @@ function ProfileOpportunitiesTab({ profile }) {
       )}
 
       {businessProblems.length === 0 && agenticOpportunities.length === 0 && (
-        <div className="empty-opportunities">
+        <div className={styles.emptyOpportunities}>
           <p>No problems or agentic AI opportunities identified yet. Complete the Problems & Opportunities section to see the analysis.</p>
         </div>
       )}
@@ -664,9 +528,9 @@ function ProfileMarkdownTab({ profile }) {
   const markdown = profile.markdown || markdownService.generateMarkdown(profile);
 
   return (
-    <div className="tab-content markdown-tab">
-      <div className="markdown-container">
-        <div className="markdown-header">
+    <div className={styles.tabContent}>
+      <div className={styles.markdownContainer}>
+        <div className={styles.markdownHeader}>
           <h3>Profile Markdown</h3>
           <button 
             className="btn btn-secondary btn-small"
@@ -675,7 +539,7 @@ function ProfileMarkdownTab({ profile }) {
             Copy to Clipboard
           </button>
         </div>
-        <pre className="markdown-content">
+        <pre className={styles.markdownContent}>
           {markdown}
         </pre>
       </div>

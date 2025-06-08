@@ -1,6 +1,10 @@
+/* The styles for timelineContainer and timelineMain have been moved back to the global timeline.css 
+   to fix the layout issues caused by the previous refactoring. 
+   This module can be used for any additional component-specific styles for the TimelinePage. */
+
 .timelineContainer {
   display: flex;
-  height: calc(100vh - 80px); /* 80px is an assumption for GlobalHeader height */
+  height: calc(100vh - 73px); /* Adjust if GlobalHeader height is different */
   width: 100%;
   background-color: var(--timeline-bg);
   color: var(--timeline-text-primary);
@@ -12,7 +16,53 @@
 .timelineMain {
   flex: 1;
   overflow-y: auto;
-  height: 100vh;
+  height: 100%; /* Changed from 100vh to 100% to fit container */
   background-color: var(--timeline-content-bg);
   scroll-behavior: smooth;
+  padding: var(--timeline-spacing-xl) var(--timeline-spacing-xxl);
+}
+
+/* Custom Scrollbar for Webkit browsers */
+.timelineMain::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.timelineMain::-webkit-scrollbar-track {
+  background: var(--timeline-content-bg);
+  border-radius: 10px;
+}
+
+.timelineMain::-webkit-scrollbar-thumb {
+  background-color: var(--timeline-text-muted);
+  border-radius: 10px;
+  border: 2px solid var(--timeline-content-bg);
+}
+
+.timelineMain::-webkit-scrollbar-thumb:hover {
+  background-color: var(--timeline-text-secondary);
+}
+
+/* Custom Scrollbar for Firefox */
+.timelineMain {
+  scrollbar-width: thin;
+  scrollbar-color: var(--timeline-text-muted) var(--timeline-content-bg);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .timelineMain {
+    padding: var(--timeline-spacing-xl);
+  }
+}
+
+@media (max-width: 992px) {
+  .timelineContainer {
+    flex-direction: column;
+    height: auto;
+  }
+  .timelineMain {
+    height: auto; /* Adjust height for column layout */
+    padding: var(--timeline-spacing-lg);
+  }
 }
