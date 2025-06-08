@@ -2,7 +2,7 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (currently with an OpenAI implementation) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers (OpenAI, Gemini, Claude) and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: Database-backed caching provides 80-90% cost reduction with cache-first architecture and instant loading. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: Complete edit profile functionality, ProfileWizard with clickable step navigation and free exploration, professional cache status widgets, and working test-before-save credential functionality. The platform features **consistent professional theming** across all pages with global CSS variables, theme provider, and standardized UI components. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for the next phase of development** to enable multi-provider AI timeline generation.
+**🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (currently with an OpenAI implementation) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers (OpenAI, Gemini, Claude) and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: Database-backed caching provides 80-90% cost reduction with cache-first architecture and instant loading. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: Complete edit profile functionality, ProfileWizard with clickable step navigation and free exploration, professional cache status widgets, and working test-before-save credential functionality. The platform features **consistent professional theming** across all pages with global CSS variables, theme provider, and standardized UI components. **✅ Code Health**: Recent refactoring has improved code consistency, removed component duplication, and fixed bugs related to caching and API authentication, resulting in a more stable and maintainable codebase. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for the next phase of development** to enable multi-provider AI timeline generation.
 
 **🚀 Next Steps:** 
 1. ✅ **COMPLETED**: Admin interface for secure, multi-service credential management.
@@ -183,6 +183,13 @@ npm test
 - Zustand for state management
 - Lucide React for icons
 
+### **Backend/Services**
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **File Storage**: Supabase Storage
+- **AI/LLM**: OpenAI API (with provider abstraction layer)
+- **API Environment**: Node.js on Vercel
+
 ### **Visualization**
 - Dagre.js for automatic graph layout
 - Custom node types with expand/collapse
@@ -205,12 +212,30 @@ npm test
 - **JSON Response Validation**: Services that consume the `aiService` are responsible for validating the structure of the returned JSON data.
 - **Environment Configuration**: Easy setup verification via the `/api/debug-env` endpoint.
 
-### **Development**
+### **Development & Testing**
 - TypeScript-ready architecture
 - Jest testing framework with Supabase mocking
 - ESLint for code quality
 - GitHub Actions for CI/CD
 - CSS Modules for component-level styling, ensuring a scalable and conflict-free architecture
+
+## Development Workflow
+
+### Branching Strategy
+```
+main (production)
+├── develop (staging)
+    ├── feature/phase-N-new-feature
+    └── fix/bug-fix-branch
+```
+
+### Code Review Process
+1. Create feature or fix branch from `develop`.
+2. Implement changes with corresponding tests.
+3. Submit a Pull Request to `develop` with a clear description.
+4. Ensure all CI checks (linting, testing) pass.
+5. Merge to `develop` after review and approval.
+6. Periodically merge `develop` into `main` for releases.
 
 ## Testing
 
