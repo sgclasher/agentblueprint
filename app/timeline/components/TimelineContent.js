@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import styles from './TimelineContent.module.css';
 
 export default function TimelineContent({ sections, timelineData, sectionRefs, businessProfile }) {
   const registerRef = (id, element) => {
@@ -44,7 +45,7 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
   };
   
   return (
-    <div className="timeline-content">
+    <div className={styles.timelineContent}>
       {sections.map((section) => {
         const { content, highlights } = getSectionContent(section.id);
         
@@ -53,33 +54,33 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
             key={section.id}
             id={section.id}
             ref={(el) => registerRef(section.id, el)}
-            className="timeline-section"
+            className={styles.timelineSection}
           >
-            <div className="section-header">
-              <div className="section-icon">{section.icon}</div>
-              <div className="section-meta">
-                <div className="section-year">{section.year}</div>
-                <h2 className="section-title">{section.title}</h2>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionIcon}>{section.icon}</div>
+              <div className={styles.sectionMeta}>
+                <div className={styles.sectionYear}>{section.year}</div>
+                <h2 className={styles.sectionTitle}>{section.title}</h2>
               </div>
             </div>
             
-            <div className="section-body">
+            <div className={styles.sectionBody}>
               {content && (
                 <>
                   {content.description && (
-                    <div className="section-description">
+                    <div className={styles.sectionDescription}>
                       <p>{content.description}</p>
                     </div>
                   )}
                   
                   {highlights && highlights.length > 0 && (
-                    <div className="section-highlights">
+                    <div className={styles.sectionHighlights}>
                       <h3>Key Highlights</h3>
-                      <div className="highlights-grid">
+                      <div className={styles.highlightsGrid}>
                         {highlights.map((highlight, index) => (
-                          <div key={index} className="highlight-card">
-                            <div className="highlight-label">{highlight.label}</div>
-                            <div className="highlight-value">{highlight.value}</div>
+                          <div key={index} className={styles.highlightCard}>
+                            <div className={styles.highlightLabel}>{highlight.label}</div>
+                            <div className={styles.highlightValue}>{highlight.value}</div>
                           </div>
                         ))}
                       </div>
@@ -87,16 +88,16 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
                   )}
                   
                   {content.initiatives && content.initiatives.length > 0 && (
-                    <div className="section-initiatives">
+                    <div className={styles.sectionInitiatives}>
                       <h3>Key Initiatives</h3>
-                      <ul className="initiatives-list">
+                      <ul className={styles.initiativesList}>
                         {content.initiatives.map((initiative, index) => (
-                          <li key={index} className="initiative-item">
-                            <div className="initiative-title">{initiative.title}</div>
-                            <div className="initiative-description">{initiative.description}</div>
+                          <li key={index} className={styles.initiativeItem}>
+                            <div className={styles.initiativeTitle}>{initiative.title}</div>
+                            <div className={styles.initiativeDescription}>{initiative.description}</div>
                             {initiative.impact && (
-                              <div className="initiative-impact">
-                                <span className="impact-label">Impact:</span> {initiative.impact}
+                              <div className={styles.initiativeImpact}>
+                                <span className={styles.impactLabel}>Impact:</span> {initiative.impact}
                               </div>
                             )}
                           </li>
@@ -106,26 +107,26 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
                   )}
                   
                   {content.technologies && content.technologies.length > 0 && (
-                    <div className="section-technologies">
+                    <div className={styles.sectionTechnologies}>
                       <h3>Technologies & Tools</h3>
-                      <div className="tech-tags">
+                      <div className={styles.techTags}>
                         {content.technologies.map((tech, index) => (
-                          <span key={index} className="tech-tag">{tech}</span>
+                          <span key={index} className={styles.techTag}>{tech}</span>
                         ))}
                       </div>
                     </div>
                   )}
                   
                   {content.outcomes && content.outcomes.length > 0 && (
-                    <div className="section-outcomes">
+                    <div className={styles.sectionOutcomes}>
                       <h3>Expected Outcomes</h3>
-                      <div className="outcomes-grid">
+                      <div className={styles.outcomesGrid}>
                         {content.outcomes.map((outcome, index) => (
-                          <div key={index} className="outcome-card">
-                            <div className="outcome-metric">{outcome.metric}</div>
-                            <div className="outcome-value">{outcome.value}</div>
+                          <div key={index} className={styles.outcomeCard}>
+                            <div className={styles.outcomeMetric}>{outcome.metric}</div>
+                            <div className={styles.outcomeValue}>{outcome.value}</div>
                             {outcome.description && (
-                               <div className="outcome-description">{outcome.description}</div>
+                               <div className={styles.outcomeDescription}>{outcome.description}</div>
                             )}
                           </div>
                         ))}
@@ -139,15 +140,15 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
         );
       })}
       
-      <div className="timeline-end-card" ref={(el) => registerRef('end-card', el)}>
-        <div className="section-icon">
+      <div className={styles.timelineEndCard} ref={(el) => registerRef('end-card', el)}>
+        <div className={styles.sectionIcon}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <h3 className="end-card-title">End of Journey</h3>
-        <p className="end-card-text">You've reached the end of the AI transformation roadmap.</p>
+        <h3 className={styles.endCardTitle}>End of Journey</h3>
+        <p className={styles.endCardText}>You've reached the end of the AI transformation roadmap.</p>
       </div>
     </div>
   );

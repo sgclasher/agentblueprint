@@ -1,0 +1,185 @@
+.timelineSidebar {
+  width: 280px; /* Slightly wider for more content */
+  background-color: var(--timeline-sidebar-bg);
+  padding: var(--timeline-spacing-lg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid var(--timeline-border-primary);
+  transition: width var(--timeline-transition-duration) ease;
+}
+
+.timelineSidebarHeader {
+  margin-bottom: var(--timeline-spacing-xl);
+  padding-bottom: var(--timeline-spacing-lg);
+  border-bottom: 1px solid var(--timeline-border-secondary);
+}
+
+.timelineSidebarHeader h3 {
+  font-size: 1.25rem;
+  font-weight: var(--timeline-header-font-weight);
+  color: var(--timeline-text-primary);
+  margin-bottom: var(--timeline-spacing-md);
+}
+
+.timelineProgress {
+  height: 100%; /* Ensure it takes available space if used as a visual */
+  background-color: var(--timeline-border-secondary); /* Subtle track */
+  border-radius: 4px; /* Pill shape */
+  position: relative;
+  display: none; /* Hidden for now, will redesign */
+}
+
+.timelineProgressBarContainer {
+  position: absolute;
+  top: 0;
+  left: calc(var(--timeline-spacing-md) + 12px - 2px);
+  width: 4px;
+  height: 100%;
+  background-color: var(--timeline-border-secondary);
+  border-radius: 2px;
+  z-index: 1;
+  transition: top 0.3s ease-out, height 0.3s ease-out;
+}
+
+.timelineProgressBar {
+  background: var(--timeline-accent-blue);
+  width: 100%;
+  border-radius: 2px;
+  transition: height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.timelineNav {
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling if many items */
+  display: flex;
+  flex-direction: column;
+  gap: var(--timeline-spacing-sm); /* Space between nav items */
+  position: relative; /* Ensure this is a positioning context for the progress bar */
+}
+
+.timelineNavItem {
+  display: flex;
+  align-items: flex-start; /* Align items to the start for multi-line text */
+  padding: var(--timeline-spacing-md);
+  border-radius: var(--timeline-border-radius);
+  cursor: pointer;
+  transition: background-color var(--timeline-transition-duration) ease, color var(--timeline-transition-duration) ease;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  position: relative; /* For the dot and line */
+  z-index: 2;
+}
+
+.timelineNavItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.timelineNavItem.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--timeline-text-primary);
+}
+.timelineNavItem.active .timelineNavYear,
+.timelineNavItem.active .timelineNavTitle,
+.timelineNavItem.active .timelineNavSubtitle {
+  color: var(--timeline-text-primary);
+}
+
+
+.timelineNavDot {
+  width: 24px; 
+  height: 24px;
+  border-radius: 50%;
+  /* Make non-active dots blend with the track or be very subtle */
+  background-color: transparent; /* Make it transparent by default */
+  border: 2px solid var(--timeline-border-secondary); /* A very subtle border for non-active dots */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--timeline-spacing-md);
+  flex-shrink: 0;
+  transition: background-color var(--timeline-transition-duration) ease, transform var(--timeline-transition-duration) ease, border-color var(--timeline-transition-duration) ease;
+}
+
+.timelineNavItem:hover .timelineNavDot {
+  border-color: var(--timeline-accent-blue); /* Subtle highlight on hover for non-active */
+}
+
+.timelineNavItem.active .timelineNavDot {
+  background-color: white; /* Active dot is white to "light up" */
+  transform: scale(1.15); /* Slightly larger pop for active dot */
+  border: 2px solid var(--timeline-accent-blue); /* Blue border around the white active dot */
+}
+
+.timelineNavIcon {
+  /* This class is no longer used as icons are removed */
+  /* font-size: 0.8rem; */ 
+}
+
+.timelineNavContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineNavYear {
+  font-size: 0.75rem; /* Smaller year */
+  font-weight: 500;
+  color: var(--timeline-text-muted);
+  margin-bottom: var(--timeline-spacing-xs);
+  transition: color var(--timeline-transition-duration) ease;
+}
+
+.timelineNavTitle {
+  font-size: 0.95rem; /* Slightly larger title */
+  font-weight: var(--timeline-header-font-weight);
+  color: var(--timeline-text-primary);
+  margin-bottom: var(--timeline-spacing-xs);
+  transition: color var(--timeline-transition-duration) ease;
+}
+
+.timelineNavSubtitle {
+  font-size: 0.8rem;
+  color: var(--timeline-text-secondary);
+  line-height: 1.3;
+  transition: color var(--timeline-transition-duration) ease;
+}
+
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: var(--timeline-spacing-lg);
+  border-top: 1px solid var(--timeline-border-secondary);
+}
+
+.cacheInfo {
+  padding: var(--timeline-spacing-md);
+  margin-top: var(--timeline-spacing-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--timeline-border-secondary);
+}
+
+.cacheStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--timeline-spacing-xs);
+  margin-bottom: var(--timeline-spacing-sm);
+  font-size: 0.85rem;
+  color: var(--timeline-text-muted);
+}
+
+.scenarioInfo {
+  font-size: 0.8rem;
+  color: var(--timeline-text-muted);
+  margin-bottom: var(--timeline-spacing-sm);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

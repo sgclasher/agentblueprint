@@ -7,6 +7,7 @@ import GlobalHeader from '../components/GlobalHeader';
 import TimelineSidebar from './components/TimelineSidebar';
 import TimelineContent from './components/TimelineContent';
 import MetricsWidget from './components/MetricsWidget';
+import styles from './Timeline.module.css';
 import './timeline.css';
 
 function TimelinePlaceholder({ title, message, showButton, buttonText, onButtonClick }) {
@@ -93,7 +94,7 @@ export default function TimelinePage() {
   return (
     <div style={{ minHeight: '100vh' }}>
       <GlobalHeader />
-      <div className="timeline-container" data-timeline-theme={theme} style={{ height: 'calc(100vh - 80px)' }}>
+      <div className={styles.timelineContainer} data-timeline-theme={theme}>
         <TimelineSidebar 
           sections={timelineSections}
           activeSection={activeSection}
@@ -109,7 +110,7 @@ export default function TimelinePage() {
           currentProfile={currentProfile}
         />
         
-        <div className="timeline-main" ref={contentRef}>
+        <div className={styles.timelineMain} ref={contentRef}>
           {renderContent()}
         </div>
         

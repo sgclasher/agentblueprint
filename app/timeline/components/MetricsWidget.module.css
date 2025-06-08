@@ -1,0 +1,138 @@
+.metricsWidget {
+  width: 320px; /* Slightly wider for better content fit */
+  background-color: var(--timeline-widget-bg);
+  border-left: 1px solid var(--timeline-border-primary);
+  padding: var(--timeline-spacing-lg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  backdrop-filter: blur(12px) saturate(150%); /* Frosted glass effect */
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  box-shadow: -5px 0px 15px rgba(0,0,0,0.1);
+  transition: width var(--timeline-transition-duration) ease;
+}
+.metricsWidget.minimized {
+  width: 80px; /* Width when minimized */
+  padding: var(--timeline-spacing-lg) var(--timeline-spacing-sm);
+}
+.metricsWidget.minimized .widgetHeaderContent h3,
+.metricsWidget.minimized .journeyProgress .progressLabel,
+.metricsWidget.minimized .widgetMetrics,
+.metricsWidget.minimized .widgetFooter {
+  display: none;
+}
+.metricsWidget.minimized .widgetHeader {
+  align-items: center;
+}
+.metricsWidget.minimized .widgetToggle {
+ transform: rotate(180deg);
+}
+
+
+.widgetHeader {
+  margin-bottom: var(--timeline-spacing-lg);
+}
+.widgetHeaderContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--timeline-spacing-md);
+}
+.widgetHeader h3 {
+  font-size: 1.1rem;
+  font-weight: var(--timeline-header-font-weight);
+  color: var(--timeline-text-primary);
+}
+.widgetToggle {
+  background: none;
+  border: none;
+  color: var(--timeline-text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: var(--timeline-spacing-sm);
+  line-height: 1;
+  border-radius: var(--timeline-border-radius);
+  transition: background-color var(--timeline-transition-duration) ease, transform var(--timeline-transition-duration) ease;
+}
+.widgetToggle:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.journeyProgress {
+  text-align: center;
+  margin-bottom: var(--timeline-spacing-lg);
+}
+.progressRing {
+  display: block;
+  margin: 0 auto var(--timeline-spacing-sm);
+}
+.progressText {
+  font-size: 1.5em;
+  font-weight: 600;
+  fill: var(--timeline-text-primary);
+}
+.progressLabel {
+  font-size: 0.85rem;
+  color: var(--timeline-text-secondary);
+}
+
+
+.widgetMetrics {
+  margin-bottom: var(--timeline-spacing-xl);
+}
+.widgetMetrics h4 {
+  font-size: 1rem;
+  font-weight: var(--timeline-header-font-weight);
+  color: var(--timeline-text-primary);
+  margin-bottom: var(--timeline-spacing-md);
+  padding-bottom: var(--timeline-spacing-sm);
+  border-bottom: 1px solid var(--timeline-border-secondary);
+}
+
+.metricItem {
+  margin-bottom: var(--timeline-spacing-md);
+}
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--timeline-spacing-xs);
+}
+.metricLabel {
+  font-size: 0.9rem;
+  color: var(--timeline-text-secondary);
+}
+.metricTrend {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.metricTrend.new { background-color: rgba(59, 130, 246, 0.2); color: var(--timeline-accent-blue); }
+.metricTrend.change { background-color: rgba(245, 158, 11, 0.2); color: var(--timeline-accent-yellow); }
+.metricTrend.achieved { background-color: rgba(16, 185, 129, 0.2); color: var(--timeline-accent-green); }
+
+.metricValue {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--timeline-text-primary);
+}
+
+
+.widgetFooter {
+  margin-top: auto;
+  padding-top: var(--timeline-spacing-lg);
+  border-top: 1px solid var(--timeline-border-secondary);
+}
+.widgetInsight h4 {
+  font-size: 0.95rem;
+  font-weight: var(--timeline-header-font-weight);
+  color: var(--timeline-text-primary);
+  margin-bottom: var(--timeline-spacing-sm);
+}
+.widgetInsight p {
+  font-size: 0.85rem;
+  color: var(--timeline-text-secondary);
+  line-height: var(--timeline-line-height);
+}

@@ -1,17 +1,13 @@
 # Agent Blueprint & Business AI Advisory Platform
 
-**🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
+**🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 14, React 18, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
 **🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (with implementations for OpenAI and Anthropic Claude) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: AI-generated timelines are now highly specific and relevant, thanks to advanced prompt engineering that leverages the full context of client profiles. Database-backed caching provides 80-90% cost reduction with instant loading for repeated requests. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: The timeline view is now robust, with fixes for all known rendering and scrolling bugs. The platform features **consistent professional theming** and a polished user experience. **✅ Code Health**: Recent refactoring has improved code consistency, removed component duplication, and fixed bugs related to caching and API authentication, resulting in a more stable and maintainable codebase. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for the next phase of development** to enable UI-based provider selection for timeline generation.
 
 **🚀 Next Steps:** 
-1. ✅ **COMPLETED**: Admin interface for secure, multi-service credential management.
-2. ✅ **COMPLETED**: Database-backed timeline caching implemented.
-3. ✅ **COMPLETED**: Multi-provider AI backend with support for OpenAI and Claude.
-4. **NEXT PRIORITIES**:
-    - Implement the frontend UI for provider selection in the timeline generation view.
-    - Add PDF export capabilities for timelines.
-    - Expand to other enterprise connectors beyond ServiceNow.
+1. **Implement Frontend UI for Provider Selection**: Add a user interface to the timeline generation view that allows users to select their preferred AI provider from the ones they've configured in the admin dashboard.
+2. **Add PDF Export Capabilities**: Implement a feature to export the generated AI timelines as professional PDF documents for easy sharing and presentation.
+3. **Expand Enterprise Connectors**: Integrate with other enterprise systems beyond ServiceNow, such as Salesforce or HubSpot, to broaden the platform's data visualization and business intelligence capabilities.
 
 ## Project Overview
 
@@ -70,7 +66,7 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Session Management**: Persistent auth state with automatic token refresh
 - **Centralized Cloud Storage**: All client profiles are stored exclusively in Supabase, ensuring data integrity and security.
 
-### 🔧 **Admin Interface for AI Credential Management** ✨ **(Completed Phase 6.1.5)**
+### 🔧 **Admin Interface for AI Credential Management** ✨ **(Completed)**
 - **Multi-Provider Support**: Full management of credentials for OpenAI, Google Gemini, Anthropic Claude, ServiceNow, and HubSpot
 - **Extensible Architecture**: Ready to support the latest AI models including OpenAI GPT-4o, Google Gemini 2.5, and Anthropic Claude 4.
 - **Production Security Architecture**: Application-level authentication with JWT verification and user-scoped data access
@@ -178,8 +174,8 @@ npm test
 ## Technical Stack
 
 ### **Frontend**
-- Next.js 15 with App Router (configured for strict CSS chunking)
-- React 19 with functional components
+- Next.js 14 with App Router (configured for strict CSS chunking)
+- React 18 with functional components
 - ReactFlow for interactive diagrams
 - Zustand for state management
 - Lucide React for icons
@@ -267,7 +263,7 @@ See `MVP_TESTING_SUMMARY.md` for complete testing strategy.
 
 ---
 
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, a centralized Supabase database, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the completion of **Phase 6.1.5 Admin Interface**, the platform now features a **production-ready credential management system** with an architecture ready for multi-provider AI support, enterprise-grade security, and a user-friendly admin interface. The combination of **real AI-powered timeline generation (via OpenAI)**, **intelligent database caching**, **secure credential management**, and **comprehensive business intelligence collection** creates a complete enterprise solution for AI transformation planning and strategic decision-making.
+**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, a centralized Supabase database, and consistent professional theming across all pages, providing a sophisticated foundation for enterprise AI transformation planning. With the completion of **the Admin Interface**, the platform now features a **production-ready credential management system** with an architecture ready for multi-provider AI support, enterprise-grade security, and a user-friendly admin interface. The combination of **real AI-powered timeline generation (via OpenAI)**, **intelligent database caching**, **secure credential management**, and **comprehensive business intelligence collection** creates a complete enterprise solution for AI transformation planning and strategic decision-making.
 
 **🔒 Production Security Summary**: The platform implements industry-standard security practices with JWT authentication, user-scoped data access, AES-256-GCM encryption, and application-level security controls. This approach follows patterns used by leading SaaS platforms and provides robust protection while maintaining development simplicity and operational reliability.
 

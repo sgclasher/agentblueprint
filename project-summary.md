@@ -120,6 +120,7 @@ Directory structure:
     │   │       ├── prompts/
     │   │       │   └── timelinePrompts.js
     │   │       └── providers/
+    │   │           ├── claudeServerProvider.js
     │   │           └── openaiServerProvider.js
     │   ├── profile/
     │   │   └── page.js

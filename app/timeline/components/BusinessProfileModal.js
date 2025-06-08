@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import styles from './BusinessProfileModal.module.css';
 
 const industries = [
   'Technology', 'Healthcare', 'Finance', 'Manufacturing', 'Retail', 
@@ -79,22 +80,22 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
   };
   
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
           <h2>Build Your AI Transformation Timeline</h2>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className={styles.modalClose} onClick={onClose}>×</button>
         </div>
         
-        <div className="modal-progress">
-          <div className="progress-steps">
+        <div className={styles.modalProgress}>
+          <div className={styles.progressSteps}>
             {[1, 2, 3].map(step => (
               <div 
                 key={step} 
-                className={`progress-step ${currentStep >= step ? 'active' : ''}`}
+                className={`${styles.progressStep} ${currentStep >= step ? styles.active : ''}`}
               >
-                <div className="step-number">{step}</div>
-                <div className="step-label">
+                <div className={styles.stepNumber}>{step}</div>
+                <div className={styles.stepLabel}>
                   {step === 1 && 'Company Info'}
                   {step === 2 && 'AI Readiness'}
                   {step === 3 && 'Planning'}
@@ -102,20 +103,20 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
               </div>
             ))}
           </div>
-          <div className="progress-bar">
+          <div className={styles.progressBar}>
             <div 
-              className="progress-fill" 
+              className={styles.progressFill} 
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             />
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="modal-form">
+        <form onSubmit={handleSubmit} className={styles.modalForm}>
           {currentStep === 1 && (
-            <div className="form-step">
+            <div className={styles.formStep}>
               <h3>Tell us about your company</h3>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label htmlFor="companyName">Company Name</label>
                 <input
                   id="companyName"
@@ -127,7 +128,7 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
                 />
               </div>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label htmlFor="industry">Industry</label>
                 <select
                   id="industry"
@@ -142,11 +143,11 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
                 </select>
               </div>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Company Size</label>
-                <div className="radio-group">
+                <div className={styles.radioGroup}>
                   {companySizes.map(size => (
-                    <label key={size.value} className="radio-label">
+                    <label key={size.value} className={styles.radioLabel}>
                       <input
                         type="radio"
                         name="companySize"
@@ -154,7 +155,7 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
                         checked={formData.companySize === size.value}
                         onChange={(e) => handleChange('companySize', e.target.value)}
                       />
-                      <span className="radio-text">{size.label}</span>
+                      <span className={styles.radioText}>{size.label}</span>
                     </label>
                   ))}
                 </div>
@@ -163,34 +164,34 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
           )}
           
           {currentStep === 2 && (
-            <div className="form-step">
+            <div className={styles.formStep}>
               <h3>Assess your AI readiness</h3>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Current AI Maturity Level</label>
-                <div className="maturity-grid">
+                <div className={styles.maturityGrid}>
                   {maturityLevels.map(level => (
                     <button
                       key={level.value}
                       type="button"
-                      className={`maturity-option ${formData.aiMaturityLevel === level.value ? 'selected' : ''}`}
+                      className={`${styles.maturityOption} ${formData.aiMaturityLevel === level.value ? styles.selected : ''}`}
                       onClick={() => handleChange('aiMaturityLevel', level.value)}
                     >
-                      <div className="maturity-label">{level.label}</div>
-                      <div className="maturity-description">{level.description}</div>
+                      <div className={styles.maturityLabel}>{level.label}</div>
+                      <div className={styles.maturityDescription}>{level.description}</div>
                     </button>
                   ))}
                 </div>
               </div>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Primary Goals (Select all that apply)</label>
-                <div className="goals-grid">
+                <div className={styles.goalsGrid}>
                   {primaryGoals.map(goal => (
                     <button
                       key={goal}
                       type="button"
-                      className={`goal-option ${formData.primaryGoals.includes(goal) ? 'selected' : ''}`}
+                      className={`${styles.goalOption} ${formData.primaryGoals.includes(goal) ? styles.selected : ''}`}
                       onClick={() => handleGoalToggle(goal)}
                     >
                       {goal}
@@ -199,7 +200,7 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
                 </div>
               </div>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label htmlFor="currentChallenges">Current Challenges (Optional)</label>
                 <textarea
                   id="currentChallenges"
@@ -213,10 +214,10 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
           )}
           
           {currentStep === 3 && (
-            <div className="form-step">
+            <div className={styles.formStep}>
               <h3>Set your transformation parameters</h3>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label htmlFor="budget">Annual AI Investment Budget</label>
                 <select
                   id="budget"
@@ -233,18 +234,18 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
                 </select>
               </div>
               
-              <div className="form-group">
+              <div className={styles.formGroup}>
                 <label>Transformation Timeframe</label>
-                <div className="timeframe-options">
+                <div className={styles.timeframeOptions}>
                   {['1-year', '3-years', '5-years'].map(tf => (
                     <button
                       key={tf}
                       type="button"
-                      className={`timeframe-option ${formData.timeframe === tf ? 'selected' : ''}`}
+                      className={`${styles.timeframeOption} ${formData.timeframe === tf ? styles.selected : ''}`}
                       onClick={() => handleChange('timeframe', tf)}
                     >
-                      <div className="timeframe-label">{tf.replace('-', ' ')}</div>
-                      <div className="timeframe-description">
+                      <div className={styles.timeframeLabel}>{tf.replace('-', ' ')}</div>
+                      <div className={styles.timeframeDescription}>
                         {tf === '1-year' && 'Quick wins focus'}
                         {tf === '3-years' && 'Balanced approach'}
                         {tf === '5-years' && 'Full transformation'}
@@ -256,7 +257,7 @@ export default function BusinessProfileModal({ onClose, onSubmit, isGenerating, 
             </div>
           )}
           
-          <div className="modal-actions">
+          <div className={styles.modalActions}>
             {currentStep > 1 && (
               <button
                 type="button"

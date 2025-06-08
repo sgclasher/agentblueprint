@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import styles from './MetricsWidget.module.css';
 
 // Helper for trend icons
 const TrendIcon = ({ type }) => {
@@ -102,7 +103,7 @@ export default function MetricsWidget({ activeSection, timelineData, scrollProgr
     const strokeDashoffset = circumference - (validValue / 100) * circumference;
     
     return (
-      <svg className="progress-ring" width="90" height="90"> {/* Adjusted size */}
+      <svg className={styles.progressRing} width="90" height="90"> {/* Adjusted size */}
         <circle
           cx="45"
           cy="45"
@@ -122,7 +123,7 @@ export default function MetricsWidget({ activeSection, timelineData, scrollProgr
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round" /* Rounded line cap */
           transform="rotate(-90 45 45)"
-          style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+          className={styles.progressRingCircle}
         />
         <defs>
           <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -130,7 +131,7 @@ export default function MetricsWidget({ activeSection, timelineData, scrollProgr
             <stop offset="100%" stopColor="var(--timeline-accent-green)" />
           </linearGradient>
         </defs>
-        <text x="45" y="45" textAnchor="middle" dy="0.3em" className="progress-text">
+        <text x="45" y="45" textAnchor="middle" dy="0.3em" className={styles.progressText}>
           {`${Math.round(validValue)}%`}
         </text>
       </svg>
@@ -140,12 +141,12 @@ export default function MetricsWidget({ activeSection, timelineData, scrollProgr
   const metrics = getDynamicMetrics();
   
   return (
-    <div className={`metrics-widget ${isMinimized ? 'minimized' : ''}`}>
-      <div className="widget-header">
-        <div className="widget-header-content">
+    <div className={`${styles.metricsWidget} ${isMinimized ? styles.minimized : ''}`}>
+      <div className={styles.widgetHeader}>
+        <div className={styles.widgetHeaderContent}>
           <h3>AI Journey Progress</h3>
           <button 
-            className="widget-toggle"
+            className={styles.widgetToggle}
             onClick={() => setIsMinimized(!isMinimized)}
             aria-label={isMinimized ? 'Expand widget' : 'Minimize widget'}
           >
@@ -153,35 +154,35 @@ export default function MetricsWidget({ activeSection, timelineData, scrollProgr
           </button>
         </div>
         {!isMinimized && (
-          <div className="journey-progress">
+          <div className={styles.journeyProgress}>
             {getProgressRing(scrollProgress || 0)}
-            <p className="progress-label">Journey Completion</p>
+            <p className={styles.progressLabel}>Journey Completion</p>
           </div>
         )}
       </div>
       
       {!isMinimized && (
         <>
-          <div className="widget-metrics">
+          <div className={styles.widgetMetrics}>
             <h4>{currentPhase.title} Metrics</h4>
             {metrics.map((metric, index) => (
-              <div key={index} className="metric-item">
-                <div className="metric-header">
-                  <span className="metric-label">{metric.label}</span>
+              <div key={index} className={styles.metricItem}>
+                <div className={styles.metricHeader}>
+                  <span className={styles.metricLabel}>{metric.label}</span>
                   {metric.trend && (
-                    <span className={`metric-trend ${metric.trend.type || 'neutral'}`}>
+                    <span className={`${styles.metricTrend} ${styles[metric.trend.type] || styles.neutral}`}>
                       <TrendIcon type={metric.trend.type} />
                       {metric.trend.text}
                     </span>
                   )}
                 </div>
-                <div className="metric-value">{metric.value}</div>
+                <div className={styles.metricValue}>{metric.value}</div>
               </div>
             ))}
           </div>
           
-          <div className="widget-footer">
-            <div className="widget-insight">
+          <div className={styles.widgetFooter}>
+            <div className={styles.widgetInsight}>
               <h4>Key Insight</h4>
               <p>{currentPhase.outcomes?.[0]?.description || currentPhase.description || 'Your AI transformation journey is progressing well.'}</p>
             </div>

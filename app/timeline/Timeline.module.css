@@ -1,0 +1,18 @@
+.timelineContainer {
+  display: flex;
+  height: calc(100vh - 80px); /* 80px is an assumption for GlobalHeader height */
+  width: 100%;
+  background-color: var(--timeline-bg);
+  color: var(--timeline-text-primary);
+  font-family: var(--timeline-font-family);
+  overflow: hidden;
+  position: relative;
+}
+
+.timelineMain {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+  background-color: var(--timeline-content-bg);
+  scroll-behavior: smooth;
+}

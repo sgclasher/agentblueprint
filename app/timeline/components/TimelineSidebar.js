@@ -1,23 +1,7 @@
 'use client';
 
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import {
-  MapPin,
-  Building,
-  Rocket,
-  TrendingUp,
-  Zap,
-  Target
-} from 'lucide-react';
-
-const iconMap = {
-  MapPin: <MapPin size={24} />,
-  Building: <Building size={24} />,
-  Rocket: <Rocket size={24} />,
-  TrendingUp: <TrendingUp size={24} />,
-  Zap: <Zap size={24} />,
-  Target: <Target size={24} />,
-};
+import styles from './TimelineSidebar.module.css';
 
 export default function TimelineSidebar({ 
   sections, 
@@ -130,53 +114,26 @@ export default function TimelineSidebar({
   }, [activeSection, sections, TIMELINE_SPACING_MD_PX, DOT_HALF_HEIGHT_PX, DOT_FULL_HEIGHT_PX]);
 
   return (
-    <aside className="timeline-sidebar">
-      <div className="timeline-sidebar-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <aside className={styles.timelineSidebar}>
+      <div className={styles.timelineSidebarHeader}>
+        <div className={styles.headerContainer}>
           <h3>Your AI Journey</h3>
-          <button 
-            className="btn-secondary"
-            onClick={onThemeToggle}
-            style={{ 
-              padding: 'var(--timeline-spacing-sm)', 
-              fontSize: '1.2rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--timeline-spacing-xs)'
-            }}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? '☀️' : '🌙'}
-          </button>
         </div>
       </div>
       
-      <nav className="timeline-nav" ref={navRef}>
-        {/* Grey Track for the progress bar - Dynamically positioned and sized */}
+      <nav className={styles.timelineNav} ref={navRef}>
         {sections.length > 0 && (
           <div 
-            className="timeline-progress-bar-container" 
+            className={styles.timelineProgressBarContainer} 
             style={{ 
-              position: 'absolute', 
               top: trackContainerTop, 
-              left: `calc(${TIMELINE_SPACING_MD_PX}px + ${DOT_HALF_HEIGHT_PX}px - 2px)`, // Centers 4px bar with 24px dot
-              width: '4px',
               height: trackContainerHeight,
-              backgroundColor: 'var(--timeline-border-secondary)', 
-              borderRadius: '2px',
-              zIndex: 1,
-              transition: 'top 0.3s ease-out, height 0.3s ease-out'
             }}
           >
-            {/* Blue Progress Bar - Height relative to the container's top */}
             <div 
-              className="timeline-progress-bar" 
+              className={styles.timelineProgressBar} 
               style={{
                 height: blueProgressBarHeight,
-                backgroundColor: 'var(--timeline-accent-blue)', 
-                width: '100%',
-                borderRadius: '2px',
-                transition: 'height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
               }}
             />
           </div>
@@ -186,89 +143,60 @@ export default function TimelineSidebar({
           <button
             key={section.id}
             ref={(el) => itemRefs.current[section.id] = el} 
-            className={`timeline-nav-item ${activeSection === section.id ? 'active' : ''}`}
+            className={`${styles.timelineNavItem} ${activeSection === section.id ? styles.active : ''}`}
             onClick={() => onSectionClick(section.id)}
-            style={{ zIndex: 2, position: 'relative' }} 
           >
-            <div className="timeline-nav-dot">{iconMap[section.iconId]}</div> 
-            <div className="timeline-nav-content">
-              <div className="timeline-nav-year">{section.year}</div>
-              <div className="timeline-nav-title">{section.title}</div>
-              <div className="timeline-nav-subtitle">{section.subtitle}</div>
+            <div className={styles.timelineNavDot}></div> 
+            <div className={styles.timelineNavContent}>
+              <div className={styles.timelineNavYear}>{section.year}</div>
+              <div className={styles.timelineNavTitle}>{section.title}</div>
+              <div className={styles.timelineNavSubtitle}>{section.subtitle}</div>
             </div>
           </button>
         ))}
       </nav>
 
-      {/* Cache Status and Regeneration Controls */}
-      {timelineGeneratedAt && (
-        <div style={{
-          padding: 'var(--timeline-spacing-md)',
-          marginTop: 'var(--timeline-spacing-lg)',
-          background: 'var(--timeline-glass-bg)',
-          backdropFilter: 'blur(var(--timeline-backdrop-blur))',
-          borderRadius: 'var(--timeline-border-radius-lg)',
-          border: '1px solid var(--timeline-border-secondary)'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--timeline-spacing-xs)',
-            marginBottom: 'var(--timeline-spacing-sm)',
-            fontSize: '0.85rem',
-            color: 'var(--timeline-text-muted)'
-          }}>
-            {timelineCached ? '💾' : '✨'} 
-            <span>
-              {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
-            </span>
-          </div>
-          
-          {timelineScenarioType && (
-            <div style={{
-              fontSize: '0.8rem',
-              color: 'var(--timeline-text-muted)',
-              marginBottom: 'var(--timeline-spacing-sm)'
-            }}>
-              Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
+      <div className={styles.sidebarFooter}>
+        {timelineGeneratedAt && (
+          <div className={styles.cacheInfo}>
+            <div className={styles.cacheStatus}>
+              {timelineCached ? '💾' : '✨'} 
+              <span>
+                {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
+              </span>
             </div>
-          )}
-
-          <button
-            className="btn-secondary"
-            onClick={handleRegenerateClick}
-            disabled={isGenerating}
-            style={{
-              width: '100%',
-              fontSize: '0.85rem',
-              padding: 'var(--timeline-spacing-sm) var(--timeline-spacing-md)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 'var(--timeline-spacing-xs)'
-            }}
-          >
-            {isGenerating ? (
-              <>
-                <span style={{ animation: 'spin 1s linear infinite' }}>⟳</span>
-                Regenerating...
-              </>
-            ) : (
-              <>
-                🔄 Regenerate Timeline
-              </>
+            
+            {timelineScenarioType && (
+              <div className={styles.scenarioInfo}>
+                Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
+              </div>
             )}
-          </button>
-        </div>
-      )}
-      
-      <div className="timeline-sidebar-footer">
-        <button 
-          className="btn-secondary"
-          onClick={() => window.location.href = '/'}
-        >
-          ← Back to Flow Visualizer
-        </button>
+
+            <button
+              className="btn btn-secondary"
+              onClick={handleRegenerateClick}
+              disabled={isGenerating}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 'var(--spacing-xs)'
+              }}
+            >
+              {isGenerating ? (
+                <>
+                  <span className={styles.spinner}>⟳</span>
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  🔄 Regenerate Timeline
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

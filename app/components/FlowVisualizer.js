@@ -71,9 +71,9 @@ const FlowVisualizer = forwardRef(({ onError, layoutDirection: externalLayoutDir
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          setEdges={setEdges}
           onNodeClick={onNodeClick}
           selectedNode={selectedNode}
-          lastUpdate={lastUpdate}
           layoutDirection={layoutDirection}
           toggleNodeExpansion={toggleNodeExpansion}
         />
