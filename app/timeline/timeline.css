@@ -486,6 +486,8 @@
 .timeline-content {
   padding: 4rem;
   max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
   scroll-behavior: smooth;
   height: 100%;
   padding-bottom: 50vh;
