@@ -20,7 +20,7 @@ Transform Agent Blueprint into a robust, scalable platform that serves as a comp
 
 ## 🎯 Next Steps & Immediate Priorities
 
-1.  **Implement Frontend UI for Provider Selection**: Add a user interface to the timeline generation view that allows users to select their preferred AI provider from the ones they've configured in the admin dashboard.
+1.  **[x] Implement Frontend UI for Provider Selection**: Add a user interface to the timeline generation view that allows users to select their preferred AI provider from the ones they've configured in the admin dashboard.
 2.  **Add PDF Export Capabilities**: Implement a feature to export the generated AI timelines as professional PDF documents for easy sharing and presentation.
 3.  **Expand Enterprise Connectors**: Integrate with other enterprise systems beyond ServiceNow, such as Salesforce or HubSpot, to broaden the platform's data visualization and business intelligence capabilities.
 
@@ -28,6 +28,13 @@ Transform Agent Blueprint into a robust, scalable platform that serves as a comp
 
 ## ✅ Completed Milestones
 *A reverse-chronological log of implemented features.*
+
+### ✅ COMPLETED: Frontend UI for Provider Selection (July 2025)
+**What was implemented:**
+- **Provider Selection UI**: Added a dropdown menu to the timeline sidebar that allows users to select their preferred AI provider.
+- **Dynamic Provider Fetching**: Created a new API endpoint to fetch the list of available AI providers from the user's configured credentials.
+- **State Management Integration**: Updated the central state management store to handle the selected provider.
+- **Backend Integration**: Modified the timeline generation service and API routes to use the selected provider, allowing for on-the-fly switching between different AI models.
 
 ### ✅ COMPLETED: Codebase Refactoring & Best Practices (June 2025)
 **What was implemented:**

@@ -213,31 +213,55 @@ async function testGemini(credentials, configuration) {
  */
 async function testClaude(credentials, configuration) {
   const startTime = Date.now();
-  const { api_key } = credentials;
+  const { api_key, model } = credentials;
   
   if (!api_key) {
     throw new Error('Anthropic API key is required');
   }
 
+  const modelToUse = configuration?.model || model;
+  if (!modelToUse) {
+    throw new Error('Anthropic model is required');
+  }
+
+  const requestBody = {
+    model: modelToUse,
+    max_tokens: 10,
+    messages: [
+      { role: 'user', content: 'Test' }
+    ]
+  };
+
+  console.log('--- Claude Test Request ---');
+  console.log('URL:', 'https://api.anthropic.com/v1/messages');
+  console.log('Headers:', {
+    'x-api-key': 'sk-ant-api03-...', // Masked for security
+    'Content-Type': 'application/json',
+    'anthropic-version': '2023-06-01'
+  });
+  console.log('Body:', requestBody);
+  console.log('---------------------------');
+
   // Test with a simple messages request
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${api_key}`,
+      'x-api-key': api_key,
       'Content-Type': 'application/json',
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({
-      model: configuration?.model || 'claude-3-sonnet-20240229',
-      max_tokens: 10,
-      messages: [
-        { role: 'user', content: 'Test' }
-      ]
-    })
+    body: JSON.stringify(requestBody)
   });
 
+  const responseBody = await response.text();
+  console.log('--- Claude Test Response ---');
+  console.log('Status:', response.status);
+  console.log('Status Text:', response.statusText);
+  console.log('Body:', responseBody);
+  console.log('----------------------------');
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = JSON.parse(responseBody);
     throw new Error(`Claude API error: ${response.status} - ${error.error?.message || 'Authentication failed'}`);
   }
 
@@ -245,7 +269,7 @@ async function testClaude(credentials, configuration) {
     success: true,
     message: 'Anthropic Claude connection successful',
     details: {
-      recommendedModel: configuration?.model || 'claude-3-sonnet-20240229',
+      recommendedModel: modelToUse,
       endpoint: 'https://api.anthropic.com/v1'
     },
     timestamp: new Date().toISOString(),

@@ -259,7 +259,7 @@ async function testClaude(credentials, configuration) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${api_key}`,
+      'x-api-key': api_key,
       'Content-Type': 'application/json',
       'anthropic-version': '2023-06-01'
     },

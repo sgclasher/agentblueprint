@@ -130,15 +130,27 @@ export default function AddServiceForm({
   // Initialize form when editing
   useEffect(() => {
     if (editingCredential) {
+      // For AI providers, the model is in the configuration, not credentials
+      const initialCredentials = {};
+      const initialConfiguration = editingCredential.configuration || {};
+
+      if (editingCredential.service_type === 'ai_provider') {
+        // We don't want to display the saved API key, but we do want to populate the model
+        initialCredentials.model = editingCredential.configuration?.model || '';
+      }
+
       setFormData({
         id: editingCredential.id,
         serviceType: editingCredential.service_type,
         serviceName: editingCredential.service_name,
         displayName: editingCredential.display_name,
-        credentials: {}, // Will be empty for security - user must re-enter
+        credentials: {
+          // Repopulate model for display, but not other secrets
+          model: editingCredential.configuration?.model
+        },
         configuration: editingCredential.configuration || {},
         isActive: editingCredential.is_active,
-        isDefault: editingCredential.is_default
+        isDefault: editingCredential.is_default,
       });
     } else {
       // Reset for new credential
@@ -269,8 +281,18 @@ export default function AddServiceForm({
     }
 
     setIsSubmitting(true);
+    
+    // Create a deep copy to avoid mutating state directly
+    const submissionData = JSON.parse(JSON.stringify(formData));
+
+    // For AI providers, move the 'model' from credentials to configuration before saving
+    if (submissionData.serviceType === 'ai_provider' && submissionData.credentials.model) {
+      submissionData.configuration.model = submissionData.credentials.model;
+      delete submissionData.credentials.model;
+    }
+
     try {
-      await onSave(formData);
+      await onSave(submissionData);
       onClose();
     } catch (error) {
       setErrors({ submit: error.message });
@@ -378,7 +400,7 @@ export default function AddServiceForm({
                   </label>
                   {field.type === 'select' ? (
                     <select
-                      value={formData.credentials[field.name] || ''}
+                      value={formData.configuration[field.name] || formData.credentials[field.name] || ''}
                       onChange={(e) => handleInputChange('credentials', field.name, e.target.value)}
                       className={`${styles.select} ${errors[`credentials.${field.name}`] ? styles.error : ''}`}
                     >

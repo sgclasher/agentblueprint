@@ -5,7 +5,12 @@
  * This class is designed to be used by the central `aiService`.
  */
 export class ClaudeServerProvider {
-  constructor({ apiKey, model = 'claude-3-sonnet-20240229' }) {
+  private apiKey: string;
+  private baseUrl: string;
+  private model: string;
+  private anthropicVersion: string;
+
+  constructor({ apiKey, model = 'claude-3-sonnet-20240229' }: { apiKey: string, model?: string }) {
     if (!apiKey) {
       throw new Error('Anthropic API key must be provided.');
     }
@@ -22,7 +27,7 @@ export class ClaudeServerProvider {
    * @param {object} options - Additional options for the generation (e.g., temperature).
    * @returns {Promise<object>} The generated JSON object.
    */
-  async generateJson(systemPrompt, userPrompt, options = {}) {
+  async generateJson(systemPrompt: string, userPrompt: string, options: { temperature?: number, max_tokens?: number } = {}) {
     // Anthropic API requires the prompt to explicitly ask for JSON and start with an opening brace.
     const finalUserPrompt = `${userPrompt}
     
@@ -37,7 +42,7 @@ Please provide the output in a single, valid JSON object, starting with { and en
       const response = await fetch(`${this.baseUrl}/messages`, {
         method: 'POST',
         headers: {
-          'x-api-key': this.apiKey,
+          'Authorization': `Bearer ${this.apiKey}`,
           'anthropic-version': this.anthropicVersion,
           'Content-Type': 'application/json',
         },
@@ -68,7 +73,7 @@ Please provide the output in a single, valid JSON object, starting with { and en
 
       return JSON.parse(content);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Claude Server Provider Error:', error);
       throw new Error(`Failed to generate JSON from Anthropic: ${error.message}`);
     }

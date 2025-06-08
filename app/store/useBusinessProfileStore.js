@@ -22,6 +22,7 @@ const useBusinessProfileStore = create(
       
       // Timeline settings
       scenarioType: 'balanced', // 'conservative', 'balanced', 'aggressive'
+      selectedProvider: null, // To store the selected AI provider
       selectedYear: new Date().getFullYear(),
       expandedSections: {}, // Track which timeline sections are expanded
       theme: 'dark', // 'dark' or 'light'
@@ -43,6 +44,8 @@ const useBusinessProfileStore = create(
         set({ businessProfile: { ...get().businessProfile, ...updates } }),
       
       setScenarioType: (type) => set({ scenarioType: type }),
+      
+      setSelectedProvider: (provider) => set({ selectedProvider: provider }),
       
       setSelectedYear: (year) => set({ selectedYear: year }),
       
@@ -85,7 +88,7 @@ const useBusinessProfileStore = create(
           set({ businessProfile: profile });
         }
         
-        const { businessProfile, scenarioType } = get();
+        const { businessProfile, scenarioType, selectedProvider } = get();
         
         try {
           // Call server-side API instead of TimelineService directly
@@ -96,7 +99,8 @@ const useBusinessProfileStore = create(
             },
             body: JSON.stringify({
               businessProfile,
-              scenarioType
+              scenarioType,
+              provider: selectedProvider,
             })
           });
 
@@ -118,6 +122,9 @@ const useBusinessProfileStore = create(
         set({ isGenerating: true });
         
         try {
+          // Get the selected provider from the store
+          const { selectedProvider } = get();
+          
           // Get current user session for authentication token
           const { data: { session } } = await supabase.auth.getSession();
 
@@ -134,7 +141,8 @@ const useBusinessProfileStore = create(
               profileId: profile.id || null,
               profile: profile,
               forceRegenerate,
-              scenarioType
+              scenarioType,
+              provider: selectedProvider,
               // No longer need to pass userId, it's derived from token on server
             })
           });
@@ -163,8 +171,13 @@ const useBusinessProfileStore = create(
         }
       },
 
-      regenerateTimelineFromProfile: async (profile, scenarioType = null) => {
+      regenerateTimelineFromProfile: async (profile, scenarioType = null, provider = null) => {
+        // Update the selected provider if a new one is passed
+        if (provider) {
+          set({ selectedProvider: provider });
+        }
         // Force regeneration by setting forceRegenerate = true
+        // The provider from the store will be used in generateTimelineFromProfile
         return await get().generateTimelineFromProfile(profile, true, scenarioType);
       },
       

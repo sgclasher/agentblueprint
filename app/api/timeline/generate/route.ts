@@ -9,6 +9,7 @@ import type { BusinessProfile } from '../../../utils/validation';
 interface RequestBody {
   businessProfile: BusinessProfile;
   scenarioType: string;
+  provider?: string;
 }
 
 interface AiStatus {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { businessProfile, scenarioType } = body;
+    const { businessProfile, scenarioType, provider } = body;
 
     // Validate business profile
     const profileValidation = validateBusinessProfile(businessProfile);
@@ -108,11 +109,12 @@ export async function POST(request: NextRequest) {
         profileValidation.sanitized,
         scenarioValidation.sanitized,
         userId,
-        CredentialsRepository
+        CredentialsRepository,
+        provider
       );
 
       // TODO: Refactor TimelineService.getStatus to return a typed object
-      const status = await TimelineService.getStatus(userId, CredentialsRepository) as any as AiStatus;
+      const status = await TimelineService.getStatus(userId, CredentialsRepository, provider) as any as AiStatus;
 
       return NextResponse.json({
         success: true,

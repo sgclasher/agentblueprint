@@ -6,6 +6,7 @@
  */
 
 import { supabase } from '../lib/supabase';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export class CredentialsRepository {
   /**
@@ -14,7 +15,7 @@ export class CredentialsRepository {
    * @param {string} serviceType - Optional filter by service type
    * @returns {Promise<Array>} Array of credential configurations
    */
-  static async getCredentials(userId, serviceType = null) {
+  static async getCredentials(userId: string, serviceType: string | null = null) {
     if (!userId) {
       return [];
     }
@@ -51,7 +52,7 @@ export class CredentialsRepository {
    * @param {string} serviceType - Service type ('ai_provider', 'crm_system', etc.)
    * @returns {Promise<Object|null>} Default provider configuration
    */
-  static async getDefaultProvider(userId, serviceType) {
+  static async getDefaultProvider(userId: string, serviceType: string) {
     if (!userId || !serviceType) {
       return null;
     }
@@ -86,7 +87,7 @@ export class CredentialsRepository {
    * @param {Object} credentialData - Credential configuration
    * @returns {Promise<Object>} Saved credential record
    */
-  static async saveCredentials(userId, credentialData) {
+  static async saveCredentials(userId: string, credentialData: any) {
     if (!userId) {
       throw new Error('User authentication required.');
     }
@@ -166,7 +167,7 @@ export class CredentialsRepository {
       }
 
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error('💥 Exception in saveCredentials:', error);
       console.error('🔍 Error details:', { 
         message: error.message, 
@@ -184,7 +185,7 @@ export class CredentialsRepository {
    * @param {Object} credentialData - The unsaved credential data from the form
    * @returns {Promise<Object>} Test result
    */
-  static async testNewCredentials(userId, credentialData) {
+  static async testNewCredentials(userId: string, credentialData: any) {
     if (!userId) {
       throw new Error('User authentication required to test credentials.');
     }
@@ -192,7 +193,7 @@ export class CredentialsRepository {
     // Get current session for authentication
     const { data: { session } } = await supabase.auth.getSession();
     
-    const headers = { 'Content-Type': 'application/json' };
+    const headers: { [key: string]: string } = { 'Content-Type': 'application/json' };
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`;
     } else {
@@ -220,7 +221,7 @@ export class CredentialsRepository {
    * @param {string} credentialId - Credential ID
    * @returns {Promise<Object>} Test result
    */
-  static async testConnection(userId, credentialId) {
+  static async testConnection(userId: string, credentialId: string) {
     if (!userId || !credentialId) {
       throw new Error('User ID and credential ID required.');
     }
@@ -273,7 +274,7 @@ export class CredentialsRepository {
             test_status: 'failed',
             test_result: { 
               success: false, 
-              error: error.message,
+              error: (error as Error).message,
               timestamp: new Date().toISOString()
             },
             last_tested_at: new Date().toISOString()
@@ -292,7 +293,7 @@ export class CredentialsRepository {
    * @param {string} credentialId - Credential ID
    * @returns {Promise<boolean>} Success status
    */
-  static async deleteCredentials(userId, credentialId) {
+  static async deleteCredentials(userId: string, credentialId: string) {
     if (!userId || !credentialId) {
       throw new Error('User ID and credential ID required.');
     }
@@ -318,7 +319,7 @@ export class CredentialsRepository {
    * @param {string} credentialId - Credential ID to set as default
    * @returns {Promise<boolean>} Success status
    */
-  static async setDefaultProvider(userId, credentialId) {
+  static async setDefaultProvider(userId: string, credentialId: string) {
     if (!userId || !credentialId) {
       throw new Error('User ID and credential ID required.');
     }
@@ -348,6 +349,39 @@ export class CredentialsRepository {
     }
   }
 
+  /**
+   * Get all available providers for a given service type
+   * @param {string} serviceType - Service type (e.g., 'ai')
+   * @returns {Promise<Array>} Array of provider objects with name and display name
+   */
+  static async getProvidersByType(client: SupabaseClient, userId: string, serviceType: string) {
+    if (!userId || !serviceType) {
+      return [];
+    }
+
+    try {
+      const { data, error } = await client
+        .from('external_service_credentials')
+        .select('service_name, display_name, is_default')
+        .eq('user_id', userId)
+        .eq('service_type', serviceType)
+        .eq('is_active', true)
+        .order('is_default', { ascending: false })
+        .order('display_name', { ascending: true });
+
+      if (error) {
+        console.error(`❌ Error fetching ${serviceType} providers:`, error);
+        throw error;
+      }
+      
+      return data || [];
+
+    } catch (error: any) {
+      console.error(`❌ Exception in getProvidersByType for ${serviceType}:`, error);
+      throw new Error(`Failed to fetch ${serviceType} providers.`);
+    }
+  }
+
   // =============================================
   // Private Helper Methods
   // =============================================
@@ -358,11 +392,11 @@ export class CredentialsRepository {
    * @returns {Promise<Object>} Encrypted credentials with metadata
    * @private
    */
-  static async _encryptCredentials(credentials) {
+  static async _encryptCredentials(credentials: any) {
     // Get current session for authentication
     const { data: { session } } = await supabase.auth.getSession();
     
-    const headers = { 'Content-Type': 'application/json' };
+    const headers: { [key: string]: string } = { 'Content-Type': 'application/json' };
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`;
     }
@@ -402,13 +436,13 @@ export class CredentialsRepository {
    * @returns {Promise<Object>} Test result
    * @private
    */
-  static async _callTestAPI(credential) {
+  static async _callTestAPI(credential: any) {
     const { service_type, service_name } = credential;
     
     // Get current session for authentication
     const { data: { session } } = await supabase.auth.getSession();
     
-    const headers = { 'Content-Type': 'application/json' };
+    const headers: { [key: string]: string } = { 'Content-Type': 'application/json' };
     if (session?.access_token) {
       headers['Authorization'] = `Bearer ${session.access_token}`;
     }

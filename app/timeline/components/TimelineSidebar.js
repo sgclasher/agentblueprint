@@ -2,6 +2,8 @@
 
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import styles from './TimelineSidebar.module.css';
+import ProviderSelector from './ProviderSelector';
+import useBusinessProfileStore from '../../store/useBusinessProfileStore';
 
 export default function TimelineSidebar({ 
   sections, 
@@ -19,6 +21,7 @@ export default function TimelineSidebar({
 }) {
   const navRef = useRef(null); // Ref for the main navigation container
   const itemRefs = useRef({}); // Refs for individual navigation items
+  const { selectedProvider, setSelectedProvider } = useBusinessProfileStore();
   
   const [trackContainerTop, setTrackContainerTop] = useState('0px');
   const [trackContainerHeight, setTrackContainerHeight] = useState('0px');
@@ -49,7 +52,7 @@ export default function TimelineSidebar({
   const handleRegenerateClick = async () => {
     if (onRegenerateTimeline && currentProfile) {
       try {
-        await onRegenerateTimeline(currentProfile, timelineScenarioType);
+        await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
       } catch (error) {
         console.error('Error regenerating timeline:', error);
       }
@@ -171,6 +174,12 @@ export default function TimelineSidebar({
                 Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
               </div>
             )}
+
+            <ProviderSelector
+              selectedProvider={selectedProvider}
+              onProviderChange={setSelectedProvider}
+              disabled={isGenerating}
+            />
 
             <button
               className="btn btn-secondary"

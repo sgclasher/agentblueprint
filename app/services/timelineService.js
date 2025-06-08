@@ -60,9 +60,10 @@ export class TimelineService {
    * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'.
    * @param {string} userId - The ID of the authenticated user.
    * @param {object} CredentialsRepository - The repository class for DB access.
+   * @param {string} [provider=null] - The specific AI provider to use.
    * @returns {Promise<Object>} Generated timeline data.
    */
-  static async generateTimeline(profileData, scenarioType = 'balanced', userId, CredentialsRepository) {
+  static async generateTimeline(profileData, scenarioType = 'balanced', userId, CredentialsRepository, provider = null) {
     if (!userId) {
       throw new Error('User ID is required for timeline generation.');
     }
@@ -74,7 +75,7 @@ export class TimelineService {
     }
 
     try {
-      const aiStatus = await aiService.getStatus(userId, CredentialsRepository);
+      const aiStatus = await aiService.getStatus(userId, CredentialsRepository, provider);
       if (!aiStatus.configured) {
         throw new Error('AI provider not configured. Please configure a provider in the admin settings or set the OPENAI_API_KEY environment variable.');
       }
@@ -89,7 +90,8 @@ export class TimelineService {
         systemPrompt, 
         userPrompt, 
         userId, 
-        CredentialsRepository
+        CredentialsRepository,
+        provider
       );
 
       this.validateTimelineResponse(timeline);
@@ -165,11 +167,12 @@ export class TimelineService {
    * Check if the underlying AI service is configured for a specific user.
    * @param {string} userId - The ID of the authenticated user.
    * @param {object} CredentialsRepository - The repository class for DB access.
+   * @param {string} [provider=null] - The specific AI provider to check.
    * @returns {Promise<boolean>}
    */
-  static async isConfigured(userId, CredentialsRepository) {
+  static async isConfigured(userId, CredentialsRepository, provider = null) {
     if (!userId) return false;
-    const status = await aiService.getStatus(userId, CredentialsRepository);
+    const status = await aiService.getStatus(userId, CredentialsRepository, provider);
     return status.configured;
   }
 
@@ -177,12 +180,13 @@ export class TimelineService {
    * Get configuration status for a specific user for debugging.
    * @param {string} userId - The ID of the authenticated user.
    * @param {object} CredentialsRepository - The repository class for DB access.
+   * @param {string} [provider=null] - The specific AI provider to get status for.
    * @returns {Promise<Object>}
    */
-  static async getStatus(userId, CredentialsRepository) {
+  static async getStatus(userId, CredentialsRepository, provider = null) {
     if (!userId || !CredentialsRepository) {
       return { configured: false, provider: 'None', apiKeyStatus: 'Missing user ID or Repository' };
     }
-    return await aiService.getStatus(userId, CredentialsRepository);
+    return await aiService.getStatus(userId, CredentialsRepository, provider);
   }
 } 
