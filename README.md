@@ -2,13 +2,14 @@
 
 **🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 15, React 19, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
-**🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (currently with an OpenAI implementation) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers (OpenAI, Gemini, Claude) and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: Database-backed caching provides 80-90% cost reduction with cache-first architecture and instant loading. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: Complete edit profile functionality, ProfileWizard with clickable step navigation and free exploration, professional cache status widgets, and working test-before-save credential functionality. The platform features **consistent professional theming** across all pages with global CSS variables, theme provider, and standardized UI components. **✅ Code Health**: Recent refactoring has improved code consistency, removed component duplication, and fixed bugs related to caching and API authentication, resulting in a more stable and maintainable codebase. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for the next phase of development** to enable multi-provider AI timeline generation.
+**🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (with implementations for OpenAI and Anthropic Claude) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: AI-generated timelines are now highly specific and relevant, thanks to advanced prompt engineering that leverages the full context of client profiles. Database-backed caching provides 80-90% cost reduction with instant loading for repeated requests. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: The timeline view is now robust, with fixes for all known rendering and scrolling bugs. The platform features **consistent professional theming** and a polished user experience. **✅ Code Health**: Recent refactoring has improved code consistency, removed component duplication, and fixed bugs related to caching and API authentication, resulting in a more stable and maintainable codebase. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **Ready for the next phase of development** to enable UI-based provider selection for timeline generation.
 
 **🚀 Next Steps:** 
 1. ✅ **COMPLETED**: Admin interface for secure, multi-service credential management.
-2. ✅ **COMPLETED**: Database-backed timeline caching implemented with intelligent cache-first architecture.
-3. **NEXT PRIORITIES**:
-    - Implement Gemini and Claude providers to enable multi-provider AI support.
+2. ✅ **COMPLETED**: Database-backed timeline caching implemented.
+3. ✅ **COMPLETED**: Multi-provider AI backend with support for OpenAI and Claude.
+4. **NEXT PRIORITIES**:
+    - Implement the frontend UI for provider selection in the timeline generation view.
     - Add PDF export capabilities for timelines.
     - Expand to other enterprise connectors beyond ServiceNow.
 
@@ -203,13 +204,14 @@ npm test
 
 ### **AI Integration & LLM Services**
 - **Centralized `aiService`**: A single, reusable service (`app/services/aiService.js`) that acts as the entry point for all LLM interactions.
-- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, currently implemented with an OpenAI provider. It's ready to be extended with support for Google Gemini, Anthropic Claude, and more.
+- **Provider-Agnostic Architecture**: The `aiService` uses a provider pattern, currently implemented with OpenAI and Anthropic Claude providers. It's ready to be extended with support for Google Gemini and more.
 - **Admin Interface**: Comprehensive `/admin` dashboard for managing service credentials.
 - **Secure Server-Side Execution**: All LLM calls are handled securely on the server, with no client-side exposure of API keys.
 - **User-Level Credential Management**: AES-256-GCM encrypted storage replacing environment variables.
 - **Live Connection Testing**: Real-time validation of API credentials before saving.
 - **Centralized Prompt Management**: Prompts are stored and managed in a dedicated directory (`app/lib/llm/prompts`) for better organization and reusability.
 - **JSON Response Validation**: Services that consume the `aiService` are responsible for validating the structure of the returned JSON data.
+- **Advanced Prompt Engineering**: The system uses a sophisticated prompt-building strategy that extracts key data from structured profiles to create highly specific and relevant instructions for the AI, ensuring high-quality, non-generic outputs.
 - **Environment Configuration**: Easy setup verification via the `/api/debug-env` endpoint.
 
 ### **Development & Testing**

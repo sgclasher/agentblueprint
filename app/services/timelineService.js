@@ -1,6 +1,6 @@
 import { markdownService } from './markdownService';
 import { aiService } from './aiService';
-import { buildTimelineUserPrompt, getTimelineSystemPrompt } from '../lib/llm/prompts/timelinePrompts';
+import { getTimelineSystemPrompt, buildTimelineUserPrompt } from '../lib/llm/prompts/timelinePrompts';
 
 /**
  * Timeline Generation Service
@@ -14,12 +14,22 @@ export class TimelineService {
    * Generate a comprehensive AI transformation timeline using AI from markdown content.
    * @param {string} profileMarkdown - Full markdown representation of client profile.
    * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'.
+   * @param {string} userId - The ID of the authenticated user.
+   * @param {object} CredentialsRepository - The repository class for DB access.
    * @returns {Promise<Object>} Generated timeline data.
    */
-  static async generateTimelineFromMarkdown(profileMarkdown, scenarioType = 'balanced') {
+  static async generateTimelineFromMarkdown(profileMarkdown, scenarioType = 'balanced', userId, CredentialsRepository) {
+    if (!userId) {
+      throw new Error('User ID is required for timeline generation.');
+    }
+    if (!CredentialsRepository) {
+      throw new Error('CredentialsRepository is required.');
+    }
+
     try {
-      if (!aiService.getStatus().configured) {
-        throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
+      const aiStatus = await aiService.getStatus(userId, CredentialsRepository);
+      if (!aiStatus.configured) {
+        throw new Error('AI provider not configured. Please configure a provider in the admin settings or set the OPENAI_API_KEY environment variable.');
       }
 
       this.validateScenario(scenarioType);
@@ -27,7 +37,12 @@ export class TimelineService {
       const systemPrompt = getTimelineSystemPrompt();
       const userPrompt = buildTimelineUserPrompt(profileMarkdown, scenarioType);
 
-      const timeline = await aiService.generateJson(systemPrompt, userPrompt);
+      const timeline = await aiService.generateJson(
+        systemPrompt, 
+        userPrompt, 
+        userId, 
+        CredentialsRepository
+      );
 
       this.validateTimelineResponse(timeline);
 
@@ -41,17 +56,45 @@ export class TimelineService {
 
   /**
    * Generate a comprehensive AI transformation timeline using AI.
-   * @param {Object} businessProfile - Company profile data.
+   * @param {object} profileData - Company profile data.
    * @param {string} scenarioType - 'conservative', 'balanced', or 'aggressive'.
+   * @param {string} userId - The ID of the authenticated user.
+   * @param {object} CredentialsRepository - The repository class for DB access.
    * @returns {Promise<Object>} Generated timeline data.
    */
-  static async generateTimeline(businessProfile, scenarioType = 'balanced') {
+  static async generateTimeline(profileData, scenarioType = 'balanced', userId, CredentialsRepository) {
+    if (!userId) {
+      throw new Error('User ID is required for timeline generation.');
+    }
+    if (!CredentialsRepository) {
+      throw new Error('CredentialsRepository is required.');
+    }
+    if (!profileData) {
+      throw new Error('Profile data is required for timeline generation.');
+    }
+
     try {
-      this.validateInputs(businessProfile, scenarioType);
+      const aiStatus = await aiService.getStatus(userId, CredentialsRepository);
+      if (!aiStatus.configured) {
+        throw new Error('AI provider not configured. Please configure a provider in the admin settings or set the OPENAI_API_KEY environment variable.');
+      }
 
-      const profileMarkdown = markdownService.generateMarkdown(businessProfile);
+      this.validateScenario(scenarioType);
 
-      return await this.generateTimelineFromMarkdown(profileMarkdown, scenarioType);
+      // The prompt builder now handles both markdown generation and summary extraction
+      const userPrompt = buildTimelineUserPrompt(profileData, scenarioType);
+      const systemPrompt = getTimelineSystemPrompt();
+
+      const timeline = await aiService.generateJson(
+        systemPrompt, 
+        userPrompt, 
+        userId, 
+        CredentialsRepository
+      );
+
+      this.validateTimelineResponse(timeline);
+
+      return timeline;
 
     } catch (error) {
       console.error('Timeline generation error:', error);
@@ -119,18 +162,27 @@ export class TimelineService {
   }
 
   /**
-   * Check if the underlying AI service is configured.
-   * @returns {boolean}
+   * Check if the underlying AI service is configured for a specific user.
+   * @param {string} userId - The ID of the authenticated user.
+   * @param {object} CredentialsRepository - The repository class for DB access.
+   * @returns {Promise<boolean>}
    */
-  static isConfigured() {
-    return aiService.getStatus().configured;
+  static async isConfigured(userId, CredentialsRepository) {
+    if (!userId) return false;
+    const status = await aiService.getStatus(userId, CredentialsRepository);
+    return status.configured;
   }
 
   /**
-   * Get configuration status for debugging.
-   * @returns {Object}
+   * Get configuration status for a specific user for debugging.
+   * @param {string} userId - The ID of the authenticated user.
+   * @param {object} CredentialsRepository - The repository class for DB access.
+   * @returns {Promise<Object>}
    */
-  static getStatus() {
-    return aiService.getStatus();
+  static async getStatus(userId, CredentialsRepository) {
+    if (!userId || !CredentialsRepository) {
+      return { configured: false, provider: 'None', apiKeyStatus: 'Missing user ID or Repository' };
+    }
+    return await aiService.getStatus(userId, CredentialsRepository);
   }
 } 

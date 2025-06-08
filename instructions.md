@@ -71,6 +71,18 @@ app/lib/llm/providers/
 - ✅ **Scalable**: Easy to add new providers through the admin interface.
 - ✅ **Secure**: All credentials encrypted and user-isolated.
 
+#### **Task 6.2.1: Implement Claude Provider & Refactor AI Service (In Progress)**
+**Goal**: Add Anthropic Claude as a second AI provider and refactor the `aiService` to be provider-agnostic.
+
+**Implementation Plan:**
+1.  **Create `claudeServerProvider.js`**: Implement a new provider for the Anthropic Claude API, using `openaiServerProvider.js` as a template. It will be designed to receive its API key from the new credential management system, not environment variables.
+2.  **Update `openaiServerProvider.js`**: Refactor the existing OpenAI provider to accept an API key during instantiation, with a fallback to `process.env` to maintain backward compatibility and support default system-wide configuration.
+3.  **Refactor `aiService.js`**:
+    -   Implement a `getConfiguredProvider(userId, preferredProvider)` method to dynamically resolve and instantiate the correct AI provider based on the user's settings stored in the database.
+    -   This service will use the `CredentialsRepository` to fetch the default or preferred provider and its corresponding API key.
+    -   The `generateJson` method will be updated to use this dynamic provider logic.
+4.  **Focus**: This task is focused exclusively on the backend architecture. UI for provider selection will be handled in a subsequent task.
+
 ### **Phase 7: Professional PDF Export (AFTER 6.2 - 2-3 weeks)**
 **Goal**: Generate professional timeline documents with high-quality LLM content.
 
@@ -84,6 +96,14 @@ app/lib/llm/providers/
 
 ## ✅ Completed Milestones
 *A reverse-chronological log of implemented features.*
+
+### ✅ COMPLETED: Multi-Provider AI Backend (Phase 6.2)
+**What was implemented:**
+- **Provider-Agnostic AI Service**: Refactored the central `aiService` to be fully provider-agnostic. It now dynamically loads the correct AI provider based on the user's saved credentials in the admin interface.
+- **Anthropic Claude Provider**: Created a new `claudeServerProvider.js` that correctly interfaces with the Anthropic Claude API, using the API key from the user's configuration.
+- **Enhanced OpenAI Provider**: Updated `openaiServerProvider.js` to accept a runtime API key, allowing it to work with both user-configured credentials and the legacy environment variable fallback.
+- **Robust Error Handling**: Resolved multiple bugs, including circular dependencies and UI rendering issues, to ensure the new multi-provider system is stable and reliable.
+- **Advanced Prompt Engineering**: Re-engineered the prompt-building logic to be significantly more effective. It now extracts key data from the structured profile object (not markdown) and uses an improved example structure to guide the AI, resulting in highly specific and relevant timeline generation.
 
 ### ✅ COMPLETED: Codebase Health Check & Refactoring (January 2025)
 **What was implemented:**
@@ -179,7 +199,7 @@ app/lib/llm/providers/
 **What was implemented:**
 - **Supabase-Only Architecture**: Refactored the data layer to exclusively use Supabase for all client profile storage.
 - **Authentication Required**: User authentication is now mandatory for creating, viewing, or managing any client profiles.
-- **Removed `localStorage`**: Eliminated all `localStorage` fallbacks, storage logic, and migration tools.
+- **Removed `localStorage`**: Eliminated all `localStorage` code, including fallbacks and migration tools.
 - **Simplified Data Layer**: `ProfileRepository` and `ProfileService` were streamlined for direct Supabase interaction.
 - **Secure by Default**: Row-level security in Supabase ensures users can only access their own data.
 

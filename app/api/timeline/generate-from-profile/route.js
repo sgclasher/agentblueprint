@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import { markdownService } from '../../../services/markdownService';
 import { TimelineService } from '../../../services/timelineService';
 import { ProfileRepository } from '../../../repositories/profileRepository';
+import { CredentialsRepository } from '../../../repositories/credentialsRepository';
 import { createClient } from '@supabase/supabase-js';
 import { getUser } from '../../../lib/supabase';
+import { aiService } from '../../../services/aiService';
 
 /**
  * Generate Timeline from Client Profile with Database Caching
@@ -18,18 +20,28 @@ import { getUser } from '../../../lib/supabase';
  */
 export async function POST(request) {
   try {
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    // Note: The environment variable check is now a fallback. 
+    // The primary check is user-configured providers inside TimelineService.
+    const user = await getUser(request);
+    const userId = user?.id;
+
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Early check for any configured AI provider for this user
+    const aiStatus = await aiService.getStatus(userId, CredentialsRepository);
+    if (!aiStatus.configured) {
       return NextResponse.json(
         { 
-          error: 'AI timeline generation not available', 
-          details: 'OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.',
+          error: 'AI provider not configured', 
+          details: 'Please configure an AI provider in the admin settings or set a system-wide OPENAI_API_KEY.',
           configured: false
         },
         { status: 503 }
       );
     }
-
+    
     // Parse request body
     let body;
     try {
@@ -42,14 +54,8 @@ export async function POST(request) {
     }
 
     const { profileId, profile, forceRegenerate = false, scenarioType } = body;
-    const user = await getUser(request);
-    const userId = user?.id;
-
+    
     console.log(`📝 Request: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}`);
-
-    if (!user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
 
     // Create a new Supabase client authenticated with the user's token
     const supabase = createClient(
@@ -177,10 +183,15 @@ export async function POST(request) {
         }
 
         // Generate full markdown representation of the client profile
-        const profileMarkdown = markdownService.generateMarkdown(targetProfile);
+        // const profileMarkdown = markdownService.generateMarkdown(targetProfile);
         
         // Generate timeline using the full markdown for richer context
-        timeline = await TimelineService.generateTimelineFromMarkdown(profileMarkdown, finalScenarioType);
+        timeline = await TimelineService.generateTimeline(
+          targetProfile,
+          finalScenarioType, 
+          userId,
+          CredentialsRepository
+        );
         
         // Enhance timeline with profile-specific insights
         timeline = enhanceTimelineWithProfile(timeline, targetProfile);
@@ -226,7 +237,7 @@ export async function POST(request) {
         generatedAt: generatedAt,
         scenarioType: finalScenarioType,
         unsavedProfile: unsavedProfile,
-        provider: cached ? 'Database Cache' : 'OpenAI GPT-4o',
+        provider: cached ? 'Database Cache' : aiStatus.provider,
         method: unsavedProfile ? 'Profile-Based Generation (Unsaved)' : 'Profile-Based Generation with Caching'
       });
 

@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { X, Key, TestTube, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
 import styles from './AddServiceForm.module.css';
+import { CredentialsRepository } from '../../repositories/credentialsRepository';
+import useAuthStore from '../../store/useAuthStore';
 
 export default function AddServiceForm({ 
   isOpen, 
@@ -24,6 +26,7 @@ export default function AddServiceForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [isTesting, setIsTesting] = useState(false);
+  const { user } = useAuthStore();
 
   // Service configurations
   const serviceConfigs = {
@@ -86,13 +89,11 @@ export default function AddServiceForm({
             type: 'select', 
             required: true,
             options: [
-              { value: 'claude-opus-4', label: 'Claude Opus 4 (Most Capable)' },
-              { value: 'claude-sonnet-4', label: 'Claude Sonnet 4 (High Performance)' },
-              { value: 'claude-3-7-sonnet', label: 'Claude 3.7 Sonnet (Hybrid Reasoning)' },
-              { value: 'claude-3-5-sonnet', label: 'Claude 3.5 Sonnet' },
-              { value: 'claude-3-5-haiku', label: 'Claude 3.5 Haiku (Fast)' },
-              { value: 'claude-3-opus', label: 'Claude 3 Opus' },
-              { value: 'claude-3-haiku', label: 'Claude 3 Haiku' }
+              { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Most Powerful)' },
+              { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (High Performance)' },
+              { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet' },
+              { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fastest)' },
+              { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Legacy)' },
             ]
           },
           { name: 'base_url', label: 'Base URL (Optional)', type: 'url', required: false },
@@ -243,25 +244,17 @@ export default function AddServiceForm({
     setTestResult(null);
 
     try {
-      // For testing, we'll call the test API directly with credentials
-      const response = await fetch('/api/admin/test-credentials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceType: formData.serviceType,
-          serviceName: formData.serviceName,
-          credentials: formData.credentials,
-          configuration: formData.configuration
-        })
+      const result = await CredentialsRepository.testNewCredentials(user.id, {
+        serviceType: formData.serviceType,
+        serviceName: formData.serviceName,
+        credentials: formData.credentials,
+        configuration: formData.configuration,
       });
-
-      const result = await response.json();
       setTestResult(result);
     } catch (error) {
       setTestResult({
         success: false,
-        error: 'Connection test failed',
-        details: error.message
+        error: error.message || 'Connection test failed',
       });
     } finally {
       setIsTesting(false);
@@ -383,13 +376,26 @@ export default function AddServiceForm({
                     {field.label}
                     {field.required && <span className={styles.required}>*</span>}
                   </label>
-                  <input
-                    type={field.type}
-                    value={formData.credentials[field.name] || ''}
-                    onChange={(e) => handleInputChange('credentials', field.name, e.target.value)}
-                    placeholder={field.placeholder}
-                    className={`${styles.input} ${errors[`credentials.${field.name}`] ? styles.error : ''}`}
-                  />
+                  {field.type === 'select' ? (
+                    <select
+                      value={formData.credentials[field.name] || ''}
+                      onChange={(e) => handleInputChange('credentials', field.name, e.target.value)}
+                      className={`${styles.select} ${errors[`credentials.${field.name}`] ? styles.error : ''}`}
+                    >
+                      <option value="">Choose a model...</option>
+                      {field.options.map(option => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={field.type}
+                      value={formData.credentials[field.name] || ''}
+                      onChange={(e) => handleInputChange('credentials', field.name, e.target.value)}
+                      placeholder={field.placeholder}
+                      className={`${styles.input} ${errors[`credentials.${field.name}`] ? styles.error : ''}`}
+                    />
+                  )}
                   {errors[`credentials.${field.name}`] && (
                     <span className={styles.errorText}>{errors[`credentials.${field.name}`]}</span>
                   )}

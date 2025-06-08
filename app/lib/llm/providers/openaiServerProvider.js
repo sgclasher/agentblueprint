@@ -5,7 +5,8 @@
  * This class is designed to be used by the central `aiService`.
  */
 export class OpenAIServerProvider {
-  constructor() {
+  constructor({ apiKey } = {}) {
+    this._apiKey = apiKey; // Can be undefined
     this.baseUrl = 'https://api.openai.com/v1';
     this.model = 'gpt-4o';
     
@@ -14,7 +15,9 @@ export class OpenAIServerProvider {
   }
 
   get apiKey() {
-    return process.env.OPENAI_API_KEY;
+    // Use the provided API key if it exists, otherwise fallback to environment variable.
+    // This allows for both user-specific credentials and system-wide fallbacks.
+    return this._apiKey || process.env.OPENAI_API_KEY;
   }
 
   /**
@@ -29,6 +32,11 @@ export class OpenAIServerProvider {
     if (!this.apiKey) {
       throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
     }
+
+    console.log('--- OpenAI Provider Request ---');
+    console.log('System Prompt:', systemPrompt);
+    console.log('User Prompt:', userPrompt);
+    console.log('-----------------------------');
     
     try {
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -60,6 +68,10 @@ export class OpenAIServerProvider {
       if (!content) {
         throw new Error('No content received from OpenAI API');
       }
+
+      console.log('--- OpenAI Provider Response ---');
+      console.log('Raw JSON Content:', content);
+      console.log('------------------------------');
 
       // The provider's responsibility is just to return the parsed JSON, not to validate its structure.
       return JSON.parse(content);

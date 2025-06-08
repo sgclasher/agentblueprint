@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * External Service Credentials Repository
  * 
@@ -178,6 +176,42 @@ export class CredentialsRepository {
       });
       throw new Error(`Failed to save credentials: ${error.message}`);
     }
+  }
+
+  /**
+   * Test connection for NEW, unsaved service credentials
+   * @param {string} userId - User ID
+   * @param {Object} credentialData - The unsaved credential data from the form
+   * @returns {Promise<Object>} Test result
+   */
+  static async testNewCredentials(userId, credentialData) {
+    if (!userId) {
+      throw new Error('User authentication required to test credentials.');
+    }
+    
+    // Get current session for authentication
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    const headers = { 'Content-Type': 'application/json' };
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`;
+    } else {
+      // If there's no session, we cannot proceed.
+      throw new Error('Authentication session not found. Please log in again.');
+    }
+    
+    const response = await fetch('/api/admin/test-credentials', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(credentialData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new Error(error.message || `Connection test failed with status: ${response.status}`);
+    }
+
+    return await response.json();
   }
 
   /**

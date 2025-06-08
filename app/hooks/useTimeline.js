@@ -7,43 +7,41 @@ import { ProfileService } from '../services/profileService';
 
 const getTimelineSections = (timelineData) => {
   if (!timelineData) return [];
-  return [{
+
+  const sections = [];
+
+  // 1. Current State
+  sections.push({
     id: 'current-state',
     year: 'Today',
     title: 'Current State',
     subtitle: 'Where you are now',
     iconId: 'MapPin'
-  }, {
-    id: 'phase-1',
-    year: 'Q1-Q2',
-    title: 'Foundation',
-    subtitle: 'Building AI capabilities',
-    iconId: 'Building'
-  }, {
-    id: 'phase-2',
-    year: 'Q3-Q4',
-    title: 'Implementation',
-    subtitle: 'Deploying solutions',
-    iconId: 'Rocket'
-  }, {
-    id: 'phase-3',
-    year: 'Year 2',
-    title: 'Expansion',
-    subtitle: 'Scaling operations',
-    iconId: 'TrendingUp'
-  }, {
-    id: 'phase-4',
-    year: 'Year 3',
-    title: 'Optimization',
-    subtitle: 'Maximizing value',
-    iconId: 'Zap'
-  }, {
+  });
+
+  // 2. Dynamically add phases from AI response
+  if (timelineData.phases && Array.isArray(timelineData.phases)) {
+    timelineData.phases.forEach((phase, index) => {
+      sections.push({
+        id: `phase-${index + 1}`,
+        year: phase.duration || `Year ${index + 1}`,
+        title: phase.title,
+        subtitle: phase.description.substring(0, 50) + '...', // Short subtitle
+        iconId: 'Rocket' // You might want to make this dynamic later
+      });
+    });
+  }
+
+  // 3. Future State
+  sections.push({
     id: 'future-state',
-    year: 'Year 5',
+    year: `Year ${timelineData.phases?.length ? timelineData.phases.length + 1 : '3-5'}`,
     title: 'Future State',
     subtitle: 'Vision realized',
     iconId: 'Target'
-  }, ];
+  });
+
+  return sections;
 };
 
 export function useTimeline() {
@@ -127,40 +125,48 @@ export function useTimeline() {
 
       const progress = scrollHeight > clientHeight ? (scrollTop / (scrollHeight - clientHeight)) * 100 : 0;
       setScrollProgress(Math.max(0, Math.min(100, progress)));
+      
+      let newActiveSectionId;
+      
+      // Prevent a false positive on initial load before the container's height is fully calculated.
+      const isScrollable = scrollHeight > clientHeight;
+      const atBottom = isScrollable && (scrollHeight - scrollTop - clientHeight < 1);
 
-      // More reliable active section detection
-      // We'll find the last section that has scrolled past the top of the viewport
-      // with a 150px offset for better user experience.
-      const scrollPosition = scrollTop + 150;
-      
-      const currentSection = timelineSections
-        .slice() // Create a shallow copy to reverse
-        .reverse()
-        .find(section => {
-          const el = sectionRefs.current[section.id];
-          return el && el.offsetTop <= scrollPosition;
-        });
-      
-      if (currentSection) {
-        setActiveSection(currentSection.id);
+      if (atBottom) {
+        newActiveSectionId = timelineSections[timelineSections.length - 1].id;
       } else {
-        // Fallback to the first section if none are active (e.g., at the very top)
-        setActiveSection(timelineSections[0]?.id || 'current-state');
+        const scrollPosition = scrollTop + 150;
+        
+        const currentSection = timelineSections
+          .slice()
+          .reverse()
+          .find(section => {
+            const el = sectionRefs.current[section.id];
+            return el && el.offsetTop <= scrollPosition;
+          });
+        
+        newActiveSectionId = currentSection ? currentSection.id : (timelineSections[0]?.id || 'current-state');
       }
+      
+      setActiveSection(newActiveSectionId);
     };
+
+    // Set the initial active section immediately to prevent flickering.
+    setActiveSection('current-state');
 
     const contentElement = contentRef.current;
     if (contentElement) {
       contentElement.addEventListener('scroll', handleScroll, { passive: true });
-      // Run on mount to set initial state correctly
-      handleScroll(); 
-    }
+      
+      // Run on mount to set initial state correctly, with a small delay
+      // to allow the browser to paint and calculate correct dimensions.
+      const timer = setTimeout(() => handleScroll(), 100);
 
-    return () => {
-      if (contentElement) {
+      return () => {
+        clearTimeout(timer);
         contentElement.removeEventListener('scroll', handleScroll);
-      }
-    };
+      };
+    }
   }, [timelineData]); // Dependency on timelineData to re-run when sections change
 
   const handleSectionClick = useCallback((sectionId) => {
