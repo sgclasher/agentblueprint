@@ -1,14 +1,15 @@
-const nextJest = require('next/jest')
+import type { Config } from 'jest';
+import nextJest from 'next/jest';
 
 const createJestConfig = nextJest({
   // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
   dir: './',
-})
+});
 
 // Add any custom config to be passed to Jest
-const customJestConfig = {
+const customJestConfig: Config = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you soon)
     '^@/(.*)$': '<rootDir>/$1',
@@ -27,13 +28,13 @@ const customJestConfig = {
     '**/*.(test|spec).(js|jsx|ts|tsx)',
   ],
   collectCoverageFrom: [
-    'app/**/*.{js,jsx}',
+    'app/**/*.{js,jsx,ts,tsx}',
     '!app/**/*.d.ts',
-    '!app/layout.js',
-    '!app/page.js',
-    '!app/timeline/layout.js',
-    '!app/timeline/page.js',
-    '!app/profiles/page.js',
+    '!app/layout.tsx',
+    '!app/page.tsx',
+    '!app/timeline/layout.tsx',
+    '!app/timeline/page.tsx',
+    '!app/profiles/page.tsx',
     '!app/api/**',
     '!app/**/__tests__/**',
   ],
@@ -53,7 +54,7 @@ const customJestConfig = {
   transformIgnorePatterns: [
     'node_modules/(?!(@supabase|jose|openid-client|uuid|oauth|preact-render-to-string|preact|@preact|comlink|core-js|@babel|babel-preset-react-app)/)',
   ],
-}
+};
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig) 
+export default createJestConfig(customJestConfig); 

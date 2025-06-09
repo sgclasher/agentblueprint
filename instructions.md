@@ -1,3 +1,19 @@
+## TypeScript Migration Plan
+*Track the progress of converting the remaining JavaScript files to TypeScript.*
+
+### Phase 1: Profile Components (`app/profiles/components/`)
+- [x] `app/profiles/components/StrategicInitiativesForm.js` -> `app/profiles/components/StrategicInitiativesForm.tsx`
+- [x] `app/profiles/components/ProblemsOpportunitiesForm.js` -> `app/profiles/components/ProblemsOpportunitiesForm.tsx`
+- [x] `app/profiles/components/ProfileWizard.js` -> `app/profiles/components/ProfileWizard.tsx`
+
+### Phase 2: API Routes (`app/api/`)
+- [x] `app/api/timeline/stream/route.js` -> `app/api/timeline/stream/route.ts`
+
+### Phase 3: Root Configuration Files
+- [x] `jest.setup.js` -> `jest.setup.ts`
+- [x] `jest.config.js` -> `jest.config.ts`
+- [x] `next.config.js` -> `next.config.mjs` (or `.ts`)
+
 # Agent Blueprint - Project Roadmap
 
 ## 🔑 Key Documents

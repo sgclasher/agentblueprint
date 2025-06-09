@@ -21,119 +21,117 @@
 
 .formGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
 .formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
+  margin-bottom: 1.5rem;
 }
 
 .formGroup label {
-  font-size: 0.9rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  opacity: 0.9;
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
 .formInput,
 .formSelect,
 .formTextarea {
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
-  background: var(--btn-secondary-bg);
-  color: var(--text-primary);
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   font-size: 1rem;
-  font-family: var(--font-family);
-  transition: all var(--transition-fast) ease;
+  transition: all 0.2s ease;
+  background: white;
+  color: #1f2937;
 }
 
 .formInput:focus,
 .formSelect:focus,
 .formTextarea:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .radioLabel {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
-  background: var(--btn-secondary-bg);
   cursor: pointer;
-  transition: all var(--transition-fast) ease;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.radioLabel:hover {
+  border-color: #3498db;
+  background: #f8fafc;
 }
 
 .radioLabelSelected {
-    border-color: var(--accent-blue);
-    background: rgba(59, 130, 246, 0.1);
+  border-color: #3498db;
+  background: #eff6ff;
 }
 
 .radioInput {
-    margin: 0;
+  margin-right: 0.75rem;
+  width: auto;
+  cursor: pointer;
 }
 
 .radioText {
-  color: var(--text-primary);
-  font-size: 1rem;
-  font-weight: var(--font-weight-medium);
-}
-
-.formSection {
-    margin-bottom: var(--spacing-xl);
-}
-
-.formSection h3 {
-    margin: 0 0 var(--spacing-lg) 0;
-    font-size: 1.5rem;
-    font-weight: var(--font-weight-bold);
-    color: var(--text-primary);
-    padding-bottom: var(--spacing-md);
-    border-bottom: 1px solid var(--border-primary);
+  font-weight: 500;
+  color: #374151;
 }
 
 .checkboxGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .checkboxCard {
-  position: relative;
-  padding: var(--spacing-md);
-  border: 2px solid var(--border-primary);
-  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
   cursor: pointer;
-  transition: all var(--transition-fast) ease;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: white;
 }
 
 .checkboxCard:hover {
-    border-color: var(--accent-blue);
-    transform: translateY(-2px);
+  border-color: #3498db;
+  background: #f8fafc;
 }
 
 .checkboxCardSelected {
-    border-color: var(--accent-blue);
-    background-color: rgba(59, 130, 246, 0.1);
-    color: var(--text-primary);
-}
-
-.checkboxCard input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
+  border-color: #3498db;
+  background: #eff6ff;
 }
 
 .checkboxText {
-    font-weight: var(--font-weight-medium);
+  font-weight: 500;
+  color: #374151;
+}
+
+.formSection {
+  margin-bottom: var(--spacing-xl);
+}
+
+.formSection h3 {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-primary);
 } 

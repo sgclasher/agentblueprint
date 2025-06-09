@@ -1,0 +1,72 @@
+.wizardStep {
+    /* Base styles for a wizard step */
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.formGroup {
+    margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.formInput,
+.formSelect {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: white;
+    color: #1f2937;
+}
+
+.formInput:focus,
+.formSelect:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.radioLabel {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.radioLabel:hover {
+    border-color: #3498db;
+    background: #f8fafc;
+}
+
+.radioLabelSelected {
+    border-color: #3498db;
+    background: #eff6ff;
+}
+
+.radioInput {
+    margin-right: 0.75rem;
+    width: auto;
+    cursor: pointer;
+}
+
+.radioText {
+    font-weight: 500;
+    color: #374151;
+} 

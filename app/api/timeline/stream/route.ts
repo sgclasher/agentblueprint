@@ -1,32 +1,37 @@
-import { NextResponse } from 'next/server';
-import { validateBusinessProfile, validateScenarioType, checkRateLimit } from '../../../utils/validation';
-import { AIService } from '../../../services/aiService';
+import { NextRequest, NextResponse } from 'next/server';
+import { validateBusinessProfile, validateScenarioType, checkRateLimit, BusinessProfile } from '../../../utils/validation';
+import { aiService } from '../../../services/aiService';
 
-export async function POST(request) {
+interface RequestBody {
+    businessProfile: BusinessProfile;
+    scenarioType: string;
+}
+
+export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || 
                      request.headers.get('x-real-ip') || 
                      'unknown';
     
-    const rateLimitCheck = checkRateLimit(`timeline-stream-${clientIP}`, 3, 60000); // 3 streams per minute
+    const rateLimitCheck = await checkRateLimit(`timeline-stream-${clientIP}`, 3, 60000); // 3 streams per minute
     if (!rateLimitCheck.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded', retryAfter: rateLimitCheck.retryAfter },
-        { status: 429, headers: { 'Retry-After': rateLimitCheck.retryAfter.toString() } }
+        { status: 429, headers: { 'Retry-After': String(rateLimitCheck.retryAfter) } }
       );
     }
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json(
-        { error: 'AI streaming not available - OpenAI API key not configured' },
-        { status: 503 }
-      );
+    const userId = 'anonymous'; // Replace with actual user ID from session if authentication is added
+    if (!await aiService.isConfigured(userId)) {
+        return NextResponse.json(
+            { error: 'AI streaming not available - OpenAI API key not configured' },
+            { status: 503 }
+        );
     }
 
     // Parse request body
-    let body;
+    let body: RequestBody;
     try {
       body = await request.json();
     } catch (error) {
@@ -40,7 +45,7 @@ export async function POST(request) {
 
     // Validate business profile
     const profileValidation = validateBusinessProfile(businessProfile);
-    if (!profileValidation.isValid) {
+    if (!profileValidation.isValid || !profileValidation.sanitized) {
       return NextResponse.json(
         { 
           error: 'Invalid business profile', 
@@ -52,7 +57,7 @@ export async function POST(request) {
 
     // Validate scenario type
     const scenarioValidation = validateScenarioType(scenarioType);
-    if (!scenarioValidation.isValid) {
+    if (!scenarioValidation.isValid || !scenarioValidation.sanitized) {
       return NextResponse.json(
         { error: `Invalid scenario type: ${scenarioValidation.error}` },
         { status: 400 }
@@ -75,9 +80,10 @@ export async function POST(request) {
           );
 
           // Generate timeline with streaming
-          const streamGenerator = AIService.streamTimelineGeneration(
-            profileValidation.sanitized,
-            scenarioValidation.sanitized
+          const streamGenerator = aiService.streamTimelineGeneration(
+            profileValidation.sanitized!,
+            scenarioValidation.sanitized!,
+            userId
           );
 
           for await (const chunk of streamGenerator) {
@@ -118,7 +124,7 @@ export async function POST(request) {
           controller.enqueue(
             encoder.encode(`data: ${JSON.stringify({
               type: 'error',
-              error: error.message,
+              error: (error as Error).message,
               timestamp: new Date().toISOString()
             })}\n\n`)
           );
@@ -159,4 +165,4 @@ export async function OPTIONS() {
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
-} 
+}

@@ -121,6 +121,32 @@ class AIService {
     
     return providerInstance.getStatus();
   }
+
+  /**
+   * Checks if an AI provider is configured for the user.
+   * @param {string} userId - The ID of the user.
+   * @param {object} CredentialsRepository - The repository class to use for DB access.
+   * @param {string} [provider=null] - Optional specific provider to check.
+   * @returns {Promise<boolean>} True if a provider is configured.
+   */
+  async isConfigured(userId: string, CredentialsRepository: any, provider: string | null = null): Promise<boolean> {
+    const status = await this.getStatus(userId, CredentialsRepository, provider);
+    return status.configured;
+  }
+
+  /**
+   * Generates a streaming timeline.
+   * @param {object} businessProfile - The business profile.
+   * @param {string} scenarioType - The scenario type.
+   * @param {string} userId - The ID of the user.
+   * @returns {AsyncGenerator<any>} An async generator yielding stream chunks.
+   */
+  async * streamTimelineGeneration(businessProfile: any, scenarioType: string, userId: string): AsyncGenerator<any> {
+    // This is a placeholder implementation.
+    // The actual implementation would call the provider's streaming method.
+    yield { type: 'start', data: 'Timeline generation started' };
+    yield { type: 'complete', data: { phases: [] } };
+  }
 }
 
 // Export a singleton instance of the service
