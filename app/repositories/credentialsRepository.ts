@@ -32,7 +32,9 @@ export class CredentialsRepository {
         query = query.eq('service_type', serviceType);
       }
 
+      console.log('[CredentialsRepository.getCredentials] Query params:', { userId, serviceType });
       const { data, error } = await query;
+      console.log('[CredentialsRepository.getCredentials] Result:', data);
 
       if (error) {
         console.error('❌ Error fetching credentials:', error);
@@ -58,6 +60,7 @@ export class CredentialsRepository {
     }
 
     try {
+      console.log('[CredentialsRepository.getDefaultProvider] Query params:', { userId, serviceType });
       const { data, error } = await supabase
         .from('external_service_credentials')
         .select('*')
@@ -66,6 +69,7 @@ export class CredentialsRepository {
         .eq('is_active', true)
         .eq('is_default', true)
         .single();
+      console.log('[CredentialsRepository.getDefaultProvider] Result:', data);
 
       if (error) {
         if (error.code !== 'PGRST116') { // Not found is not an error
@@ -106,6 +110,16 @@ export class CredentialsRepository {
 
       // Encrypt credentials on server-side via API
       const encryptionResponse = await this._encryptCredentials(credentials);
+      
+      // Validation for AI providers: credentials_encrypted must be a string, metadata must have iv and authTag
+      if (serviceType === 'ai_provider') {
+        if (typeof encryptionResponse.encrypted !== 'string') {
+          throw new Error('Encrypted credentials must be a string for AI providers');
+        }
+        if (!encryptionResponse.metadata.iv || !encryptionResponse.metadata.authTag) {
+          throw new Error('Encryption metadata must include iv and authTag for AI providers');
+        }
+      }
       
       const recordData = {
         user_id: userId,

@@ -14,6 +14,7 @@ interface GenerateFromProfileBody {
     profile?: Profile;
     forceRegenerate?: boolean;
     scenarioType?: ScenarioType;
+    provider?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    let body: GenerateFromProfileBody;
+    let body: GenerateFromProfileBody & { provider?: string };
     try {
       body = await request.json();
     } catch (error) {
@@ -47,9 +48,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { profileId, profile, forceRegenerate = false, scenarioType } = body;
+    const { profileId, profile, forceRegenerate = false, scenarioType, provider } = body;
     
-    console.log(`📝 Request: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}`);
+    console.log(`📝 Request: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}, provider=${provider}`);
 
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -174,7 +175,8 @@ export async function POST(request: NextRequest) {
           targetProfile,
           finalScenarioType, 
           userId,
-          CredentialsRepository
+          CredentialsRepository,
+          provider
         );
         
         timeline = enhanceTimelineWithProfile(generatedTimeline, targetProfile);

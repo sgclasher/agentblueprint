@@ -176,6 +176,7 @@ export function useTimeline() {
     if (profile) {
       return await regenerateTimelineFromProfile(profile, scenarioType);
     }
+    return undefined;
   }, [regenerateTimelineFromProfile]);
 
   return {

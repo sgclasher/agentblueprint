@@ -1,3 +1,47 @@
+## Current Task: Fix Credential Encryption and Storage Robustness
+
+#### Checklist
+- [x] 1. Analyze and fix encryption utility/API to always return string and correct metadata keys
+- [x] 2. Fix Admin UI save logic to use correct structure
+- [x] 3. Add validation before saving (and normalize credential keys to { apiKey, model } for AI providers; backend supports both apiKey and api_key)
+- [ ] 4. Add automated tests for credential saving/encryption
+- [ ] 5. Manual and automated testing (add, test, and use credentials; timeline generation must work for all providers)
+- [ ] 6. Update documentation (instructions.md, README.md if needed)
+
+---
+
+### Previous Task: Fix Timeline Provider Selection Bug
+
+#### Checklist
+
+- [x] **1. Analyze Data Flow from Timeline Dropdown to API Call**
+  - Files: Timeline page/component (likely in `app/timeline/`), state/store files, API call logic.
+  - Goal: Confirm how the selected provider is stored and sent to the backend.
+
+- [x] **2. Write/Update Tests for Provider Selection**
+  - Files: Timeline page/component test, API route test, aiService test.
+  - Goal: Ensure tests cover selecting a provider and the correct provider being used.
+
+- [x] **3. Ensure Provider is Sent in API Request**
+  - Files: Timeline page/component, API call utility.
+  - Goal: Make sure the selected provider is included in the request payload or query params.
+
+- [x] **4. Update API Route to Accept Provider Parameter**
+  - Files: Timeline API route (e.g., `app/api/timeline/generate/route.ts`).
+  - Goal: Parse the provider from the request and pass it to the service.
+
+- [x] **5. Update aiService Usage to Respect Provider Parameter**
+  - Files: `app/services/aiService.ts`
+  - Goal: Ensure the `provider` argument is passed through and used to select the correct provider.
+
+- [x] **6. Manual and Automated Testing**
+  - Files: Timeline page, API route, aiService, relevant test files.
+  - Goal: Verify that selecting different providers results in the correct LLM being called (OpenAI, Gemini, Claude).
+
+- [x] **7. Update Documentation**
+  - Files: `instructions.md`, possibly `README.md`.
+  - Goal: Document the fix and the correct usage pattern for provider selection.
+
 ## TypeScript Migration Plan
 *Track the progress of converting the remaining JavaScript files to TypeScript.*
 

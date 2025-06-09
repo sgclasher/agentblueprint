@@ -1,5 +1,6 @@
 import { OpenAIServerProvider } from '../lib/llm/providers/openaiServerProvider';
 import { ClaudeServerProvider } from '../lib/llm/providers/claudeServerProvider';
+import { GoogleServerProvider } from '../lib/llm/providers/googleServerProvider';
 import { decryptCredential } from '../utils/encryption';
 
 /**
@@ -17,15 +18,12 @@ class AIService {
    * @param {string} userId - The ID of the user.
    * @param {object} Repository - The CredentialsRepository class.
    * @param {string} [preferredProviderName=null] - The name of a preferred provider.
-   * @returns {Promise<OpenAIServerProvider|ClaudeServerProvider|null>} An instance of the configured provider.
+   * @returns {Promise<OpenAIServerProvider|ClaudeServerProvider|GoogleServerProvider|null>} An instance of the configured provider.
    * @private
    */
   async #getConfiguredProvider(userId: string, Repository: any, preferredProviderName: string | null = null) {
     if (!userId) {
-      // Fallback to environment variable if no user context is provided.
-      if (process.env.OPENAI_API_KEY) {
-        return new OpenAIServerProvider();
-      }
+      // No fallback to OpenAI. If no user context, return null.
       return null;
     }
 
@@ -34,10 +32,14 @@ class AIService {
     // If a specific provider is requested, try to fetch it directly.
     if (preferredProviderName) {
       const allProviders = await Repository.getCredentials(userId, 'ai_provider');
+      console.log('[aiService] Providers fetched for user:', allProviders.map((p: any) => p.service_name));
       credential = allProviders.find((p: any) => p.service_name === preferredProviderName);
+      console.log('[aiService] Looking for provider:', preferredProviderName);
+      console.log('[aiService] Credential found:', credential);
     } else {
       // Otherwise, get the default provider.
       credential = await Repository.getDefaultProvider(userId, 'ai_provider');
+      console.log('[aiService] Using default provider credential:', credential);
     }
     
     // If we have a credential, decrypt and instantiate the provider.
@@ -49,29 +51,32 @@ class AIService {
           credential.encryption_metadata.authTag
         );
         const credentials = JSON.parse(decryptedString);
-        const apiKey = credentials.apiKey;
+        // Normalize: support both 'apiKey' and 'api_key' for backward compatibility
+        const apiKey = credentials.apiKey || credentials.api_key;
+        const model = credentials.model || credential.configuration?.model;
+        console.log('[aiService] Decrypted credentials:', { apiKey: !!apiKey, model });
 
         if (apiKey) {
           switch (credential.service_name.toLowerCase()) {
             case 'openai':
-              return new OpenAIServerProvider({ apiKey });
+              return new OpenAIServerProvider({ apiKey, model });
             case 'claude':
-              return new ClaudeServerProvider({ apiKey });
+              return new ClaudeServerProvider({ apiKey, model });
+            case 'gemini':
+              return new GoogleServerProvider({ apiKey, model });
             default:
               console.warn(`Unsupported service name: ${credential.service_name}`);
+              throw new Error(`Selected provider '${credential.service_name}' is not supported by the backend.`);
           }
         }
       } catch (error) {
         console.error('Failed to decrypt or instantiate user-configured provider:', error);
+        throw new Error('Failed to decrypt or instantiate user-configured provider.');
       }
     }
 
-    // If no user-configured provider is found or works, fall back to the environment variable.
-    if (process.env.OPENAI_API_KEY) {
-      return new OpenAIServerProvider();
-    }
-
-    return null;
+    // If no user-configured provider is found or works, do not fallback. Throw error.
+    throw new Error('No valid AI provider configured for this user. Please check your provider selection.');
   }
 
   /**
@@ -88,12 +93,17 @@ class AIService {
       throw new Error('User context (userId) and CredentialsRepository are required.');
     }
 
+    // Log for backend: which provider is selected
+    console.log(`[aiService] Requested provider: ${provider}`);
     const providerInstance = await this.#getConfiguredProvider(userId, CredentialsRepository, provider);
-
     if (!providerInstance) {
-      throw new Error('No AI provider configured. Please check admin settings or set OPENAI_API_KEY.');
+      throw new Error('No AI provider configured. Please check admin settings.');
     }
-
+    // Log for backend: which provider is actually run
+    if (providerInstance.getStatus) {
+      const status = providerInstance.getStatus();
+      console.log(`[aiService] Running provider: ${status.provider}`);
+    }
     return providerInstance.generateJson(systemPrompt, userPrompt);
   }
 
@@ -109,17 +119,29 @@ class AIService {
         return { configured: false, provider: 'None', apiKeyStatus: 'Missing user ID or Repository' };
     }
     
-    const providerInstance = await this.#getConfiguredProvider(userId, CredentialsRepository, provider);
-    
-    if (!providerInstance) {
+    try {
+      const providerInstance = await this.#getConfiguredProvider(userId, CredentialsRepository, provider);
+      if (!providerInstance) {
+        return {
+          configured: false,
+          provider: 'None',
+          apiKeyStatus: 'Not configured',
+        };
+      }
+      return providerInstance.getStatus();
+    } catch (err) {
+      let message = 'Unknown error';
+      if (err instanceof Error) {
+        message = err.message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
       return {
         configured: false,
         provider: 'None',
-        apiKeyStatus: 'Not configured',
+        apiKeyStatus: 'Error: ' + message,
       };
     }
-    
-    return providerInstance.getStatus();
   }
 
   /**

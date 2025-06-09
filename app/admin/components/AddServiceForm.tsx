@@ -251,11 +251,19 @@ export default function AddServiceForm({
         configuration: formData.configuration,
       });
       setTestResult(result);
+      // Log to browser console
+      if (result.success) {
+        console.log(`[Admin] Test Connection SUCCESS for provider: ${formData.serviceName}`);
+      } else {
+        console.log(`[Admin] Test Connection FAILED for provider: ${formData.serviceName}. Error: ${result.error || 'Unknown error'}`);
+      }
     } catch (error: any) {
       setTestResult({
         success: false,
         error: error.message || 'Connection test failed',
       });
+      // Log to browser console
+      console.log(`[Admin] Test Connection FAILED for provider: ${formData.serviceName}. Error: ${error.message || 'Unknown error'}`);
     } finally {
       setIsTesting(false);
     }
@@ -278,6 +286,15 @@ export default function AddServiceForm({
     }
 
     try {
+      // For AI providers, ensure credentials use 'apiKey' and always include 'model' in the encrypted JSON
+      if (submissionData.serviceType === 'ai_provider') {
+        const { api_key, model } = submissionData.credentials;
+        if (!api_key) {
+          throw new Error('API key is required for AI providers');
+        }
+        // Normalize to { apiKey, model }
+        submissionData.credentials = { apiKey: api_key, model: model || submissionData.configuration.model };
+      }
       await onSave(submissionData);
       onClose();
     } catch (error: any) {

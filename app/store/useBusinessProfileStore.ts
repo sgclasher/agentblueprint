@@ -186,7 +186,7 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
             timelineScenarioType: data.scenarioType || 'balanced'
           });
           
-          return data.timeline;
+          return data;
         } catch (error) {
           console.error('Error generating timeline from profile:', error);
           set({ isGenerating: false });

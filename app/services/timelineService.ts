@@ -65,7 +65,9 @@ export class TimelineService {
     }
 
     try {
+      console.log('[TimelineService.generateTimeline] userId:', userId, 'provider:', provider);
       const aiStatus = await aiService.getStatus(userId, CredentialsRepository, provider);
+      console.log('[TimelineService.generateTimeline] aiStatus:', aiStatus);
       if (!aiStatus.configured) {
         throw new Error('AI provider not configured. Please configure a provider in the admin settings or set the OPENAI_API_KEY environment variable.');
       }

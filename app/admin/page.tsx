@@ -65,13 +65,32 @@ export default function AdminPage() {
 
   const handleTestConnection = async (credentialId: string) => {
     setTestingConnections(prev => new Set([...prev, credentialId]));
-    
+    const credential = credentials.find(c => c.id === credentialId);
+    if (credential) {
+      console.log(`[Admin] Test Connection clicked for provider: ${credential.service_name}`);
+    }
     try {
         if(!user) throw new Error("User not authenticated");
-      await CredentialsRepository.testConnection(user.id, credentialId);
+      const result = await CredentialsRepository.testConnection(user.id, credentialId);
+      if (credential) {
+        if (result && result.success) {
+          console.log(`[Admin] Test Connection SUCCESS for provider: ${credential.service_name}`);
+        } else {
+          console.log(`[Admin] Test Connection FAILED for provider: ${credential.service_name}. Error: ${result?.error || 'Unknown error'}`);
+        }
+      }
       await loadCredentials();
     } catch (err) {
       console.error('Test connection failed:', err);
+      if (credential) {
+        let errorMsg = 'Unknown error';
+        if (typeof err === 'object' && err !== null && 'message' in err && typeof (err as any).message === 'string') {
+          errorMsg = (err as any).message;
+        } else if (typeof err === 'string') {
+          errorMsg = err;
+        }
+        console.log(`[Admin] Test Connection FAILED for provider: ${credential.service_name}. Error: ${errorMsg}`);
+      }
     } finally {
       setTestingConnections(prev => {
         const newSet = new Set(prev);

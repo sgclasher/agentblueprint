@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
       credential.credentials_encrypted,
       credential.encryption_metadata
     );
+    console.log('[test-connection] Decrypted credentials:', decryptedCredentials);
 
     let testResult: TestResult;
     switch (serviceType) {
@@ -101,9 +102,24 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function decryptStoredCredentials(encryptedCredentials: any, metadata: any): Promise<{ [key: string]: string }> {
+async function decryptStoredCredentials(encryptedCredentials: any, metadata: any): Promise<{ [key: string]: any }> {
+  // Handle new AI provider format: encryptedCredentials is a string
+  if (typeof encryptedCredentials === 'string') {
+    try {
+      const decrypted = decryptCredential(
+        encryptedCredentials,
+        metadata.iv,
+        metadata.authTag
+      );
+      // Should be a JSON string: { apiKey: "...", model: "..." }
+      return JSON.parse(decrypted);
+    } catch (error) {
+      console.error('Failed to decrypt single-string credentials:', error);
+      throw new Error('Failed to decrypt credentials (single-string)');
+    }
+  }
+  // Legacy/multi-field format
   const decrypted: { [key: string]: string } = {};
-  
   for (const [key, encryptedValue] of Object.entries(encryptedCredentials)) {
     if (typeof encryptedValue === 'string' && metadata[`${key}_iv`] && metadata[`${key}_auth_tag`]) {
       try {
@@ -118,7 +134,6 @@ async function decryptStoredCredentials(encryptedCredentials: any, metadata: any
       }
     }
   }
-  
   return decrypted;
 }
 
@@ -170,16 +185,16 @@ async function testCRMSystem(serviceName: string, credentials: { [key: string]: 
 
 async function testOpenAI(credentials: { [key: string]: any }, configuration: { [key: string]: any }): Promise<TestResult> {
   const startTime = Date.now();
-  const { api_key } = credentials;
-  
-  if (!api_key) {
+  const apiKey = credentials.apiKey || credentials.api_key;
+  console.log('[testOpenAI] Using apiKey:', !!apiKey);
+  if (!apiKey) {
     throw new Error('OpenAI API key is required');
   }
 
   const response = await fetch('https://api.openai.com/v1/models', {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${api_key}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json'
     }
   });
@@ -207,13 +222,13 @@ async function testOpenAI(credentials: { [key: string]: any }, configuration: { 
 
 async function testGemini(credentials: { [key: string]: any }, configuration: { [key: string]: any }): Promise<TestResult> {
   const startTime = Date.now();
-  const { api_key } = credentials;
-  
-  if (!api_key) {
+  const apiKey = credentials.apiKey || credentials.api_key;
+  console.log('[testGemini] Using apiKey:', !!apiKey);
+  if (!apiKey) {
     throw new Error('Google API key is required');
   }
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${api_key}`, {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
@@ -242,16 +257,16 @@ async function testGemini(credentials: { [key: string]: any }, configuration: { 
 
 async function testClaude(credentials: { [key: string]: any }, configuration: { [key: string]: any }): Promise<TestResult> {
   const startTime = Date.now();
-  const { api_key } = credentials;
-  
-  if (!api_key) {
+  const apiKey = credentials.apiKey || credentials.api_key;
+  console.log('[testClaude] Using apiKey:', !!apiKey);
+  if (!apiKey) {
     throw new Error('Anthropic API key is required');
   }
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'x-api-key': api_key,
+      'x-api-key': apiKey,
       'Content-Type': 'application/json',
       'anthropic-version': '2023-06-01'
     },

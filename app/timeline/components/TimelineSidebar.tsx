@@ -69,7 +69,11 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   const handleRegenerateClick = async () => {
     if (onRegenerateTimeline && currentProfile) {
       try {
-        await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
+        console.log('[Timeline] Selected provider:', selectedProvider);
+        const result = await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
+        if (result && typeof result === 'object' && 'provider' in result) {
+          console.log('[Timeline] Provider actually run:', result.provider);
+        }
       } catch (error) {
         console.error('Error regenerating timeline:', error);
       }

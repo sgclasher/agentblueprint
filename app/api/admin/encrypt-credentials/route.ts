@@ -46,6 +46,26 @@ export async function POST(request: NextRequest) {
     console.log('🔐 Encrypting credentials for user:', user.id);
     console.log('🔑 Credential keys to encrypt:', Object.keys(credentials));
 
+    // Special case for AI providers: encrypt the full JSON stringified object (e.g., { apiKey, model })
+    if ((('apiKey' in credentials) || ('api_key' in credentials)) && Object.keys(credentials).length <= 2) {
+      // Normalize to { apiKey, model }
+      const apiKey = credentials.apiKey || credentials.api_key;
+      const model = credentials.model;
+      const toEncrypt = JSON.stringify({ apiKey, model });
+      const encrypted = encryptCredential(toEncrypt);
+      const metadata = {
+        iv: encrypted.iv,
+        authTag: encrypted.authTag,
+        algorithm: 'aes-256-gcm',
+        encrypted_at: new Date().toISOString()
+      };
+      return NextResponse.json({
+        encrypted: encrypted.encrypted,
+        metadata
+      });
+    }
+
+    // Default: multi-field encryption (e.g., ServiceNow)
     const encryptedCredentials: { [key: string]: string } = {};
     const encryptionMetadata: { [key: string]: any } = {};
 
