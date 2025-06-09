@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    // Adding a comment to force TS server restart
     "target": "ES2017",
     "lib": [
       "dom",

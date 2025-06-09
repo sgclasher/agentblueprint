@@ -70,6 +70,8 @@ Directory structure:
     │   │       │   └── route.ts
     │   │       ├── generate-from-profile/
     │   │       │   └── route.js
+    │   │       ├── get-providers/
+    │   │       │   └── route.js
     │   │       └── stream/
     │   │           └── route.js
     │   ├── auth/
@@ -126,17 +128,15 @@ Directory structure:
     │   │       ├── prompts/
     │   │       │   └── timelinePrompts.js
     │   │       └── providers/
-    │   │           ├── claudeServerProvider.js
     │   │           ├── claudeServerProvider.ts
-    │   │           ├── openaiServerProvider.js
     │   │           └── openaiServerProvider.ts
     │   ├── profile/
     │   │   └── page.js
     │   ├── profiles/
     │   │   ├── page.js
-    │   │   ├── profile-detail.css
     │   │   ├── [id]/
     │   │   │   ├── page.js
+    │   │   │   ├── ProfileDetail.module.css
     │   │   │   ├── __tests__/
     │   │   │   │   └── page.test.js
     │   │   │   └── edit/
@@ -149,12 +149,9 @@ Directory structure:
     │   │       └── __tests__/
     │   │           └── ProfileWizard.test.js
     │   ├── repositories/
-    │   │   ├── credentialsRepository.js
     │   │   ├── credentialsRepository.ts
-    │   │   ├── profileRepository.js
     │   │   └── profileRepository.ts
     │   ├── services/
-    │   │   ├── aiService.js
     │   │   ├── aiService.ts
     │   │   ├── demoDataService.js
     │   │   ├── markdownService.js
@@ -180,10 +177,14 @@ Directory structure:
     │   │       ├── MetricsCards.js
     │   │       ├── MetricsWidget.js
     │   │       ├── MetricsWidget.module.css
+    │   │       ├── ProviderSelector.js
+    │   │       ├── ProviderSelector.module.css
     │   │       ├── ScenarioSelector.js
     │   │       ├── TimelineContent.js
     │   │       ├── TimelineContent.module.css
     │   │       ├── TimelineHeader.js
+    │   │       ├── TimelinePlaceholder.js
+    │   │       ├── TimelinePlaceholder.module.css
     │   │       ├── TimelineSidebar.js
     │   │       ├── TimelineSidebar.module.css
     │   │       └── TimelineVisualization.js
@@ -192,7 +193,6 @@ Directory structure:
     │       ├── layoutGraph.js
     │       ├── nodeUtils.js
     │       ├── transformAgenticData.js
-    │       ├── validation.js
     │       └── validation.ts
     ├── public/
     │   └── images/
