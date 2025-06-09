@@ -40,7 +40,8 @@ const ProviderSelector: FC<ProviderSelectorProps> = ({ selectedProvider, onProvi
         const typedProviders = data as Provider[];
         setProviders(typedProviders);
 
-        if (typedProviders.length > 0 && !selectedProvider) {
+        const providerNames = typedProviders.map(p => p.service_name);
+        if (!selectedProvider || !providerNames.includes(selectedProvider)) {
           const defaultProvider = typedProviders.find(p => p.is_default) || typedProviders[0];
           if (defaultProvider) {
             onProviderChange(defaultProvider.service_name);

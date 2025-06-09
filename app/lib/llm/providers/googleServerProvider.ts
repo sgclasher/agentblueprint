@@ -8,7 +8,7 @@ export class GoogleServerProvider {
   private apiKey: string;
   private model: string;
 
-  constructor({ apiKey, model = 'gemini-1.5-flash-latest' }: { apiKey: string, model?: string }) {
+  constructor({ apiKey, model = 'gemini-1.5-flash' }: { apiKey: string, model?: string }) {
     if (!apiKey) {
       throw new Error('Google Gemini API key must be provided.');
     }

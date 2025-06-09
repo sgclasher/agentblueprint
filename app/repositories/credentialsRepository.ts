@@ -108,6 +108,22 @@ export class CredentialsRepository {
         isDefault = false
       } = credentialData;
 
+      // Check if this should be set as default automatically
+      let shouldSetAsDefault = isDefault;
+      
+      // If this is a new credential (no id) and no default is explicitly set,
+      // check if this is the user's first provider of this type
+      if (!id && !isDefault) {
+        const existingProviders = await this.getCredentials(userId, serviceType);
+        const hasDefaultProvider = existingProviders.some((p: any) => p.is_default);
+        
+        // If no default provider exists, make this one the default
+        if (!hasDefaultProvider) {
+          shouldSetAsDefault = true;
+          console.log(`[CredentialsRepository] Setting as default - first ${serviceType} provider for user`);
+        }
+      }
+
       // Encrypt credentials on server-side via API
       const encryptionResponse = await this._encryptCredentials(credentials);
       
@@ -130,7 +146,7 @@ export class CredentialsRepository {
         encryption_metadata: encryptionResponse.metadata,
         configuration,
         is_active: isActive,
-        is_default: isDefault,
+        is_default: shouldSetAsDefault,
         updated_at: new Date().toISOString()
       };
 

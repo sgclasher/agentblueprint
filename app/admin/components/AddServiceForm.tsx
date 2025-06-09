@@ -74,13 +74,12 @@ export default function AddServiceForm({
             type: 'select', 
             required: true,
             options: [
-              { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Latest Hybrid)' },
-              { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Advanced Thinking)' },
-              { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-              { value: 'gemini-2.0-flash-thinking', label: 'Gemini 2.0 Flash Thinking' },
-              { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
-              { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-              { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B' }
+              { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Recommended)' },
+              { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Advanced)' },
+              { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (Latest Stable)' },
+              { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (Fast & Efficient)' },
+              { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro Preview (Most Advanced)' },
+              { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash Preview (Experimental)' }
             ]
           },
           { name: 'base_url', label: 'Base URL (Optional)', type: 'url', required: false },

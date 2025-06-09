@@ -34,7 +34,7 @@ interface BusinessProfileActions {
     collapseAllSections: () => void;
     hasValidProfile: () => boolean;
     generateTimeline: (profile?: Partial<Profile>) => Promise<void>;
-    generateTimelineFromProfile: (profile: Partial<Profile>, forceRegenerate?: boolean, scenarioType?: ScenarioType | null) => Promise<Timeline | undefined>;
+    generateTimelineFromProfile: (profile: Partial<Profile>, forceRegenerate?: boolean, scenarioType?: ScenarioType | null, providerOverride?: string | null) => Promise<Timeline | undefined>;
     regenerateTimelineFromProfile: (profile: Partial<Profile>, scenarioType?: ScenarioType | null, provider?: string | null) => Promise<Timeline | undefined>;
     clearTimeline: () => void;
 }
@@ -146,19 +146,16 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
         }
       },
       
-      generateTimelineFromProfile: async (profile, forceRegenerate = false, scenarioType = null) => {
+      generateTimelineFromProfile: async (profile, forceRegenerate = false, scenarioType = null, providerOverride = null) => {
         set({ isGenerating: true });
-        
         try {
           const { selectedProvider } = get();
-          
+          const providerToUse = providerOverride || selectedProvider;
           const { data: { session } } = await supabase.auth.getSession();
-
           const headers: HeadersInit = { 'Content-Type': 'application/json' };
           if (session?.access_token) {
             headers['Authorization'] = `Bearer ${session.access_token}`;
           }
-          
           const response = await fetch('/api/timeline/generate-from-profile', {
             method: 'POST',
             headers: headers,
@@ -167,17 +164,14 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
               profile: profile,
               forceRegenerate,
               scenarioType,
-              provider: selectedProvider,
+              provider: providerToUse,
             })
           });
-
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
             throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
           }
-
           const data = await response.json();
-          
           set({ 
             timelineData: data.timeline, 
             isGenerating: false,
@@ -185,7 +179,6 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
             timelineGeneratedAt: data.generatedAt,
             timelineScenarioType: data.scenarioType || 'balanced'
           });
-          
           return data;
         } catch (error) {
           console.error('Error generating timeline from profile:', error);
@@ -195,10 +188,7 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
       },
 
       regenerateTimelineFromProfile: async (profile, scenarioType = null, provider = null) => {
-        if (provider) {
-          set({ selectedProvider: provider });
-        }
-        return await get().generateTimelineFromProfile(profile, true, scenarioType);
+        return await get().generateTimelineFromProfile(profile, true, scenarioType, provider);
       },
       
       clearTimeline: () => set({ 
