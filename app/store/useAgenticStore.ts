@@ -64,7 +64,7 @@ interface AgenticStoreActions {
   setConnectionDetails: (details: ConnectionDetails) => void;
   clearAgenticData: () => void;
   resetData: () => void;
-  refreshData: () => Promise<AgenticData | undefined>;
+  refreshData: (accessToken?: string) => Promise<AgenticData | undefined>;
   setLayoutDirection: (direction: 'LR' | 'TB') => void;
 }
 
@@ -104,7 +104,7 @@ const useAgenticStore = create<AgenticStore>()(
           error: null,
         }),
 
-      refreshData: async () => {
+      refreshData: async (accessToken?: string) => {
         const { connectionDetails } = get();
 
         if (!connectionDetails) {
@@ -118,11 +118,18 @@ const useAgenticStore = create<AgenticStore>()(
 
           set({ serviceNowUrl: instanceUrl });
 
+          const headers: { [key: string]: string } = {
+            'Content-Type': 'application/json',
+          };
+
+          // Add authentication header if access token is provided
+          if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+          }
+
           const response = await fetch('/api/servicenow/fetch-agentic-data', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({
               instanceUrl,
               scopeId,

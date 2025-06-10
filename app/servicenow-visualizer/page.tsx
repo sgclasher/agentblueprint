@@ -12,7 +12,7 @@ import styles from './ServiceNowVisualizer.module.css';
 
 export default function ServiceNowVisualizerPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const { user, isAuthenticated, session } = useAuthStore();
   
   const agenticData = useAgenticStore((state) => state.agenticData);
   const clearAgenticData = useAgenticStore((state) => state.clearAgenticData);
@@ -29,10 +29,15 @@ export default function ServiceNowVisualizerPage() {
   // Check for ServiceNow credentials in admin system
   useEffect(() => {
     const checkServiceNowCredentials = async () => {
-      if (!user) return;
+      if (!user || !session?.access_token) return;
       
       try {
-        const response = await fetch('/api/servicenow/get-credentials');
+        const response = await fetch('/api/servicenow/get-credentials', {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         const data = await response.json();
         
         // Check if we have proper credentials configured
@@ -52,7 +57,7 @@ export default function ServiceNowVisualizerPage() {
     if (isAuthenticated) {
       checkServiceNowCredentials();
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, session]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -71,7 +76,12 @@ export default function ServiceNowVisualizerPage() {
       setIsRefreshing(true);
       
       // Get connection details from credentials first
-      const response = await fetch('/api/servicenow/get-credentials');
+      const response = await fetch('/api/servicenow/get-credentials', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const credentialsData = await response.json();
       
       if (!credentialsData.hasCredentials || !credentialsData.instanceUrl) {
@@ -85,8 +95,8 @@ export default function ServiceNowVisualizerPage() {
         scopeId: credentialsData.scopeId || ''
       });
       
-      // Now refresh the data
-      await refreshData();
+      // Now refresh the data with authentication
+      await refreshData(session?.access_token);
       setError(null);
     } catch (err: any) {
       console.error("Error refreshing data:", err);

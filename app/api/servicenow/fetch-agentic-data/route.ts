@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateInstanceUrl, validateScopeId, checkRateLimit } from '../../../utils/validation';
+import { validateInstanceUrl, validateScopeId } from '../../../utils/validation';
+import { checkRateLimit, getClientIdentifier } from '../../../utils/rateLimiter';
 import { getUser } from '../../../lib/supabase';
 import { CredentialsRepository } from '../../../repositories/credentialsRepository';
 import { decryptCredential } from '../../../utils/encryption';
@@ -23,15 +24,14 @@ interface FetchAgenticDataBody {
 
 export async function POST(request: NextRequest) {
   try {
-    const clientIP = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown';
+    const clientIP = getClientIdentifier(request);
     
-    const rateLimitCheck = await checkRateLimit(clientIP, 20, 60000);
+    const rateLimitCheck = await checkRateLimit(clientIP);
     if (!rateLimitCheck.allowed) {
+      const retryAfter = rateLimitCheck.resetTime ? Math.ceil((rateLimitCheck.resetTime - Date.now()) / 1000) : 60;
       return NextResponse.json(
-        { error: 'Rate limit exceeded', retryAfter: rateLimitCheck.retryAfter },
-        { status: 429, headers: { 'Retry-After': String(rateLimitCheck.retryAfter) } }
+        { error: 'Rate limit exceeded', retryAfter },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
 

@@ -79,6 +79,9 @@ export async function POST(request: NextRequest) {
       case 'crm_system':
         testResult = await testCRMSystem(serviceName, decryptedCredentials, credential.configuration);
         break;
+      case 'integration_platform':
+        testResult = await testIntegrationPlatform(serviceName, decryptedCredentials, credential.configuration);
+        break;
       default:
         return NextResponse.json(
           { error: `Unsupported service type: ${serviceType}` },
@@ -166,12 +169,30 @@ async function testCRMSystem(serviceName: string, credentials: { [key: string]: 
   
   try {
     switch (serviceName) {
-      case 'servicenow':
-        return await testServiceNow(credentials, configuration);
       case 'hubspot':
         return await testHubSpot(credentials, configuration);
       default:
         throw new Error(`Unsupported CRM system: ${serviceName}`);
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString(),
+      duration: Date.now() - startTime
+    };
+  }
+}
+
+async function testIntegrationPlatform(serviceName: string, credentials: { [key: string]: any }, configuration: { [key: string]: any }): Promise<TestResult> {
+  const startTime = Date.now();
+  
+  try {
+    switch (serviceName) {
+      case 'servicenow':
+        return await testServiceNow(credentials, configuration);
+      default:
+        throw new Error(`Unsupported integration platform: ${serviceName}`);
     }
   } catch (error: any) {
     return {
