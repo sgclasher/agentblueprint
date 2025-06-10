@@ -14,14 +14,15 @@
 - [x] Redirect to sign-in if not authenticated
 - [x] Show dashboard if authenticated
 - [x] Remove ServiceNow-specific logic from root page
+- [x] **BONUS**: Fixed missing CSS variables (`--accent-purple`, `--accent-blue-dark`) in `app/globals.css` for both dark and light themes
 
-#### **Step 3: Create Dedicated ServiceNow Visualizer Page** ⏳ **PLANNED**
+#### **Step 3: Create Dedicated ServiceNow Visualizer Page** ⏳ **IN PROGRESS**
 - [ ] **Files**: `app/servicenow-visualizer/page.tsx`, `app/servicenow-visualizer/ServiceNowVisualizer.module.css`
 - [ ] Move the existing ServiceNow visualization logic to its own page
 - [ ] Update to get credentials from admin system instead of form input
 - [ ] Maintain all existing functionality (flow visualization, controls, etc.)
 
-#### **Step 4: Update Admin Interface for ServiceNow Integration** ⏳ **PLANNED**
+#### **Step 4: Update Admin Interface for ServiceNow Integration** ⏳ **IN PROGRESS**
 - [ ] **Files**: `app/admin/components/AddServiceForm.tsx`
 - [ ] Enhance the "Integration Platform" service type to include ServiceNow
 - [ ] Add ServiceNow credential fields (username, password, instance URL, scope ID)
