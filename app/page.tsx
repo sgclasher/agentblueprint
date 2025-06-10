@@ -1,145 +1,90 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import useAgenticStore from './store/useAgenticStore';
-import ServiceNowConnector from './components/ServiceNowConnector';
-import FlowVisualizer, { FlowVisualizerHandles } from './components/FlowVisualizer';
-import GlobalHeader from './components/GlobalHeader';
-import { ReactFlowProvider } from 'reactflow';
-import { Info } from 'lucide-react';
-import styles from './Home.module.css';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import useAuthStore from './store/useAuthStore';
+import DashboardPage from './dashboard/page';
 
 export default function Home() {
-  const agenticData = useAgenticStore((state) => state.agenticData);
-  const clearAgenticData = useAgenticStore((state) => state.clearAgenticData);
-  const refreshData = useAgenticStore((state) => state.refreshData);
-  const resetData = useAgenticStore((state) => state.resetData);
+  const router = useRouter();
+  const { user, isLoading, isAuthenticated, initialize } = useAuthStore();
 
-  const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
-  const [showDebug, setShowDebug] = useState<boolean>(false);
+  useEffect(() => {
+    // Initialize auth on mount
+    initialize();
+  }, [initialize]);
 
-  const flowVisualizerRef = useRef<FlowVisualizerHandles>(null);
-
-  const handleError = (error: Error) => {
-    console.error("Error in flow visualization:", error);
-    setError(error.message || "An error occurred displaying the flow diagram");
-  };
-
-  const handleRefresh = async () => {
-    try {
-      setIsRefreshing(true);
-      await refreshData();
-      setError(null);
-    } catch (err: any) {
-      console.error("Error refreshing data:", err);
-      setError(err.message || "Failed to refresh data from ServiceNow");
-    } finally {
-      setIsRefreshing(false);
+  useEffect(() => {
+    // Redirect based on auth status once loading is complete
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        // User is not authenticated, redirect to sign in
+        router.push('/auth/signin');
+      }
+      // If user is authenticated, stay on this page and show dashboard
     }
-  };
+  }, [isLoading, isAuthenticated, router]);
 
-  const handleExpandAll = () => {
-    flowVisualizerRef.current?.expandAllNodes();
-  };
-
-  const handleCollapseAll = () => {
-    flowVisualizerRef.current?.collapseAllNodes();
-  };
-
-  const handleResetFlow = () => {
-    resetData();
-  };
-
-  return (
-    <div className={styles.container}>
-      <GlobalHeader />
-      <main className={styles.main}>
-        {agenticData && (
-          <div className={styles.flowControls}>
-            <div className={styles.controlsContainer}>
-              <div className={styles.titleContainer}>
-                <h2>ServiceNow Agentic AI Flow</h2>
-                <p>Interactive visualization of AI agents, use cases, and tools</p>
-              </div>
-
-              <div className={styles.actionsContainer}>
-                <div className={styles.buttonGroup}>
-                  <button className="btn btn-secondary" onClick={handleCollapseAll}>
-                    Collapse All
-                  </button>
-                  <button className="btn btn-secondary" onClick={handleExpandAll}>
-                    Expand All
-                  </button>
-                </div>
-                <button
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  className="btn btn-primary"
-                >
-                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                </button>
-                <button
-                  onClick={() => setShowDebug(!showDebug)}
-                  className="btn btn-secondary"
-                  aria-label="Toggle debug info"
-                >
-                  <Info size={18} />
-                </button>
-                <button
-                  onClick={clearAgenticData}
-                  className="btn btn-danger"
-                >
-                  Disconnect
-                </button>
-              </div>
-            </div>
-
-            {showDebug && (
-              <div className={styles.debugInfo}>
-                <details open>
-                  <summary>Debug Information</summary>
-                  <pre>
-                    {JSON.stringify({
-                      dataPresent: !!agenticData,
-                      useCases: agenticData?.use_cases?.length || 0,
-                      firstUseCase: agenticData?.use_cases?.[0]?.name || 'None'
-                    }, null, 2)}
-                  </pre>
-                </details>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className={styles.contentContainer}>
-          {!agenticData ? (
-            <div className={styles.connectorContainer}>
-              <ServiceNowConnector />
-            </div>
-          ) : error ? (
-            <div className={styles.errorContainer}>
-              <h3>Error Displaying Flow</h3>
-              <p>{error}</p>
-              <button
-                onClick={clearAgenticData}
-                className="btn btn-danger"
-              >
-                Try Again
-              </button>
-            </div>
-          ) : (
-            <div className={styles.flowContainer}>
-              <ReactFlowProvider>
-                <FlowVisualizer
-                  onError={handleError}
-                  ref={flowVisualizerRef}
-                />
-              </ReactFlowProvider>
-            </div>
-          )}
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'var(--bg-primary)',
+        color: 'var(--text-primary)'
+      }}>
+        <div style={{
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(var(--backdrop-blur))',
+          border: '1px solid var(--border-primary)',
+          borderRadius: 'var(--border-radius-xl)',
+          padding: 'var(--spacing-xxl)',
+          textAlign: 'center',
+          maxWidth: '400px',
+          boxShadow: 'var(--shadow-xl)'
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid var(--accent-blue)',
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto var(--spacing-lg) auto'
+          }}></div>
+          <h2 style={{ 
+            margin: '0 0 var(--spacing-sm) 0',
+            fontSize: '1.25rem',
+            fontWeight: 'var(--font-weight-semibold)'
+          }}>
+            Loading Agent Blueprint...
+          </h2>
+          <p style={{ 
+            margin: '0',
+            color: 'var(--text-secondary)',
+            fontSize: '0.9rem'
+          }}>
+            Initializing your workspace
+          </p>
         </div>
-      </main>
-    </div>
-  );
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // If user is authenticated, show the dashboard
+  if (isAuthenticated) {
+    return <DashboardPage />;
+  }
+
+  // This shouldn't be reached due to the redirect effect, but provide fallback
+  return null;
 } 

@@ -1,33 +1,60 @@
-## Current Task: PDF Export Implementation for AI Business Timelines
+## Current Task: Convert Root Page to Authenticated Dashboard with ServiceNow Admin Integration
 
-### **PDF Export Implementation for AI Business Timelines**
+### **🎯 Root Page to Dashboard Conversion Implementation**
 
-#### **Phase 1: Infrastructure Setup** ✅ **COMPLETED**
-- [x] **Step 1.1: Install Dependencies & Setup**
-  - Files: `package.json`, `next.config.mjs`
-  - Install Puppeteer and configure Next.js for serverless compatibility
+#### **Step 1: Create Dashboard Page Component** ✅ **COMPLETED**
+- [x] **Files**: `app/dashboard/page.tsx`, `app/dashboard/Dashboard.module.css`
+- [x] Create a welcome dashboard page that follows the existing design system
+- [x] Include navigation cards to main features (Profiles, Timeline, Admin, ServiceNow Visualizer)
+- [x] Add placeholder sections for future dashboard widgets
 
-- [x] **Step 1.2: Create PDF Generation API Endpoint**
-  - Files: `app/api/timeline/export-pdf/route.ts`
-  - Create secure endpoint for PDF generation with authentication
+#### **Step 2: Update Root Page with Authentication Logic** ✅ **COMPLETED**
+- [x] **Files**: `app/page.tsx`
+- [x] Replace ServiceNow form with authentication-based routing
+- [x] Redirect to sign-in if not authenticated
+- [x] Show dashboard if authenticated
+- [x] Remove ServiceNow-specific logic from root page
 
-#### **Phase 2: PDF Template & Styling** ✅ **COMPLETED**
-- [x] **Step 2.1: Create PDF-Optimized Timeline Template**
-  - Files: `app/timeline/components/TimelinePDFTemplate.tsx`
-  - Build PDF-specific component that reuses timeline data structure
+#### **Step 3: Create Dedicated ServiceNow Visualizer Page** ⏳ **PLANNED**
+- [ ] **Files**: `app/servicenow-visualizer/page.tsx`, `app/servicenow-visualizer/ServiceNowVisualizer.module.css`
+- [ ] Move the existing ServiceNow visualization logic to its own page
+- [ ] Update to get credentials from admin system instead of form input
+- [ ] Maintain all existing functionality (flow visualization, controls, etc.)
 
-- [x] **Step 2.2: PDF-Specific Styling**
-  - Files: `app/timeline/components/TimelinePDFTemplate.module.css`
-  - Create print-optimized styles while maintaining design consistency
+#### **Step 4: Update Admin Interface for ServiceNow Integration** ⏳ **PLANNED**
+- [ ] **Files**: `app/admin/components/AddServiceForm.tsx`
+- [ ] Enhance the "Integration Platform" service type to include ServiceNow
+- [ ] Add ServiceNow credential fields (username, password, instance URL, scope ID)
+- [ ] Update the service configuration to support ServiceNow as integration platform
 
-#### **Phase 3: Frontend Integration** ✅ **COMPLETED**
-- [x] **Step 3.1: Add Export Button to Timeline UI**
-  - Files: `app/timeline/components/TimelineHeader.tsx`, `app/timeline/page.tsx`, `app/timeline/components/TimelineSidebar.tsx`
-  - Integrated export functionality into existing timeline interface with buttons in both header and sidebar
+#### **Step 5: Create ServiceNow API Integration** ⏳ **PLANNED**
+- [ ] **Files**: `app/repositories/credentialsRepository.ts`, `app/api/servicenow/` routes
+- [ ] Update ServiceNow API routes to use admin-managed credentials
+- [ ] Add credential retrieval methods for ServiceNow from encrypted storage
+- [ ] Update connection testing for ServiceNow in admin interface
 
-- [x] **Step 3.2: Export State Management**
-  - Files: `app/hooks/useTimeline.ts`
-  - Added PDF export logic with loading states and error handling
+#### **Step 6: Update Navigation and Components** ⏳ **PLANNED**
+- [ ] **Files**: `app/components/GlobalHeader.tsx`, other navigation components
+- [ ] Add ServiceNow Visualizer link to navigation
+- [ ] Update any components that reference the old root page ServiceNow form
+- [ ] Ensure consistent navigation across the application
+
+#### **Step 7: Write Tests** ⏳ **PLANNED**
+- [ ] **Files**: `app/__tests__/dashboard/`, `app/__tests__/servicenow-visualizer/`
+- [ ] Create tests for new dashboard authentication logic
+- [ ] Test ServiceNow credential management in admin interface
+- [ ] Test ServiceNow visualizer page with admin credentials
+- [ ] Update existing tests that may be affected by root page changes
+
+#### **Step 8: Update Documentation** ⏳ **PLANNED**
+- [ ] **Files**: `instructions.md`, `README.md`
+- [ ] Document the new dashboard and authentication flow
+- [ ] Update ServiceNow setup instructions to reference admin interface
+- [ ] Update API documentation for ServiceNow credential management
+
+---
+
+## Previous Task: [PDF Export Implementation for AI Business Timelines] ✅ **COMPLETED**
 
 ### **🎉 PDF Export Feature Fully Operational!**
 
@@ -43,28 +70,6 @@
 - **Executive-Ready Formatting**: Print-optimized A4 layout, page breaks, brand consistency
 - **Comprehensive Data**: Handles all timeline content types and structures
 - **Security**: User authentication required, server-side generation
-
-#### **Phase 4: Testing & Documentation** ✅ **COMPLETED**
-- [x] **Step 4.1: Write Tests**
-  - Files: `app/__tests__/features/pdf-export.test.ts`
-  - Test PDF generation, error handling, and data integrity
-
-- [x] **Step 4.2: Update Documentation**
-  - Files: `instructions.md`, `README.md`
-  - Document new PDF export feature and architecture
-
-#### **Phase 5: Production Optimization** ⏳ **PLANNED**
-- [ ] **Step 5.1: Performance & Error Handling**
-  - Files: API route enhancements, rate limiting
-  - Add proper error handling, timeouts, and resource cleanup
-
-**Key Architectural Benefits:**
-- ✅ **Future-Proof**: Template component adapts to timeline structure changes
-- ✅ **Style Consistency**: Reuses existing CSS variables and design system  
-- ✅ **Flexible Data Handling**: Works with any timeline data structure
-- ✅ **Professional Output**: Executive-ready PDF formatting
-- ✅ **Performance**: Server-side generation with proper resource management
-- ✅ **User Experience**: Dual export locations (header + sidebar) with loading states
 
 ---
 
