@@ -22,7 +22,7 @@ interface TimelineSidebarProps {
     timelineCached: boolean;
     timelineGeneratedAt: string | null;
     timelineScenarioType: ScenarioType | null;
-    onRegenerateTimeline: (profile: Profile, scenarioType: ScenarioType | null, provider: string | null) => Promise<void>;
+    onRegenerateTimeline: (profile: Profile, scenarioType: ScenarioType | null, provider: string | null) => Promise<any>;
     isGenerating: boolean;
     currentProfile: Profile | null;
 }

@@ -49,15 +49,14 @@ export default function AddServiceForm({
             type: 'select', 
             required: true,
             options: [
-              { value: 'o3-mini', label: 'o3 Mini (Latest Reasoning)' },
-              { value: 'o1', label: 'o1 (Full Reasoning)' },
+              { value: 'gpt-4o', label: 'GPT-4o (Recommended)' },
+              { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Cost-Effective)' },
+              { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Legacy)' },
+              { value: 'gpt-4.1', label: 'GPT-4.1 (Latest - 1M Context)' },
+              { value: 'o1', label: 'o1 (Advanced Reasoning)' },
+              { value: 'o1-preview', label: 'o1 Preview (Reasoning Beta)' },
               { value: 'o1-mini', label: 'o1 Mini (Fast Reasoning)' },
-              { value: 'o1-preview', label: 'o1 Preview (Advanced Reasoning)' },
-              { value: 'gpt-4o', label: 'GPT-4o (Multimodal)' },
-              { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Fast)' },
-              { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-              { value: 'gpt-4', label: 'GPT-4' },
-              { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' }
+              { value: 'gpt-4', label: 'GPT-4 (Classic)' }
             ]
           },
           { name: 'base_url', label: 'Base URL (Optional)', type: 'url', required: false },
@@ -96,11 +95,12 @@ export default function AddServiceForm({
             type: 'select', 
             required: true,
             options: [
-              { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Most Powerful)' },
-              { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (High Performance)' },
-              { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet' },
-              { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fastest)' },
-              { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Legacy)' },
+              { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Recommended)' },
+              { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast)' },
+              { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Advanced)' },
+              { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 (Latest - May 2025)' },
+              { value: 'claude-opus-4-20250514', label: 'Claude Opus 4 (Most Intelligent)' },
+              { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Hybrid Reasoning)' }
             ]
           },
           { name: 'base_url', label: 'Base URL (Optional)', type: 'url', required: false },

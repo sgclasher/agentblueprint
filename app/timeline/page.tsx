@@ -67,7 +67,7 @@ export default function TimelinePage() {
           timelineCached={timelineCached}
           timelineGeneratedAt={timelineGeneratedAt}
           timelineScenarioType={timelineScenarioType}
-          onRegenerateTimeline={regenerateTimeline as any}
+          onRegenerateTimeline={regenerateTimeline}
           isGenerating={isLoading}
           currentProfile={currentProfile}
         />

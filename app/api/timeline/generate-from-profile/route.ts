@@ -211,6 +211,11 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Get the actual provider status used for generation
+      const actualProviderStatus = cached 
+        ? { provider: 'Database Cache' }
+        : await aiService.getStatus(userId, CredentialsRepository, provider);
+
       return NextResponse.json({
         success: true,
         timeline: timeline,
@@ -220,7 +225,7 @@ export async function POST(request: NextRequest) {
         generatedAt: generatedAt,
         scenarioType: finalScenarioType,
         unsavedProfile: unsavedProfile,
-        provider: cached ? 'Database Cache' : aiStatus.provider,
+        provider: actualProviderStatus.provider,
         method: unsavedProfile ? 'Profile-Based Generation (Unsaved)' : 'Profile-Based Generation with Caching'
       });
 

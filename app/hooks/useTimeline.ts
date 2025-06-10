@@ -172,9 +172,9 @@ export function useTimeline() {
     }
   }, []);
 
-  const regenerateTimeline = useCallback(async (profile: Profile | null, scenarioType: ScenarioType | null = null) => {
+  const regenerateTimeline = useCallback(async (profile: Profile | null, scenarioType: ScenarioType | null = null, provider: string | null = null) => {
     if (profile) {
-      return await regenerateTimelineFromProfile(profile, scenarioType);
+      return await regenerateTimelineFromProfile(profile, scenarioType, provider);
     }
     return undefined;
   }, [regenerateTimelineFromProfile]);

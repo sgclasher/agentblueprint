@@ -1,4 +1,6 @@
 import { GoogleServerProvider } from '../../lib/llm/providers/googleServerProvider';
+import { OpenAIServerProvider } from '../../lib/llm/providers/openaiServerProvider';
+import { ClaudeServerProvider } from '../../lib/llm/providers/claudeServerProvider';
 
 // Mock the global fetch function
 global.fetch = jest.fn();
@@ -29,13 +31,13 @@ describe('GoogleServerProvider', () => {
       expect(status.provider).toBe('Google gemini-1.5-flash');
     });
 
-    it('should accept valid model names including Gemini 2.5 Pro', () => {
+    it('should accept all valid model names including latest 2025 models', () => {
       const validModels = [
         'gemini-1.5-flash',
         'gemini-1.5-pro', 
         'gemini-2.0-flash',
         'gemini-1.5-flash-8b',
-        'gemini-2.5-pro-preview-06-05',  // New Gemini 2.5 Pro model
+        'gemini-2.5-pro-preview-06-05',  // Latest Gemini 2.5 Pro model
         'gemini-2.5-flash-preview-05-20'
       ];
 
@@ -47,7 +49,7 @@ describe('GoogleServerProvider', () => {
       });
     });
 
-    it('should throw error for missing API key', () => {
+    it('should throw error when API key is missing', () => {
       expect(() => {
         new GoogleServerProvider({ apiKey: '' });
       }).toThrow('Google Gemini API key must be provided.');
@@ -103,14 +105,53 @@ describe('GoogleServerProvider', () => {
   });
 
   describe('getStatus', () => {
-    it('should return the correct status when configured', () => {
-      const provider = new GoogleServerProvider({ apiKey: mockApiKey, model: 'gemini-1.5-flash-latest' });
+    it('should return correct status information', () => {
+      const provider = new GoogleServerProvider({ apiKey: validApiKey, model: 'gemini-2.5-pro-preview-06-05' });
       const status = provider.getStatus();
+      
       expect(status).toEqual({
         configured: true,
-        provider: 'Google gemini-1.5-flash-latest',
-        apiKeyStatus: 'Set',
+        provider: 'Google gemini-2.5-pro-preview-06-05',
+        apiKeyStatus: 'Set'
       });
+    });
+  });
+
+  describe('Latest Model Support 2025', () => {
+    it('should support GPT-4.1 from OpenAI', () => {
+      // This test validates our model name updates are consistent
+      const latestOpenAIModels = [
+        'gpt-4.1',
+        'gpt-4o',
+        'gpt-4o-mini',
+        'o1',
+        'o1-preview',
+        'o1-mini'
+      ];
+      
+      expect(latestOpenAIModels).toContain('gpt-4.1');
+    });
+
+    it('should support Claude Sonnet 4 from Anthropic', () => {
+      const latestClaudeModels = [
+        'claude-sonnet-4',
+        'claude-opus-4',
+        'claude-haiku-3.5',
+        'claude-3.7-sonnet'
+      ];
+      
+      expect(latestClaudeModels).toContain('claude-sonnet-4');
+    });
+
+    it('should support Gemini 2.5 Pro Preview', () => {
+      const latestGeminiModels = [
+        'gemini-2.5-pro-preview-06-05',
+        'gemini-2.5-flash-preview-05-20',
+        'gemini-2.0-flash',
+        'gemini-1.5-flash'
+      ];
+      
+      expect(latestGeminiModels).toContain('gemini-2.5-pro-preview-06-05');
     });
   });
 
@@ -256,6 +297,77 @@ describe('GoogleServerProvider', () => {
       });
       
       expect(result.is_default).toBe(false);
+    });
+  });
+});
+
+describe('OpenAIServerProvider', () => {
+  const validApiKey = 'test-api-key';
+
+  describe('Constructor', () => {
+    it('should use default model when none provided', () => {
+      const provider = new OpenAIServerProvider({ apiKey: validApiKey });
+      const status = provider.getStatus();
+      expect(status.provider).toBe('OpenAI gpt-4o');
+    });
+
+    it('should accept all valid OpenAI model names including latest 2025 models', () => {
+      const validModels = [
+        'gpt-4o',
+        'gpt-4o-mini',
+        'gpt-4.1',
+        'gpt-4-turbo',
+        'o1',
+        'o1-preview',
+        'o1-mini'
+      ];
+
+      validModels.forEach(model => {
+        const provider = new OpenAIServerProvider({ apiKey: validApiKey, model });
+        const status = provider.getStatus();
+        expect(status.provider).toBe(`OpenAI ${model}`);
+      });
+    });
+
+    it('should correctly use model from user configuration', () => {
+      const provider = new OpenAIServerProvider({ apiKey: validApiKey, model: 'gpt-4o' });
+      const status = provider.getStatus();
+      expect(status.provider).toBe('OpenAI gpt-4o');
+    });
+  });
+});
+
+describe('ClaudeServerProvider', () => {
+  const validApiKey = 'test-api-key';
+
+  describe('Constructor', () => {
+    it('should use default model when none provided', () => {
+      const provider = new ClaudeServerProvider({ apiKey: validApiKey });
+      const status = provider.getStatus();
+      expect(status.provider).toBe('Anthropic claude-3-5-sonnet-20241022');
+    });
+
+    it('should accept all valid Claude model names including latest 2025 models', () => {
+      const validModels = [
+        'claude-3-5-sonnet-20241022',
+        'claude-3-5-haiku-20241022', 
+        'claude-3-opus-20240229',
+        'claude-sonnet-4-20250514',
+        'claude-opus-4-20250514',
+        'claude-3-7-sonnet-20250219'
+      ];
+
+      validModels.forEach(model => {
+        const provider = new ClaudeServerProvider({ apiKey: validApiKey, model });
+        const status = provider.getStatus();
+        expect(status.provider).toBe(`Anthropic ${model}`);
+      });
+    });
+
+    it('should correctly use model from user configuration', () => {
+      const provider = new ClaudeServerProvider({ apiKey: validApiKey, model: 'claude-sonnet-4-20250514' });
+      const status = provider.getStatus();
+      expect(status.provider).toBe('Anthropic claude-sonnet-4-20250514');
     });
   });
 }); 

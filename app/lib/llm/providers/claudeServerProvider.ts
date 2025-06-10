@@ -10,7 +10,7 @@ export class ClaudeServerProvider {
   private model: string;
   private anthropicVersion: string;
 
-  constructor({ apiKey, model = 'claude-3-sonnet-20240229' }: { apiKey: string, model?: string }) {
+  constructor({ apiKey, model = 'claude-3-5-sonnet-20241022' }: { apiKey: string, model?: string }) {
     if (!apiKey) {
       throw new Error('Anthropic API key must be provided.');
     }
@@ -34,6 +34,7 @@ export class ClaudeServerProvider {
 Please provide the output in a single, valid JSON object, starting with { and ending with }. Do not include any other text or explanation.`;
 
     console.log('--- Claude Provider Request ---');
+    console.log('Model:', this.model);
     console.log('System Prompt:', systemPrompt);
     console.log('User Prompt:', finalUserPrompt);
     console.log('-----------------------------');
@@ -42,7 +43,7 @@ Please provide the output in a single, valid JSON object, starting with { and en
       const response = await fetch(`${this.baseUrl}/messages`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
+          'x-api-key': this.apiKey,
           'anthropic-version': this.anthropicVersion,
           'Content-Type': 'application/json',
         },
@@ -71,7 +72,19 @@ Please provide the output in a single, valid JSON object, starting with { and en
       console.log('Raw JSON Content:', content);
       console.log('------------------------------');
 
-      return JSON.parse(content);
+      // Claude often wraps JSON in markdown code blocks, so we need to strip them
+      let cleanedContent = content.trim();
+      
+      // Remove markdown code block markers if present
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      console.log('Cleaned JSON Content:', cleanedContent);
+
+      return JSON.parse(cleanedContent);
 
     } catch (error: any) {
       console.error('Claude Server Provider Error:', error);

@@ -5,10 +5,14 @@
  * This class is designed to be used by the central `aiService`.
  */
 export class OpenAIServerProvider {
-  constructor({ apiKey } = {}) {
+  private _apiKey?: string;
+  private baseUrl: string;
+  private model: string;
+
+  constructor({ apiKey, model = 'gpt-4o' }: { apiKey?: string, model?: string } = {}) {
     this._apiKey = apiKey; // Can be undefined
     this.baseUrl = 'https://api.openai.com/v1';
-    this.model = 'gpt-4o';
+    this.model = model;
     
     // Don't cache the API key - check it dynamically to handle environment changes
     // This is important for testing where the environment variable might be changed
@@ -27,13 +31,14 @@ export class OpenAIServerProvider {
    * @param {object} options - Additional options for the generation (e.g., temperature).
    * @returns {Promise<object>} The generated JSON object.
    */
-  async generateJson(systemPrompt, userPrompt, options = {}) {
+  async generateJson(systemPrompt: string, userPrompt: string, options: { temperature?: number, max_tokens?: number } = {}) {
     // Check for API key before making the request
     if (!this.apiKey) {
       throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
     }
 
     console.log('--- OpenAI Provider Request ---');
+    console.log('Model:', this.model);
     console.log('System Prompt:', systemPrompt);
     console.log('User Prompt:', userPrompt);
     console.log('-----------------------------');
@@ -76,7 +81,7 @@ export class OpenAIServerProvider {
       // The provider's responsibility is just to return the parsed JSON, not to validate its structure.
       return JSON.parse(content);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('OpenAI Server Provider Error:', error);
       // Re-throwing the error allows the calling service to handle it appropriately.
       throw new Error(`Failed to generate JSON from OpenAI: ${error.message}`);
@@ -91,7 +96,7 @@ export class OpenAIServerProvider {
     const isConfigured = !!this.apiKey;
     return {
       configured: isConfigured,
-      provider: 'OpenAI GPT-4o',
+      provider: `OpenAI ${this.model}`,
       apiKeyStatus: isConfigured ? 'Set' : 'Missing'
     };
   }
