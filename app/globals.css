@@ -1,4 +1,4 @@
-/* Global Theme Variables - Extended from Timeline Page */
+/* Global Theme Variables - Extended from Timeline Page  */
 :root {
   /* Background colors */
   --bg-primary: #0A0E1A; /* Primary background - deep blue */
@@ -17,9 +17,11 @@
   
   /* Accent colors */
   --accent-blue: #3B82F6;
+  --accent-blue-dark: #2563EB;
   --accent-green: #10B981;
   --accent-yellow: #F59E0B;
   --accent-red: #EF4444;
+  --accent-purple: #8B5CF6;
   
   /* Button/interactive colors */
   --btn-primary-bg: #3B82F6;
@@ -114,9 +116,11 @@
   
   /* Accent colors (adjusted for light theme) */
   --accent-blue: #2563eb;
+  --accent-blue-dark: #1d4ed8;
   --accent-green: #059669;
   --accent-yellow: #d97706;
   --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
   
   /* Button/interactive colors */
   --btn-primary-bg: #2563eb;
