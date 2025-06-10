@@ -49,6 +49,17 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
 });
 
+// Mock Next.js server components
+jest.mock('next/server', () => ({
+  NextResponse: {
+    json: jest.fn((data, options = {}) => ({
+      json: async () => data,
+      status: options.status || 200,
+    })),
+  },
+  NextRequest: jest.fn(),
+}));
+
 // Make React available globally for tests
 import React from 'react';
 (global as any).React = React; 

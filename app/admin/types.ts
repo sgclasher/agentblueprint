@@ -63,4 +63,31 @@ export interface ServiceConfigs {
     [key: string]: {
         [key:string]: ServiceConfig;
     }
+}
+
+// Dynamic model refresh types
+export interface ModelOption {
+    id: string;
+    name: string;
+    description: string;
+    created?: number | null;
+}
+
+export interface ModelRefreshState {
+    loading: boolean;
+    error: string | null;
+    lastRefreshed: Date | null;
+}
+
+export interface FetchModelsResponse {
+    success: boolean;
+    provider: string;
+    models?: ModelOption[];
+    cached?: boolean;
+    cachedAt?: string;
+    fetchedAt?: string;
+    error?: string;
+    fallbackModels?: ModelOption[];
+    remaining?: number;
+    resetTime?: number;
 } 

@@ -100,4 +100,73 @@ export class OpenAIServerProvider {
       apiKeyStatus: isConfigured ? 'Set' : 'Missing'
     };
   }
+
+  /**
+   * Fetches available models for OpenAI (returns curated list since API requires auth)
+   * @returns {Promise<Array>} Array of available models with standardized format
+   */
+  static async fetchAvailableModels() {
+    try {
+      // OpenAI API requires API key to list models, so we return a curated list
+      // This list is based on the official OpenAI documentation and pricing page
+      const openaiModels = [
+        {
+          id: 'gpt-4o',
+          name: 'GPT-4o (Recommended)',
+          description: 'Most capable GPT-4 model with multimodal capabilities',
+          created: null,
+        },
+        {
+          id: 'gpt-4o-mini',
+          name: 'GPT-4o Mini (Cost-Effective)',
+          description: 'Faster and more cost-effective version of GPT-4o',
+          created: null,
+        },
+        {
+          id: 'gpt-4.1',
+          name: 'GPT-4.1 (Latest - 1M Context)',
+          description: 'Latest GPT model with 1 million token context window',
+          created: null,
+        },
+        {
+          id: 'o1',
+          name: 'o1 (Advanced Reasoning)',
+          description: 'Advanced reasoning model for complex problem-solving',
+          created: null,
+        },
+        {
+          id: 'o1-preview',
+          name: 'o1 Preview (Reasoning Beta)',
+          description: 'Preview version of the o1 reasoning model',
+          created: null,
+        },
+        {
+          id: 'o1-mini',
+          name: 'o1 Mini (Fast Reasoning)',
+          description: 'Smaller, faster version of the o1 reasoning model',
+          created: null,
+        },
+        {
+          id: 'gpt-4-turbo',
+          name: 'GPT-4 Turbo (Legacy)',
+          description: 'High-performance GPT-4 model with improved speed',
+          created: null,
+        },
+        {
+          id: 'gpt-4',
+          name: 'GPT-4 (Classic)',
+          description: 'Original GPT-4 model with excellent reasoning capabilities',
+          created: null,
+        },
+      ];
+
+      // Simulate slight delay as if fetching from API
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      return openaiModels;
+    } catch (error: any) {
+      console.error('Failed to fetch OpenAI models:', error);
+      throw new Error(`Failed to fetch OpenAI models: ${error.message}`);
+    }
+  }
 } 

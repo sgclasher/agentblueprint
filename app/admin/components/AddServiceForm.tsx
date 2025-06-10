@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
-import { X, Key, TestTube, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { X, Key, TestTube, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import styles from './AddServiceForm.module.css';
 import { CredentialsRepository } from '../../repositories/credentialsRepository';
 import useAuthStore from '../../store/useAuthStore';
-import { Credential, CredentialFormData, ServiceType, ServiceConfigs } from '../types';
+import { Credential, CredentialFormData, ServiceType, ServiceConfigs, ModelOption, ModelRefreshState, FetchModelsResponse } from '../types';
 
 interface AddServiceFormProps {
     isOpen: boolean;
@@ -36,6 +36,10 @@ export default function AddServiceForm({
   const [testResult, setTestResult] = useState<{ success: boolean; error?: string; message?: string; details?: any } | null>(null);
   const [isTesting, setIsTesting] = useState<boolean>(false);
   const { user } = useAuthStore();
+  
+  // Dynamic model refresh state
+  const [dynamicModels, setDynamicModels] = useState<{ [provider: string]: ModelOption[] }>({});
+  const [modelRefreshState, setModelRefreshState] = useState<{ [provider: string]: ModelRefreshState }>({});
 
   const serviceConfigs: ServiceConfigs = {
     ai_provider: {
@@ -129,7 +133,77 @@ export default function AddServiceForm({
       }
     },
     productivity_tool: {},
-    integration_platform: {}
+    integration_platform: {    }
+  };
+
+  // Dynamic model refresh functionality
+  const refreshModels = async (provider: string, forceRefresh: boolean = false) => {
+    setModelRefreshState(prev => ({
+      ...prev,
+      [provider]: { loading: true, error: null, lastRefreshed: prev[provider]?.lastRefreshed || null }
+    }));
+
+    try {
+      const response = await fetch('/api/admin/fetch-models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, forceRefresh })
+      });
+
+      const data: FetchModelsResponse = await response.json();
+
+      if (data.success && data.models) {
+        setDynamicModels(prev => ({ ...prev, [provider]: data.models! }));
+        setModelRefreshState(prev => ({
+          ...prev,
+          [provider]: { loading: false, error: null, lastRefreshed: new Date() }
+        }));
+        console.log(`[Admin] Successfully refreshed ${data.models.length} models for ${provider}`);
+      } else {
+        // Use fallback models if available
+        const fallbackModels = data.fallbackModels || [];
+        if (fallbackModels.length > 0) {
+          setDynamicModels(prev => ({ ...prev, [provider]: fallbackModels }));
+          console.log(`[Admin] Using ${fallbackModels.length} fallback models for ${provider}`);
+        }
+        
+        setModelRefreshState(prev => ({
+          ...prev,
+          [provider]: { 
+            loading: false, 
+            error: data.error || 'Failed to refresh models', 
+            lastRefreshed: prev[provider]?.lastRefreshed || null 
+          }
+        }));
+      }
+    } catch (error: any) {
+      console.error(`[Admin] Error refreshing models for ${provider}:`, error);
+      setModelRefreshState(prev => ({
+        ...prev,
+        [provider]: { 
+          loading: false, 
+          error: error.message || 'Network error', 
+          lastRefreshed: prev[provider]?.lastRefreshed || null 
+        }
+      }));
+    }
+  };
+
+  // Get models for a provider (dynamic first, then fallback to hardcoded)
+  const getModelsForProvider = (provider: string): { value: string, label: string }[] => {
+    const dynamicModelsForProvider = dynamicModels[provider];
+    
+    if (dynamicModelsForProvider && dynamicModelsForProvider.length > 0) {
+      return dynamicModelsForProvider.map(model => ({
+        value: model.id,
+        label: model.name
+      }));
+    }
+
+    // Fallback to hardcoded models from serviceConfigs
+    const aiProviderConfig = serviceConfigs.ai_provider[provider];
+    const modelField = aiProviderConfig?.fields.find(field => field.name === 'model');
+    return modelField?.options || [];
   };
 
   useEffect(() => {
@@ -399,16 +473,37 @@ export default function AddServiceForm({
                     {field.required && <span className={styles.required}>*</span>}
                     </label>
                     {field.type === 'select' ? (
-                    <select
-                        value={formData.configuration[field.name] || formData.credentials[field.name] || ''}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) => handleInputChange(field.name, e.target.value)}
-                        className={`${styles.select} ${errors[`credentials.${field.name}`] ? styles.error : ''}`}
-                    >
-                        <option value="">Choose a model...</option>
-                        {field.options?.map(option => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                    </select>
+                      <div className={styles.modelDropdownContainer}>
+                        <select
+                          value={formData.configuration[field.name] || formData.credentials[field.name] || ''}
+                          onChange={(e: ChangeEvent<HTMLSelectElement>) => handleInputChange(field.name, e.target.value)}
+                          className={`${styles.select} ${errors[`credentials.${field.name}`] ? styles.error : ''} ${field.name === 'model' ? styles.modelSelect : ''}`}
+                        >
+                          <option value="">Choose a model...</option>
+                          {field.name === 'model' ? 
+                            getModelsForProvider(formData.serviceName).map(option => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            )) :
+                            field.options?.map(option => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))
+                          }
+                        </select>
+                        {field.name === 'model' && formData.serviceName && (
+                          <button
+                            type="button"
+                            onClick={() => refreshModels(formData.serviceName, false)}
+                            disabled={modelRefreshState[formData.serviceName]?.loading || false}
+                            className={styles.refreshButton}
+                            title="Refresh available models"
+                          >
+                            <RefreshCw 
+                              size={16} 
+                              className={modelRefreshState[formData.serviceName]?.loading ? styles.spinning : ''} 
+                            />
+                          </button>
+                        )}
+                      </div>
                     ) : (
                     <input
                         type={field.type}
@@ -417,6 +512,19 @@ export default function AddServiceForm({
                         placeholder={field.placeholder}
                         className={`${styles.input} ${errors[`credentials.${field.name}`] ? styles.error : ''}`}
                     />
+                    )}
+                    {field.name === 'model' && formData.serviceName && modelRefreshState[formData.serviceName] && (
+                      <div className={styles.modelStatus}>
+                        {modelRefreshState[formData.serviceName].error ? (
+                          <span className={styles.modelError}>
+                            ⚠️ {modelRefreshState[formData.serviceName].error}
+                          </span>
+                        ) : modelRefreshState[formData.serviceName].lastRefreshed ? (
+                          <span className={styles.modelSuccess}>
+                            ✅ Updated {modelRefreshState[formData.serviceName].lastRefreshed?.toLocaleTimeString()}
+                          </span>
+                        ) : null}
+                      </div>
                     )}
                     {errors[`credentials.${field.name}`] && (
                     <span className={styles.errorText}>{errors[`credentials.${field.name}`]}</span>

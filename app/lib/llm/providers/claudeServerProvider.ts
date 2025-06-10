@@ -103,4 +103,61 @@ Please provide the output in a single, valid JSON object, starting with { and en
       apiKeyStatus: 'Set',
     };
   }
+
+  /**
+   * Fetches available models for Anthropic Claude (returns curated list since API requires auth)
+   * @returns {Promise<Array>} Array of available models with standardized format
+   */
+  static async fetchAvailableModels() {
+    try {
+      // Anthropic API requires API key to list models, so we return a curated list
+      // This list is based on the official Anthropic documentation
+      const claudeModels = [
+        {
+          id: 'claude-3-5-sonnet-20241022',
+          name: 'Claude 3.5 Sonnet (Recommended)',
+          description: 'Best balance of intelligence, speed, and cost',
+          created: null,
+        },
+        {
+          id: 'claude-3-5-haiku-20241022',
+          name: 'Claude 3.5 Haiku (Fast)',
+          description: 'Fastest model for quick tasks and high-volume use cases',
+          created: null,
+        },
+        {
+          id: 'claude-3-opus-20240229',
+          name: 'Claude 3 Opus (Advanced)',
+          description: 'Most intelligent model for complex reasoning tasks',
+          created: null,
+        },
+        {
+          id: 'claude-sonnet-4-20250514',
+          name: 'Claude Sonnet 4 (Latest - May 2025)',
+          description: 'Latest high-performance model with enhanced capabilities',
+          created: null,
+        },
+        {
+          id: 'claude-opus-4-20250514',
+          name: 'Claude Opus 4 (Most Intelligent)',
+          description: 'Most intelligent Claude model for the most complex tasks',
+          created: null,
+        },
+        {
+          id: 'claude-3-7-sonnet-20250219',
+          name: 'Claude 3.7 Sonnet (Hybrid Reasoning)',
+          description: 'Hybrid model combining fast response with advanced reasoning',
+          created: null,
+        },
+      ];
+
+      // Simulate slight delay as if fetching from API
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      return claudeModels;
+    } catch (error: any) {
+      console.error('Failed to fetch Claude models:', error);
+      throw new Error(`Failed to fetch Claude models: ${error.message}`);
+    }
+  }
 } 

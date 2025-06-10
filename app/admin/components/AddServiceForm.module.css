@@ -273,4 +273,60 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Model dropdown with refresh button */
+.modelDropdownContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.modelSelect {
+  flex: 1;
+}
+
+.refreshButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background: var(--btn-secondary-bg);
+  border-color: var(--accent-blue);
+  transform: translateY(-1px);
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Model status indicators */
+.modelStatus {
+  margin-top: var(--spacing-xs);
+  font-size: 0.8rem;
+}
+
+.modelSuccess {
+  color: var(--accent-green);
+  opacity: 0.8;
+}
+
+.modelError {
+  color: var(--accent-red);
+  opacity: 0.9;
 } 
