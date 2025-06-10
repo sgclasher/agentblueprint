@@ -11,12 +11,12 @@ const extractKeyDataFromObject = (profileData: Partial<Profile>): string => {
     keyData.push(`**Core Business Objective:** ${expectedOutcome.businessObjectives}`);
   }
 
-  if (expectedOutcome?.strategicInitiatives?.length > 0) {
+  if (expectedOutcome?.strategicInitiatives?.length && expectedOutcome.strategicInitiatives.length > 0) {
     const goals = expectedOutcome.strategicInitiatives.map((i: any) => `- ${i.initiative}`).join('\\n');
     keyData.push(`**Key Strategic Goals:**\\n${goals}`);
   }
 
-  if (problems?.businessProblems?.length > 0) {
+  if (problems?.businessProblems?.length && problems.businessProblems.length > 0) {
     const problemList = problems.businessProblems.map((p: string) => `- ${p}`).join('\\n');
     keyData.push(`**Primary Problems to Solve:**\\n${problemList}`);
   }

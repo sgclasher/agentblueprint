@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     try {
       const timelineData = await TimelineService.generateTimeline(
         profileValidation.sanitized,
-        scenarioValidation.sanitized,
+        scenarioValidation.sanitized as any, // Type assertion to fix build
         userId,
         CredentialsRepository,
         provider

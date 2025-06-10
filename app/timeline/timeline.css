@@ -54,6 +54,69 @@
   --timeline-accent-red: #dc2626;
 }
 
+/* Timeline Header Styles */
+.timeline-header {
+  background-color: var(--timeline-sidebar-bg);
+  border-bottom: 1px solid var(--timeline-border-primary);
+  padding: var(--timeline-spacing-lg) var(--timeline-spacing-xl);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--timeline-text-secondary);
+  cursor: pointer;
+  padding: var(--timeline-spacing-sm);
+  border-radius: var(--timeline-border-radius);
+  transition: background-color var(--timeline-transition-duration) ease;
+}
+
+.back-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--timeline-text-primary);
+}
+
+.header-title-section {
+  flex: 1;
+  text-align: center;
+  margin: 0 var(--timeline-spacing-xl);
+}
+
+.timeline-title {
+  font-size: 1.5rem;
+  font-weight: var(--timeline-header-font-weight);
+  color: var(--timeline-text-primary);
+  margin-bottom: var(--timeline-spacing-xs);
+}
+
+.timeline-subtitle {
+  font-size: 0.9rem;
+  color: var(--timeline-text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--timeline-spacing-md);
+}
+
+.btn-icon {
+  padding: var(--timeline-spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+}
+
 /* Base Styles & Resets */
 .timeline-container * {
   box-sizing: border-box;
@@ -71,9 +134,17 @@
   cursor: pointer;
   font-weight: 500;
   transition: background-color var(--timeline-transition-duration) ease;
+  display: flex;
+  align-items: center;
+  gap: var(--timeline-spacing-xs);
 }
-.timeline-container .btn-primary:hover {
+.timeline-container .btn-primary:hover:not(:disabled) {
   background-color: #2563EB; /* Darker blue */
+}
+.timeline-container .btn-primary:disabled {
+  background-color: var(--timeline-text-muted);
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .timeline-container .btn-secondary {

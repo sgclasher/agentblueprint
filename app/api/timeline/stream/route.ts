@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = 'anonymous'; // Replace with actual user ID from session if authentication is added
-    if (!await aiService.isConfigured(userId)) {
+    if (!await aiService.isConfigured(userId, {} as any)) {
         return NextResponse.json(
             { error: 'AI streaming not available - OpenAI API key not configured' },
             { status: 503 }

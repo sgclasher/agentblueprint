@@ -4,7 +4,7 @@
 
 .timelineContainer {
   display: flex;
-  height: calc(100vh - 73px); /* Adjust if GlobalHeader height is different */
+  height: calc(100vh - 73px - 70px); /* GlobalHeader (~73px) + TimelineHeader (~70px) */
   width: 100%;
   background-color: var(--timeline-bg);
   color: var(--timeline-text-primary);

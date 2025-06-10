@@ -28,6 +28,8 @@ Directory structure:
     │   │   └── @supabase/
     │   │       └── supabase-js.js
     │   ├── __tests__/
+    │   │   ├── admin/
+    │   │   │   └── fetch-models.test.ts
     │   │   └── features/
     │   │       ├── ai-timeline.test.js
     │   │       ├── client-profiles.test.js
@@ -49,6 +51,8 @@ Directory structure:
     │   │   │   ├── debug-credentials/
     │   │   │   │   └── route.ts
     │   │   │   ├── encrypt-credentials/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── fetch-models/
     │   │   │   │   └── route.ts
     │   │   │   ├── generate-encryption-key/
     │   │   │   │   └── route.ts
@@ -214,6 +218,7 @@ Directory structure:
     │       ├── encryption.ts
     │       ├── layoutGraph.ts
     │       ├── nodeUtils.ts
+    │       ├── rateLimiter.ts
     │       ├── transformAgenticData.ts
     │       └── validation.ts
     ├── public/
