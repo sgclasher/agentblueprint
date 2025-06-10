@@ -18,8 +18,8 @@ export default function Home() {
     // Redirect based on auth status once loading is complete
     if (!isLoading) {
       if (!isAuthenticated) {
-        // User is not authenticated, redirect to sign in
-        router.push('/auth/signin');
+        // User is not authenticated, redirect to sign in with current URL as redirect
+        router.push(`/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
       }
       // If user is authenticated, stay on this page and show dashboard
     }

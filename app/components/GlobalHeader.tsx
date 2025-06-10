@@ -16,6 +16,7 @@ import {
   LogOut,
   User,
   Settings,
+  GitBranch,
   LucideIcon
 } from 'lucide-react';
 
@@ -33,10 +34,10 @@ export default function GlobalHeader() {
 
   const navigation: NavItem[] = [
     {
-      name: 'ServiceNow Flows',
+      name: 'Dashboard',
       href: '/',
       icon: Monitor,
-      description: 'Visualize agentic AI flows'
+      description: 'Platform overview and quick actions'
     },
     {
       name: 'Client Profiles',
@@ -49,6 +50,12 @@ export default function GlobalHeader() {
       href: '/timeline',
       icon: TrendingUp,
       description: 'Generate transformation roadmaps'
+    },
+    {
+      name: 'ServiceNow',
+      href: '/servicenow-visualizer',
+      icon: GitBranch,
+      description: 'Visualize agentic AI flows'
     },
     {
       name: 'Settings',

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useAuthStore from '../../store/useAuthStore';
 import GlobalHeader from '../../components/GlobalHeader';
 import { LogIn, Mail, Lock, Zap, ArrowLeft } from 'lucide-react';
@@ -11,6 +11,7 @@ type AuthMode = 'password' | 'magic-link';
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signIn, signInWithMagicLink, user, isLoading } = useAuthStore();
   const [formData, setFormData] = useState({
     email: '',
@@ -23,9 +24,11 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/profiles');
+      // Get the redirect parameter from URL, or default to dashboard
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     }
-  }, [user, router]);
+  }, [user, router, searchParams]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

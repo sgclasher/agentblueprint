@@ -1,30 +1,34 @@
 'use client';
 
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useAuthStore from '../../store/useAuthStore';
 import GlobalHeader from '../../components/GlobalHeader';
-import { UserPlus, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import styles from '../Auth.module.css';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signUp, user, isLoading } = useAuthStore();
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      router.push('/profiles');
+      // Get the redirect parameter from URL, or default to dashboard
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     }
-  }, [user, router]);
+  }, [user, router, searchParams]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

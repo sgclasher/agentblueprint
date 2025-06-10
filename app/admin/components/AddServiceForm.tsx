@@ -113,16 +113,6 @@ export default function AddServiceForm({
       }
     },
     crm_system: {
-      servicenow: {
-        name: 'ServiceNow',
-        description: 'ServiceNow instance for workflow automation and data access',
-        fields: [
-          { name: 'username', label: 'Username', type: 'text', required: true, placeholder: 'your.username' },
-          { name: 'password', label: 'Password', type: 'password', required: true, placeholder: 'Your ServiceNow password' },
-          { name: 'instance_url', label: 'Instance URL', type: 'url', required: true, placeholder: 'https://company.service-now.com' },
-          { name: 'scope_id', label: 'Application Scope ID', type: 'text', required: false, placeholder: 'Optional: sys_id of target scope' }
-        ]
-      },
       hubspot: {
         name: 'HubSpot',
         description: 'HubSpot CRM for contact and deal management',
@@ -133,7 +123,18 @@ export default function AddServiceForm({
       }
     },
     productivity_tool: {},
-    integration_platform: {    }
+    integration_platform: {
+      servicenow: {
+        name: 'ServiceNow',
+        description: 'ServiceNow platform for Agentic AI workflow visualization and enterprise automation',
+        fields: [
+          { name: 'username', label: 'Username', type: 'text', required: true, placeholder: 'your.username' },
+          { name: 'password', label: 'Password', type: 'password', required: true, placeholder: 'Your ServiceNow password' },
+          { name: 'instance_url', label: 'Instance URL', type: 'url', required: true, placeholder: 'https://company.service-now.com' },
+          { name: 'scope_id', label: 'Application Scope ID', type: 'text', required: false, placeholder: 'Optional: sys_id of target scope for Agentic AI data' }
+        ]
+      }
+    }
   };
 
   // Dynamic model refresh functionality
@@ -239,9 +240,19 @@ export default function AddServiceForm({
     if (formData.serviceName && !editingCredential) {
       const config = serviceConfigs[formData.serviceType]?.[formData.serviceName];
       if (config) {
+        const getServiceTypeLabel = (serviceType: string) => {
+          switch (serviceType) {
+            case 'ai_provider': return 'AI';
+            case 'crm_system': return 'CRM';
+            case 'integration_platform': return 'Integration';
+            case 'productivity_tool': return 'Productivity';
+            default: return 'Service';
+          }
+        };
+        
         setFormData(prev => ({
           ...prev,
-          displayName: `${config.name} (${formData.serviceType === 'ai_provider' ? 'AI' : 'CRM'})`
+          displayName: `${config.name} (${getServiceTypeLabel(formData.serviceType)})`
         }));
       }
     }

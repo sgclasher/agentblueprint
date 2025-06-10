@@ -143,9 +143,9 @@ export default function AdminPage() {
 
   const serviceTypes: ServiceTypeInfo[] = [
     { id: 'ai_provider', name: 'AI Providers', icon: Zap, description: 'OpenAI, Gemini, Claude, and other LLM providers' },
-    { id: 'crm_system', name: 'CRM Systems', icon: Users, description: 'ServiceNow, HubSpot, Salesforce integrations' },
+          { id: 'crm_system', name: 'CRM Systems', icon: Users, description: 'HubSpot, Salesforce, and customer relationship management' },
     { id: 'productivity_tool', name: 'Productivity Tools', icon: Briefcase, description: 'Microsoft 365, Google Workspace, Slack' },
-    { id: 'integration_platform', name: 'Integration Platforms', icon: Monitor, description: 'Zapier, Make, custom APIs' }
+          { id: 'integration_platform', name: 'Integration Platforms', icon: Monitor, description: 'ServiceNow, Zapier, Make, enterprise platforms' }
   ];
 
   const getStatusIcon = (testStatus: TestStatus): ReactNode => {
