@@ -1,3 +1,48 @@
+## Current Task: ServiceNow Integration Refinements - Fix Outstanding Issues
+
+### **📋 Implementation Plan - APPROVED**
+
+#### **Step 1: Remove ServiceNow Environment Variable Fallback** ✅ **COMPLETED**
+- [x] **Files**: `app/api/servicenow/get-credentials/route.ts`
+- [x] Remove the fallback logic in catch block (lines 55-60) that returns environment variables
+- [x] Replace with clear error message indicating admin credentials are not configured or invalid
+- [x] Update error response to be more descriptive about what went wrong
+
+#### **Step 2: Fix Page Refresh Redirect Logic** ✅ **COMPLETED**
+- [x] **Files**: `app/page.tsx`, `app/auth/signin/page.tsx`, `app/auth/signup/page.tsx`, `app/components/auth/AuthProvider.tsx`
+- [x] Investigate current redirect parameter handling in authentication flow
+- [x] Update root page (`app/page.tsx`) to properly preserve current URL when redirecting to sign-in
+- [x] Ensure auth components properly handle and preserve the redirect parameter
+- [x] Test that refreshing any page (especially `/admin`) keeps user on same page after authentication
+- [x] **Fixed authentication redirects in**: `/admin`, `/profile`, `/profiles`, and `/servicenow-visualizer` pages
+
+#### **Step 3: Debug and Fix Admin Test Connection Inconsistency**
+- [ ] **Files**: `app/api/admin/test-credentials/route.ts`, `app/api/admin/test-connection/route.ts`
+- [ ] Compare credential decryption logic between both endpoints
+- [ ] Standardize credential structure handling (ensure both use same format)
+- [ ] Fix ServiceNow credential testing in both endpoints to use consistent approach
+- [ ] Ensure both endpoints handle the same credential format from admin UI
+
+#### **Step 4: Test Credential Encryption/Decryption Consistency**
+- [ ] **Files**: Test files and manual verification
+- [ ] Write tests to verify credential encryption/decryption works consistently
+- [ ] Test ServiceNow credential save → test → use flow end-to-end
+- [ ] Verify both admin screen test and saved credentials test work with same data
+
+#### **Step 5: Verify ServiceNow Credential Structure Consistency**
+- [ ] **Files**: `app/admin/components/AddServiceForm.tsx`, credential handling logic
+- [ ] Ensure ServiceNow credentials are saved in consistent format
+- [ ] Verify the structure matches what both test endpoints expect
+- [ ] Test complete flow: configure → save → test from admin → use in ServiceNow visualizer
+
+#### **Step 6: Update Documentation and Error Messages**
+- [ ] **Files**: `instructions.md`, error handling in relevant API routes
+- [ ] Document the fixes applied
+- [ ] Update error messages to be more user-friendly and descriptive
+- [ ] Remove any references to environment variable fallbacks
+
+---
+
 ## Current Outstanding Issues: ServiceNow Integration Refinements
 
 ### **🚨 REMAINING ISSUES TO ADDRESS (Next Chat Session)**

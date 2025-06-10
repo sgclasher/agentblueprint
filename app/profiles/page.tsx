@@ -44,7 +44,7 @@ const AuthRequiredMessage: FC = () => {
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
         <button 
           className="btn btn-primary btn-large"
-          onClick={() => router.push('/auth/signin')}
+          onClick={() => router.push(`/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`)}
         >
           Sign In
         </button>

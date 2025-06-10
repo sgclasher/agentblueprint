@@ -37,7 +37,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/auth/signin');
+      // Preserve current URL when redirecting to sign-in
+      router.push(`/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 

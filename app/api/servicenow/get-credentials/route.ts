@@ -57,13 +57,18 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error getting ServiceNow credentials:', error);
     
-    // Fallback to environment variables if admin system fails
-    return NextResponse.json({
-      instanceUrl: process.env.SERVICENOW_INSTANCE_URL || '',
-      scopeId: process.env.SERVICENOW_SCOPE_ID || '',
-      username: '',
-      hasCredentials: false
-    });
+    // Return clear error message instead of fallback
+    return NextResponse.json(
+      { 
+        error: 'ServiceNow credentials not configured or invalid',
+        details: 'Please configure ServiceNow credentials in the admin panel',
+        instanceUrl: '',
+        scopeId: '',
+        username: '',
+        hasCredentials: false
+      },
+      { status: 500 }
+    );
   }
 }
 
