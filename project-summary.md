@@ -243,7 +243,9 @@ Directory structure:
         └── workflows/
             └── test.yml
 
-## Key Features Implemented
+----
+
+## Key Features Implemented 
 
 ### ✅ PDF Export for AI Timelines (Latest Feature)
 **Professional timeline reports with executive-ready formatting:**
