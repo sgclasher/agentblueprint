@@ -41,6 +41,7 @@ interface FlowCanvasProps {
   layoutDirection: string;
   toggleNodeExpansion: (nodeId: string) => void;
   onEdgesChange: OnEdgesChange;
+  autoFit: boolean;
 }
 
 export default function FlowCanvas({ 
@@ -52,7 +53,8 @@ export default function FlowCanvas({
   selectedNode,
   layoutDirection,
   toggleNodeExpansion,
-  onEdgesChange
+  onEdgesChange,
+  autoFit
 }: FlowCanvasProps) {
   
   // Add the required props to each node object
@@ -82,7 +84,7 @@ export default function FlowCanvas({
       onConnect={onConnect}
       onNodeClick={onNodeClick}
       nodeTypes={nodeTypes}
-      fitView
+      fitView={autoFit}
       fitViewOptions={{
         padding: 0.6,
         includeHiddenNodes: false,
@@ -95,7 +97,6 @@ export default function FlowCanvas({
       defaultViewport={{ zoom: 0.75, x: 0, y: 0 }}
       style={{ background: '#f8f8f8' }}
     >
-      <Controls />
       <MiniMap />
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
       

@@ -23,6 +23,8 @@ export default function ServiceNowVisualizerPage() {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [showDebug, setShowDebug] = useState<boolean>(false);
   const [hasServiceNowCredentials, setHasServiceNowCredentials] = useState<boolean>(false);
+  const [autoFit, setAutoFit] = useState<boolean>(false);
+  const [layout, setLayout] = useState<'LR' | 'TB'>('LR');
 
   const flowVisualizerRef = useRef<FlowVisualizerHandles>(null);
 
@@ -115,7 +117,20 @@ export default function ServiceNowVisualizerPage() {
   };
 
   const handleResetFlow = () => {
-    resetData();
+    flowVisualizerRef.current?.resetView();
+  };
+
+  const handleLayoutChange = (direction: 'LR' | 'TB') => {
+    setLayout(direction);
+    flowVisualizerRef.current?.setLayoutDirection(direction);
+  };
+
+  const handleToggleAutoFit = () => {
+    setAutoFit(current => {
+      const newState = !current;
+      flowVisualizerRef.current?.setAutoFitEnabled(newState);
+      return newState;
+    });
   };
 
   const handleBackToDashboard = () => {
@@ -164,11 +179,33 @@ export default function ServiceNowVisualizerPage() {
 
               <div className={styles.actionsContainer}>
                 <div className={styles.buttonGroup}>
+                  <button
+                    className={`${styles.controlButton} ${layout === 'LR' ? styles.active : ''}`}
+                    onClick={() => handleLayoutChange('LR')}
+                  >
+                    Horizontal Layout
+                  </button>
+                  <button
+                    className={`${styles.controlButton} ${layout === 'TB' ? styles.active : ''}`}
+                    onClick={() => handleLayoutChange('TB')}
+                  >
+                    Vertical Layout
+                  </button>
+                </div>
+                <div className={styles.buttonGroup}>
                   <button className="btn btn-secondary" onClick={handleCollapseAll}>
                     Collapse All
                   </button>
                   <button className="btn btn-secondary" onClick={handleExpandAll}>
                     Expand All
+                  </button>
+                </div>
+                <div className={styles.buttonGroup}>
+                  <button className={`btn btn-secondary ${styles.controlButton}`} onClick={handleToggleAutoFit}>
+                    Auto-Fit: {autoFit ? 'ON' : 'OFF'}
+                  </button>
+                  <button onClick={handleResetFlow} className="btn btn-danger">
+                    Reset Flow
                   </button>
                 </div>
                 <button

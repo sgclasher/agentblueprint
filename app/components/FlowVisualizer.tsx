@@ -17,6 +17,9 @@ interface FlowVisualizerProps {
 export interface FlowVisualizerHandles {
   expandAllNodes: () => void;
   collapseAllNodes: () => void;
+  setLayoutDirection: (direction: 'LR' | 'TB') => void;
+  resetView: () => void;
+  setAutoFitEnabled: (enabled: boolean) => void;
 }
 
 const FlowVisualizer = forwardRef<FlowVisualizerHandles, FlowVisualizerProps>(({ onError }, ref) => {
@@ -28,16 +31,23 @@ const FlowVisualizer = forwardRef<FlowVisualizerHandles, FlowVisualizerProps>(({
   
   const {
     layoutDirection,
+    autoFitEnabled,
     toggleNodeExpansion,
     expandAllNodes,
     collapseAllNodes,
+    setLayoutDirection,
+    resetView,
+    setAutoFitEnabled,
   } = useFlowLayout(nodes, setNodes, edges, setEdges);
   
   useFlowData(agenticData, layoutDirection, setNodes, setEdges, onError);
   
   useImperativeHandle(ref, () => ({
     expandAllNodes,
-    collapseAllNodes
+    collapseAllNodes,
+    setLayoutDirection,
+    resetView,
+    setAutoFitEnabled,
   }));
 
   const onNodeClickHandler = useCallback((event: React.MouseEvent, node: Node<NodeData>) => {
@@ -49,12 +59,7 @@ const FlowVisualizer = forwardRef<FlowVisualizerHandles, FlowVisualizerProps>(({
       width: '100%', 
       height: '100%', 
       display: 'flex', 
-      flexDirection: 'row',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0 
+      flexDirection: 'row'
     }}>
       {!agenticData ? (
         <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -73,6 +78,7 @@ const FlowVisualizer = forwardRef<FlowVisualizerHandles, FlowVisualizerProps>(({
           selectedNode={selectedNode}
           layoutDirection={layoutDirection}
           toggleNodeExpansion={toggleNodeExpansion}
+          autoFit={autoFitEnabled}
         />
       )}
     </div>

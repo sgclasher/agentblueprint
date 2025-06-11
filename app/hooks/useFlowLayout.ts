@@ -19,6 +19,10 @@ export function useFlowLayout(
   const lastCollapseStateRef = useRef<{ [key: string]: boolean }>({});
   const isLayoutNecessaryRef = useRef<boolean>(false);
 
+  const resetView = useCallback(() => {
+    reactFlowInstance.fitView({ duration: 800, padding: 0.3 });
+  }, [reactFlowInstance]);
+
   const updateDescendantVisibility = useCallback((nodesToUpdate: CustomNode[], parentId: string, hidden: boolean): CustomNode[] => {
     const children = nodesToUpdate.filter(node => node.data.parentId === parentId);
 
@@ -310,12 +314,14 @@ export function useFlowLayout(
 
   return {
     layoutDirection,
+    setLayoutDirection,
     autoFitEnabled,
     lastUpdate,
     setAutoFitEnabled,
     toggleNodeExpansion,
     expandAllNodes,
     collapseAllNodes,
-    handleLayoutChange
+    handleLayoutChange,
+    resetView
   };
 } 
