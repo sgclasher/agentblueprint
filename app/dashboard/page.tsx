@@ -35,10 +35,10 @@ export default function DashboardPage() {
       color: 'green'
     },
     {
-      title: 'ServiceNow Visualizer',
+      title: 'Agentic Workflow',
       description: 'Visualize agentic AI workflows and processes',
       icon: <GitBranch size={24} />,
-      path: '/servicenow-visualizer',
+      path: '/agentic-workflow',
       color: 'purple'
     },
     {

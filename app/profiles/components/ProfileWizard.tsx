@@ -3,7 +3,7 @@
 import React, { useState, FC, ChangeEvent } from 'react';
 import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
-import { demoDataService } from '../../services/demoDataService';
+
 import StrategicInitiativesForm from './StrategicInitiativesForm';
 import ProblemsOpportunitiesForm from './ProblemsOpportunitiesForm';
 import CompanyOverviewStep from './steps/CompanyOverviewStep';
@@ -219,13 +219,7 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
     }
   };
 
-  const loadDemoData = (demoType: string) => {
-    const demoProfile = demoDataService.getDemoProfile(demoType);
-    if(demoProfile) {
-        setProfileData(demoProfile);
-    }
-    setCurrentStep(0);
-  };
+
 
   const renderCurrentStep = () => {
     const currentStepId = WIZARD_STEPS[currentStep].id;
@@ -456,27 +450,7 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
               {showMarkdownPreview ? 'Hide Preview' : 'Show Markdown'}
             </button>
             
-                          {!isEditMode && (
-                <select 
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) => e.target.value && loadDemoData(e.target.value)}
-                  style={{
-                    padding: 'var(--spacing-sm) var(--spacing-md)',
-                    background: 'var(--btn-secondary-bg)',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: 'var(--border-radius)',
-                    color: 'var(--text-primary)',
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-family)'
-                  }}
-                >
-                  <option value="">Load Demo Data</option>
-                  <option value="tech-startup">TechFlow Solutions (SaaS)</option>
-                  <option value="manufacturing">PrecisionParts Manufacturing</option>
-                  <option value="healthcare">Regional Medical Center</option>
-                  <option value="finance">Community Trust Bank</option>
-                </select>
-              )}
+              
           </div>
 
           <div style={{

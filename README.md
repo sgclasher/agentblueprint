@@ -1,6 +1,6 @@
 # Agent Blueprint & Business AI Advisory Platform
 
-**🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring ServiceNow agentic AI flow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 14, React 18, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
+**🤖 AI Assistant Context:** This is a comprehensive business AI advisory platform built with Next.js, featuring agentic workflow visualization, interactive AI transformation timelines, and client profile management with structured business intelligence framework. The platform serves as a sophisticated business intelligence tool combining technical visualization capabilities with comprehensive data collection and strategic planning tools. Core technologies: Next.js 14, React 18, ReactFlow, Zustand, Dagre, Supabase. Design inspired by ai-2027.com with modern dark themes and floating UI elements.
 
 **🎯 Current State:** Production-ready platform with **a comprehensive admin interface for external service credential management** and **a production-grade security architecture**. Features a **centralized, provider-agnostic `aiService`** (with implementations for OpenAI, Google Gemini, and Anthropic Claude) and **intelligent database-backed timeline caching**. The platform's credential management system is built to support multiple AI providers and CRM systems. **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Dynamic Model Refresh**: One-click refresh button in admin UI fetches latest available models from all AI providers with intelligent caching and rate limiting, no API keys required. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations following industry best practices. **✅ Timeline Intelligence**: AI-generated timelines are now highly specific and relevant, thanks to advanced prompt engineering that leverages the full context of client profiles. Database-backed caching provides 80-90% cost reduction with instant loading for repeated requests. **✅ ALL THREE AI PROVIDERS FULLY OPERATIONAL**: Complete support for **OpenAI GPT-4o & o1 series**, **Google Gemini 2.5 Pro Preview**, and **Anthropic Claude Sonnet 4** with seamless provider switching and robust timeline generation across all major AI providers. **Client profiles are exclusively stored in Supabase** with complete user authentication and data isolation. **Enhanced UX Features**: The timeline view is now robust, with fixes for all known rendering and scrolling bugs. The platform features **consistent professional theming** and a polished user experience. **✅ Code Health**: Recent refactoring has improved code consistency, removed component duplication, and fixed bugs related to caching and API authentication, resulting in a more stable and maintainable codebase. Architecture includes robust service layers, secure multi-user authentication, and production-ready credential management. **✅ Provider Selection UI Complete**: Users can now dynamically select their preferred AI provider from a dropdown menu in the timeline interface, with full support for the latest models including **Gemini 2.5 Pro Preview**, **OpenAI GPT-4o**, and **Claude Sonnet 4**.
 
@@ -27,7 +27,7 @@
 
 A Next.js application that serves five primary functions:
 
-1. **ServiceNow Agentic AI Visualizer**: Transform ServiceNow agentic AI data into interactive flow diagrams
+1. **Agentic Workflow Visualizer**: Transform agentic AI data from integration platforms into interactive flow diagrams
 2. **AI Transformation Timeline**: Business advisory tool that generates personalized AI adoption roadmaps  
 3. **Client Profile Management**: Comprehensive business intelligence system using structured methodology to create client "digital twins"
 4. **User Authentication & Database Management**: Secure multi-user system with encrypted credential storage and profile management exclusively on Supabase
@@ -37,14 +37,14 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 
 ## Core Features
 
-### 🔄 **ServiceNow Flow Visualization**
+### 🔄 **Agentic Workflow Visualization**
 - **Interactive Node Graph**: Drag, zoom, and pan through complex AI workflows
 - **Hierarchical Exploration**: Expand and collapse nodes individually or all at once to navigate complex agentic flows
 - **Dynamic Layouts & View Controls**:
     - Toggle between horizontal (LR) and vertical (TB) graph layouts.
     - Automatically fit the diagram to the viewport with an "Auto-Fit" toggle.
     - Instantly reset the view to its default position and zoom.
-- **Secure Integration**: Direct connection to ServiceNow instances with credential management
+- **Secure Integration**: Direct connection to integration platforms with credential management (supports ServiceNow)
 
 ### 📈 **AI Transformation Timeline** ✨ **(AI-Powered with OpenAI GPT-4o, Google Gemini 2.5 Pro & Intelligent Caching)**
 - **Business Profile Collection**: Multi-step form capturing company details, AI maturity, goals
@@ -73,7 +73,7 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Structured Framework**: Expected Outcomes → Problems & Opportunities → Solutions & Value → Architecture Assessment
 - **Smart Validation**: Visual step indicators (completed ✓, current, incomplete) with gentle warnings instead of hard blocks
 - **Secure Database Integration**: All profiles are stored securely in Supabase, requiring user authentication.
-- **Demo Data System**: Load 4 realistic industry profiles directly into your authenticated account.
+- **Real Profile Creation**: Create comprehensive business profiles through guided ProfileWizard interface.
 - **Visual Indicators**: Cloud tags for Supabase-stored profiles
 
 ### 🔐 **User Authentication & Database Management**
@@ -221,9 +221,9 @@ npm test
 
 ### **Usage Options**
 
-#### **Option 1: ServiceNow Visualization**
-1. Navigate to `http://localhost:3000`
-2. Enter ServiceNow instance details
+#### **Option 1: Agentic Workflow Visualization**
+1. Navigate to `http://localhost:3000/agentic-workflow` 
+2. Configure integration platform credentials (admin required)
 3. Connect and explore agentic AI flows
 4. Use layout controls and node interactions
 
@@ -236,7 +236,7 @@ npm test
 #### **Option 3: Client Profile Management**
 1. Click "Client Profiles" button or go to `/profiles`
 2. **Sign up or sign in** to access your secure profile dashboard.
-3. Create a new profile or load demo data (4 industry scenarios available) into your account.
+3. Create a new profile using the guided ProfileWizard interface.
 4. Complete 8-step business intelligence assessment (click any step to jump around freely).
 5. **Edit existing profiles** - click "View Details" then "Edit Profile" for full wizard editing.
 6. Generate automatic AI timeline from profile data.

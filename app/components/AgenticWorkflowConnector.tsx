@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import useAgenticStore from '../store/useAgenticStore';
 import { useTheme } from './theme/ThemeProvider';
 
-export default function ServiceNowConnector() {
+export default function AgenticWorkflowConnector() {
   const { theme } = useTheme();
   const router = useRouter();
   
@@ -61,7 +61,7 @@ export default function ServiceNowConnector() {
       });
 
       if (!response.ok) {
-        let errorMessage = 'Failed to fetch data from ServiceNow';
+        let errorMessage = 'Failed to fetch data from integration platform';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -76,7 +76,7 @@ export default function ServiceNowConnector() {
       setAgenticData(data);
 
     } catch (err: any) {
-      setError(err.message || 'An unknown error occurred while fetching data.');
+      setError(err.message || 'An unknown error occurred while fetching workflow data.');
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +130,7 @@ export default function ServiceNowConnector() {
             margin: '0 0 var(--spacing-sm) 0', 
             fontWeight: 'var(--font-weight-semibold)',
             color: 'var(--text-primary)'
-          }}>Agentic AI Visualizer</h2>
+          }}>Agentic Workflow Visualizer</h2>
           
           <div style={{ 
             display: 'flex', 
@@ -151,7 +151,7 @@ export default function ServiceNowConnector() {
             color: 'var(--text-secondary)', 
             margin: '0'
           }}>
-            Connect to your ServiceNow instance to visualize Agentic AI flows
+            Connect to your integration platform to visualize agentic workflow processes
           </p>
         </div>
         
@@ -242,7 +242,7 @@ export default function ServiceNowConnector() {
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 6v6l4 2"></path>
               </svg>
-              <strong>Secure Connection:</strong> Authentication is handled server-side using environment variables.
+              <strong>Secure Connection:</strong> Authentication is handled server-side using configured credentials.
             </p>
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function ServiceNowConnector() {
             fontSize: '0.9rem', 
             marginBottom: 'var(--spacing-md)' 
           }}>
-            Or explore our client intelligence tools:
+            Or explore our business intelligence tools:
           </p>
           <div style={{ 
             display: 'flex', 

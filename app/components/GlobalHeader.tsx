@@ -53,7 +53,7 @@ export default function GlobalHeader() {
     },
     {
       name: 'Agentic Workflow',
-      href: '/servicenow-visualizer',
+      href: '/agentic-workflow',
       icon: GitBranch,
       description: 'Visualize agentic AI flows'
     },

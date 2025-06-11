@@ -18,11 +18,7 @@ jest.mock('../../services/profileService', () => ({
   }
 }));
 
-jest.mock('../../services/demoDataService', () => ({
-  demoDataService: {
-    getDemoProfiles: jest.fn()
-  }
-}));
+
 
 jest.mock('../../services/markdownService', () => ({
   markdownService: {
@@ -61,7 +57,7 @@ jest.mock('../../profiles/components/ProfileWizard', () => ({
 
 import ProfilesPage from '../../profiles/page';
 import { ProfileService } from '../../services/profileService';
-import { demoDataService } from '../../services/demoDataService';
+
 
 describe('Client Profile Management Feature', () => {
   beforeEach(() => {
@@ -73,11 +69,7 @@ describe('Client Profile Management Feature', () => {
       Promise.resolve({ ...data, id: 'test-123', createdAt: new Date() })
     );
     
-    // Mock demo data
-    demoDataService.getDemoProfiles.mockReturnValue([
-      { name: 'TechFlow Solutions', industry: 'Technology' },
-      { name: 'PrecisionParts Manufacturing', industry: 'Manufacturing' }
-    ]);
+
   });
 
   it('should display profile list and create new profile', async () => {
@@ -106,19 +98,7 @@ describe('Client Profile Management Feature', () => {
     });
   });
 
-  it('should load demo data when requested', async () => {
-    render(<ProfilesPage />);
-    
-    // Find and click demo data button
-    const demoButton = await screen.findByText(/Load Demo Data/i);
-    fireEvent.click(demoButton);
-    
-    // Should show demo options
-    await waitFor(() => {
-      expect(screen.getByText('TechFlow Solutions')).toBeInTheDocument();
-      expect(screen.getByText('PrecisionParts Manufacturing')).toBeInTheDocument();
-    });
-  });
+
 
   it('should handle existing profiles', async () => {
     // Mock existing profiles

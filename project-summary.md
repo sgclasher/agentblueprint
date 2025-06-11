@@ -98,7 +98,7 @@ Directory structure:
     │   │   ├── GlobalHeader.tsx
     │   │   ├── NodeIcons.tsx
     │   │   ├── Providers.tsx
-    │   │   ├── ServiceNowConnector.tsx
+    │   │   ├── AgenticWorkflowConnector.tsx
     │   │   ├── auth/
     │   │   │   ├── AuthModal.tsx
     │   │   │   ├── AuthProvider.tsx
@@ -181,12 +181,12 @@ Directory structure:
     │   ├── repositories/
     │   │   ├── credentialsRepository.ts
     │   │   └── profileRepository.ts
-    │   ├── servicenow-visualizer/
+    │   ├── agentic-workflow/
     │   │   ├── page.tsx
-    │   │   └── ServiceNowVisualizer.module.css
+    │   │   └── AgenticWorkflow.module.css
     │   ├── services/
     │   │   ├── aiService.ts
-    │   │   ├── demoDataService.ts
+
     │   │   ├── markdownService.ts
     │   │   ├── profileService.ts
     │   │   ├── timelineService.ts

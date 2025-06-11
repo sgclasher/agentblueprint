@@ -37,9 +37,9 @@ jest.mock('../../components/FlowVisualizer', () => ({
   }
 }));
 
-jest.mock('../../components/ServiceNowConnector', () => ({
+jest.mock('../../components/AgenticWorkflowConnector', () => ({
   __esModule: true,
-  default: function MockServiceNowConnector({ onConnect }) {
+  default: function MockAgenticWorkflowConnector({ onConnect }) {
     return (
       <div data-testid="servicenow-connector">
         <button onClick={() => onConnect({ instanceUrl: 'test.service-now.com' })}>

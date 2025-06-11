@@ -3,7 +3,7 @@
 import React, { useState, useEffect, FC } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProfileService } from '../services/profileService';
-import { demoDataService } from '../services/demoDataService';
+
 import ProfileWizard from './components/ProfileWizard';
 import useAuthStore from '../store/useAuthStore';
 import GlobalHeader from '../components/GlobalHeader';
@@ -343,18 +343,7 @@ export default function ProfilesPage() {
     setShowWizard(true);
   };
 
-  const loadDemoProfiles = async () => {
-    try {
-      const demoProfiles = demoDataService.getDemoProfiles();
-      
-      for (const demoData of demoProfiles) {
-        await ProfileService.createProfile(demoData);
-      }
-      await loadProfiles();
-    } catch (error) {
-      console.error('Error loading demo profiles:', error);
-    }
-  };
+
 
   const handleWizardComplete = (profile: Profile) => {
     setProfiles(prev => [...prev, profile]);
@@ -449,12 +438,6 @@ export default function ProfilesPage() {
               onClick={handleCreateProfile}
             >
               Create Your First Profile
-            </button>
-            <button 
-              className="btn btn-secondary btn-large"
-              onClick={loadDemoProfiles}
-            >
-              <BarChart size={20} style={{ marginRight: '0.5rem' }} /> Load Demo Profiles
             </button>
           </div>
         </div>

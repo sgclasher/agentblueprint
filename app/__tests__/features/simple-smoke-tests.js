@@ -10,11 +10,11 @@ describe('MVP Smoke Tests', () => {
     it('should have required components', () => {
       // Verify components can be imported
       const FlowVisualizer = require('../../components/FlowVisualizer').default;
-      const ServiceNowConnector = require('../../components/ServiceNowConnector').default;
+      const AgenticWorkflowConnector = require('../../components/AgenticWorkflowConnector').default;
       const useAgenticStore = require('../../store/useAgenticStore').default;
       
       expect(FlowVisualizer).toBeDefined();
-      expect(ServiceNowConnector).toBeDefined();
+      expect(AgenticWorkflowConnector).toBeDefined();
       expect(useAgenticStore).toBeDefined();
     });
     
@@ -33,17 +33,14 @@ describe('MVP Smoke Tests', () => {
     it('should have profile services', () => {
       const { ProfileService } = require('../../services/profileService');
       const { markdownService } = require('../../services/markdownService');
-      const { demoDataService } = require('../../services/demoDataService');
       
       expect(ProfileService).toBeDefined();
       expect(markdownService).toBeDefined();
-      expect(demoDataService).toBeDefined();
       
       // Verify key methods exist as static methods
       expect(ProfileService.createProfile).toBeDefined();
       expect(ProfileService.getProfiles).toBeDefined();
       expect(markdownService.generateMarkdown).toBeDefined();
-      expect(demoDataService.getDemoProfiles).toBeDefined();
     });
     
     it('should generate valid markdown', () => {
@@ -127,38 +124,5 @@ describe('MVP Smoke Tests', () => {
     });
   });
   
-  describe('Data Integrity', () => {
-    it('should have demo data in correct format', () => {
-      const { demoDataService } = require('../../services/demoDataService');
-      
-      const demoProfiles = demoDataService.getDemoProfiles();
-      expect(Array.isArray(demoProfiles)).toBe(true);
-      expect(demoProfiles.length).toBeGreaterThan(0);
-      
-      // Check first demo profile has required fields from new framework
-      const firstProfile = demoProfiles[0];
-      expect(firstProfile.companyName).toBeDefined();
-      expect(firstProfile.industry).toBeDefined();
-      expect(firstProfile.expectedOutcome).toBeDefined();
-      expect(firstProfile.problems).toBeDefined();
-      expect(firstProfile.solutions).toBeDefined();
-      expect(firstProfile.value).toBeDefined();
-      expect(firstProfile.currentArchitecture).toBeDefined();
-      
-      // Verify strategic initiatives have contact information
-      expect(firstProfile.expectedOutcome.strategicInitiatives).toBeDefined();
-      expect(Array.isArray(firstProfile.expectedOutcome.strategicInitiatives)).toBe(true);
-      expect(firstProfile.expectedOutcome.strategicInitiatives.length).toBeGreaterThan(0);
-      
-      const firstInitiative = firstProfile.expectedOutcome.strategicInitiatives[0];
-      expect(firstInitiative.contact).toBeDefined();
-      expect(firstInitiative.contact.name).toBeDefined();
-      expect(firstInitiative.contact.email).toBeDefined();
-      
-      // Verify agentic opportunities exist
-      expect(firstProfile.problems.agenticOpportunities).toBeDefined();
-      expect(Array.isArray(firstProfile.problems.agenticOpportunities)).toBe(true);
-      expect(firstProfile.problems.agenticOpportunities.length).toBeGreaterThan(0);
-    });
-  });
+
 }); 

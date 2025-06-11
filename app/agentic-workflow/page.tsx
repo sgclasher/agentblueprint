@@ -8,9 +8,9 @@ import FlowVisualizer, { FlowVisualizerHandles } from '../components/FlowVisuali
 import GlobalHeader from '../components/GlobalHeader';
 import { ReactFlowProvider } from 'reactflow';
 import { Info, Settings } from 'lucide-react';
-import styles from './ServiceNowVisualizer.module.css';
+import styles from './AgenticWorkflow.module.css';
 
-export default function ServiceNowVisualizerPage() {
+export default function AgenticWorkflowPage() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const session = useAuthStore((state) => state.session);
@@ -62,7 +62,7 @@ export default function ServiceNowVisualizerPage() {
       }
     } catch (err: any) {
       console.error("Error connecting or fetching data:", err);
-      setError(err.message || "Failed to connect to ServiceNow");
+      setError(err.message || "Failed to connect to integration platform");
     } finally {
       setIsConnecting(false);
     }
@@ -98,7 +98,7 @@ export default function ServiceNowVisualizerPage() {
         }
       } catch (err: any) {
         console.error("Initialization error:", err);
-        setError(err.message || "Failed to initialize visualizer");
+        setError(err.message || "Failed to initialize workflow visualizer");
       } finally {
         setPageStatus('ready');
       }
@@ -158,7 +158,7 @@ export default function ServiceNowVisualizerPage() {
         <GlobalHeader />
         <div className={styles.loadingContainer}>
           <div className={styles.spinner}></div>
-          <p>Initializing Visualizer...</p>
+          <p>Initializing Agentic Workflow Visualizer...</p>
         </div>
       </div>
     );
@@ -179,8 +179,8 @@ export default function ServiceNowVisualizerPage() {
           <div className={styles.flowControls}>
             <div className={styles.controlsContainer}>
               <div className={styles.titleContainer}>
-                <h2>ServiceNow Agentic AI Flow</h2>
-                <p>Interactive visualization of AI agents, use cases, and tools</p>
+                <h2>Agentic Workflow Visualization</h2>
+                <p>Interactive visualization of agentic AI workflows</p>
               </div>
 
               <div className={styles.actionsContainer}>
@@ -265,17 +265,17 @@ export default function ServiceNowVisualizerPage() {
                   <div className={styles.statusIcon}>
                     <Settings size={48} />
                   </div>
-                  <h3>ServiceNow Configuration Required</h3>
+                  <h3>Integration Platform Configuration Required</h3>
                   <p>
-                    To visualize ServiceNow Agentic AI flows, you need to configure your 
-                    ServiceNow instance credentials in the admin panel.
+                    To visualize agentic workflows, you need to configure your 
+                    integration platform credentials in the admin panel.
                   </p>
                   <button 
                     onClick={handleConfigureCredentials}
                     className="btn btn-primary"
                   >
                     <Settings size={18} />
-                    Configure ServiceNow Credentials
+                    Configure Integration Platform
                   </button>
                 </div>
               ) : (
@@ -290,8 +290,8 @@ export default function ServiceNowVisualizerPage() {
                           <line x1="12" y1="22.08" x2="12" y2="12" stroke="white" strokeWidth="1"></line>
                         </svg>
                       </div>
-                      <h3>Connect to ServiceNow</h3>
-                      <p>Your ServiceNow credentials are configured. Connect to start visualizing.</p>
+                      <h3>Connect to Agentic Workflow Platform</h3>
+                      <p>Your integration platform credentials are configured. Connect to start visualizing.</p>
                     </div>
                     
                     <button
@@ -316,7 +316,7 @@ export default function ServiceNowVisualizerPage() {
           ) : error ? (
             // Error state
             <div className={styles.errorContainer}>
-              <h3>Error Displaying Flow</h3>
+              <h3>Error Displaying Workflow</h3>
               <p>{error}</p>
               <button
                 onClick={clearAgenticData}
