@@ -16,6 +16,7 @@ Directory structure:
     ├── package.json
     ├── project-summary.md
     ├── SUPABASE_SETUP.md
+    ├── task-instructions.md
     ├── tsconfig.json
     ├── .cursorignore
     ├── .cursorrules

@@ -40,7 +40,7 @@ export default function GlobalHeader() {
       description: 'Platform overview and quick actions'
     },
     {
-      name: 'Client Profiles',
+      name: 'Clients',
       href: '/profiles',
       icon: Users,
       description: 'Manage client intelligence'
@@ -52,7 +52,7 @@ export default function GlobalHeader() {
       description: 'Generate transformation roadmaps'
     },
     {
-      name: 'ServiceNow',
+      name: 'Agentic Workflow',
       href: '/servicenow-visualizer',
       icon: GitBranch,
       description: 'Visualize agentic AI flows'
@@ -78,14 +78,15 @@ export default function GlobalHeader() {
       <div className="header-container">
         <div className="header-brand">
           <Link href="/" className="brand-link">
-            <div className="logo-wrapper">
+            <h1 className="app-title">Agent Blueprint</h1>
+            <div className="byline-wrapper" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
               <img 
-                src={theme === 'dark' ? "/images/Full Logo Dark.png" : "/images/Full Logo Light.png"}
-                alt="Agent Blueprint Logo" 
-                className="nowgentic-logo"
+                src="/images/nowgenticLogo.svg"
+                alt="Company Logo"
+                className="company-logo"
+                style={{ height: 28 }}
               />
             </div>
-            <h1 className="app-title">Agent Blueprint</h1>
           </Link>
         </div>
 
