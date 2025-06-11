@@ -1,111 +1,126 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import useAgenticStore from '../store/useAgenticStore';
 import useAuthStore from '../store/useAuthStore';
 import FlowVisualizer, { FlowVisualizerHandles } from '../components/FlowVisualizer';
 import GlobalHeader from '../components/GlobalHeader';
 import { ReactFlowProvider } from 'reactflow';
-import { Info, ArrowLeft, Settings } from 'lucide-react';
+import { Info, Settings } from 'lucide-react';
 import styles from './ServiceNowVisualizer.module.css';
 
 export default function ServiceNowVisualizerPage() {
   const router = useRouter();
-  const { user, isAuthenticated, session } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const session = useAuthStore((state) => state.session);
   
   const agenticData = useAgenticStore((state) => state.agenticData);
   const clearAgenticData = useAgenticStore((state) => state.clearAgenticData);
   const refreshData = useAgenticStore((state) => state.refreshData);
-  const resetData = useAgenticStore((state) => state.resetData);
 
+  const [pageStatus, setPageStatus] = useState<'loading' | 'ready'>('loading');
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [showDebug, setShowDebug] = useState<boolean>(false);
   const [hasServiceNowCredentials, setHasServiceNowCredentials] = useState<boolean>(false);
   const [autoFit, setAutoFit] = useState<boolean>(false);
   const [layout, setLayout] = useState<'LR' | 'TB'>('LR');
 
   const flowVisualizerRef = useRef<FlowVisualizerHandles>(null);
+  const hasInitialized = useRef(false);
 
-  // Check for ServiceNow credentials in admin system
+  const connectAndFetchData = useCallback(async () => {
+    if (!isAuthenticated || !session?.access_token) {
+      return;
+    }
+
+    setIsConnecting(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/servicenow/get-credentials', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const credentialsData = await response.json();
+
+      const hasCreds = credentialsData.hasCredentials && !!credentialsData.instanceUrl && !!credentialsData.username;
+      setHasServiceNowCredentials(hasCreds);
+
+      if (hasCreds) {
+        const setConnectionDetails = useAgenticStore.getState().setConnectionDetails;
+        setConnectionDetails({
+          instanceUrl: credentialsData.instanceUrl,
+          scopeId: credentialsData.scopeId || ''
+        });
+        await refreshData(session.access_token);
+      } else {
+        clearAgenticData();
+      }
+    } catch (err: any) {
+      console.error("Error connecting or fetching data:", err);
+      setError(err.message || "Failed to connect to ServiceNow");
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [isAuthenticated, session, refreshData, clearAgenticData]);
+  
   useEffect(() => {
-    const checkServiceNowCredentials = async () => {
-      if (!user || !session?.access_token) return;
-      
+    const initialize = async () => {
+      if (!isAuthenticated || hasInitialized.current) {
+        return;
+      }
+      hasInitialized.current = true;
+
+      if (agenticData) {
+        setPageStatus('ready');
+        return;
+      }
+
       try {
         const response = await fetch('/api/servicenow/get-credentials', {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Authorization': `Bearer ${session?.access_token}` }
         });
-        const data = await response.json();
-        
-        // Check if we have proper credentials configured
-        setHasServiceNowCredentials(data.hasCredentials && !!data.instanceUrl && !!data.username);
-        
-        console.log('ServiceNow credentials check:', {
-          hasCredentials: data.hasCredentials,
-          instanceUrl: !!data.instanceUrl,
-          username: !!data.username
-        });
-      } catch (error) {
-        console.error('Error checking ServiceNow credentials:', error);
-        setHasServiceNowCredentials(false);
+
+        if (!response.ok) {
+          throw new Error('Failed to check credentials');
+        }
+
+        const credentialsData = await response.json();
+        const hasCreds = credentialsData.hasCredentials && !!credentialsData.instanceUrl && !!credentialsData.username;
+        setHasServiceNowCredentials(hasCreds);
+
+        if (hasCreds) {
+          await connectAndFetchData();
+        }
+      } catch (err: any) {
+        console.error("Initialization error:", err);
+        setError(err.message || "Failed to initialize visualizer");
+      } finally {
+        setPageStatus('ready');
       }
     };
 
-    if (isAuthenticated) {
-      checkServiceNowCredentials();
-    }
-  }, [user, isAuthenticated, session]);
+    initialize();
+  }, [isAuthenticated, session, agenticData, connectAndFetchData]);
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (pageStatus === 'ready' && !isAuthenticated) {
       router.push(`/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
     }
-  }, [isAuthenticated, router]);
+  }, [pageStatus, isAuthenticated, router]);
 
   const handleError = (error: Error) => {
     console.error("Error in flow visualization:", error);
     setError(error.message || "An error occurred displaying the flow diagram");
   };
 
-  const handleRefresh = async () => {
-    try {
-      setIsRefreshing(true);
-      
-      // Get connection details from credentials first
-      const response = await fetch('/api/servicenow/get-credentials', {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      const credentialsData = await response.json();
-      
-      if (!credentialsData.hasCredentials || !credentialsData.instanceUrl) {
-        throw new Error('ServiceNow credentials not properly configured');
-      }
-      
-      // Set connection details in the store
-      const setConnectionDetails = useAgenticStore.getState().setConnectionDetails;
-      setConnectionDetails({
-        instanceUrl: credentialsData.instanceUrl,
-        scopeId: credentialsData.scopeId || ''
-      });
-      
-      // Now refresh the data with authentication
-      await refreshData(session?.access_token);
-      setError(null);
-    } catch (err: any) {
-      console.error("Error refreshing data:", err);
-      setError(err.message || "Failed to refresh data from ServiceNow");
-    } finally {
-      setIsRefreshing(false);
-    }
+  const handleConnect = async () => {
+    await connectAndFetchData();
   };
 
   const handleExpandAll = () => {
@@ -133,13 +148,21 @@ export default function ServiceNowVisualizerPage() {
     });
   };
 
-  const handleBackToDashboard = () => {
-    router.push('/');
-  };
-
   const handleConfigureCredentials = () => {
     router.push('/admin');
   };
+
+  if (pageStatus === 'loading') {
+    return (
+      <div className={styles.container}>
+        <GlobalHeader />
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner}></div>
+          <p>Initializing Visualizer...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Don't render anything if not authenticated (will redirect)
   if (!isAuthenticated) {
@@ -192,11 +215,11 @@ export default function ServiceNowVisualizerPage() {
                   </button>
                 </div>
                 <button
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
+                  onClick={handleConnect}
+                  disabled={isConnecting}
                   className="btn btn-primary"
                 >
-                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                  {isConnecting ? 'Refreshing...' : 'Refresh'}
                 </button>
                 <button
                   onClick={() => setShowDebug(!showDebug)}
@@ -272,11 +295,11 @@ export default function ServiceNowVisualizerPage() {
                     </div>
                     
                     <button
-                      onClick={handleRefresh}
-                      disabled={isRefreshing}
+                      onClick={handleConnect}
+                      disabled={isConnecting}
                       className="btn btn-primary"
                     >
-                      {isRefreshing ? 'Connecting...' : 'Connect & Visualize'}
+                      {isConnecting ? 'Connecting...' : 'Connect & Visualize'}
                     </button>
                     
                     <button 

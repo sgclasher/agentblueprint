@@ -34,7 +34,7 @@ export class CredentialsRepository {
 
       console.log('[CredentialsRepository.getCredentials] Query params:', { userId, serviceType });
       const { data, error } = await query;
-      console.log('[CredentialsRepository.getCredentials] Result:', data);
+      // console.log('[CredentialsRepository.getCredentials] Result:', data);
 
       if (error) {
         console.error('❌ Error fetching credentials:', error);

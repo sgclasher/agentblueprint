@@ -115,8 +115,6 @@ export async function POST(request: NextRequest) {
 
     const apiUrl = `${formattedUrl}/api/x_nowge_rfx_ai/ai_relationship_explorer/relationships?app_scope_id=${sanitizedScopeId}`;
     
-    console.log(`Fetching from: ${apiUrl}`);
-    
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
@@ -131,8 +129,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    
-    console.log('API Response Structure:', JSON.stringify(data, null, 2));
     
     if (data.x_nowge_rfx_ai && data.x_nowge_rfx_ai.use_cases) {
       return NextResponse.json({ use_cases: data.x_nowge_rfx_ai.use_cases });

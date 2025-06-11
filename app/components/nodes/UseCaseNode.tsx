@@ -47,7 +47,7 @@ const UseCaseNode: React.FC<NodeProps<NodeData>> = ({ data, id }) => {
       
       <div className="node-header use-case-header">
         <div className="header-content">
-          <div className="node-type">USE CASE</div>
+          <div className="node-type">AGENTIC WORKFLOW</div>
           <div className="node-title">{label}</div>
         </div>
         

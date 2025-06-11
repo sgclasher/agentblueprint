@@ -2725,3 +2725,24 @@ body {
     justify-content: space-between;
   }
 } 
+
+/* Ensure node titles are always readable, regardless of theme */
+.node .node-title {
+  color: #333; /* A dark gray that works on light backgrounds */
+}
+
+/* Ensure all node content is readable in any theme */
+.node .node-content,
+.node .node-description,
+.node .node-field,
+.node .node-children-info,
+.node .trigger-objective-body,
+.node .node-condition .condition-label,
+.node .node-condition .condition-value {
+  color: #333 !important; /* Use !important to override conflicting styles */
+}
+
+/* =============================================
+   React Flow Customizations
+   ============================================= */
+/* ... existing code ... */
