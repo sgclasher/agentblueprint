@@ -150,24 +150,7 @@ export default function ServiceNowVisualizerPage() {
     <div className={styles.container}>
       <GlobalHeader />
       
-      <main className={styles.main}>
-        {/* Header Section */}
-        <div className={styles.pageHeader}>
-          <div className={styles.headerContent}>
-            <button onClick={handleBackToDashboard} className={styles.backButton}>
-              <ArrowLeft size={20} />
-              <span>Back to Dashboard</span>
-            </button>
-            
-            <div className={styles.titleSection}>
-              <h1 className={styles.pageTitle}>ServiceNow Agentic AI Visualizer</h1>
-              <p className={styles.pageSubtitle}>
-                Interactive visualization of AI agents, use cases, and tools from your ServiceNow instance
-              </p>
-            </div>
-          </div>
-        </div>
-
+      <main className={`${styles.main} ${agenticData ? styles.isVisualizing : ''}`}>
         {/* Flow Controls (shown when data is loaded) */}
         {agenticData && (
           <div className={styles.flowControls}>

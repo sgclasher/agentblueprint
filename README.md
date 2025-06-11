@@ -39,9 +39,11 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 
 ### 🔄 **ServiceNow Flow Visualization**
 - **Interactive Node Graph**: Drag, zoom, and pan through complex AI workflows
-- **Hierarchical Exploration**: Expand/collapse nodes to explore use cases → agents → tools
-- **Dynamic Layouts**: Toggle between horizontal (LR) and vertical (TB) orientations
-- **Real-time Collaboration**: Multiple layout options and live data refresh
+- **Hierarchical Exploration**: Expand and collapse nodes individually or all at once to navigate complex agentic flows
+- **Dynamic Layouts & View Controls**:
+    - Toggle between horizontal (LR) and vertical (TB) graph layouts.
+    - Automatically fit the diagram to the viewport with an "Auto-Fit" toggle.
+    - Instantly reset the view to its default position and zoom.
 - **Secure Integration**: Direct connection to ServiceNow instances with credential management
 
 ### 📈 **AI Transformation Timeline** ✨ **(AI-Powered with OpenAI GPT-4o, Google Gemini 2.5 Pro & Intelligent Caching)**

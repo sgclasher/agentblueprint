@@ -5,68 +5,9 @@
 }
 
 .main {
-  min-height: calc(100vh - 73px); /* Account for GlobalHeader height */
-}
-
-/* Page Header */
-.pageHeader {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--backdrop-blur));
-  border-bottom: 1px solid var(--border-primary);
-  padding: var(--spacing-xl) var(--spacing-xxl);
-}
-
-.headerContent {
-  max-width: 1400px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.backButton {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  background: var(--btn-secondary-bg);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius);
-  padding: var(--spacing-sm) var(--spacing-md);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--transition-normal) ease;
-  align-self: flex-start;
-}
-
-.backButton:hover {
-  background: var(--btn-secondary-hover);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.titleSection {
-  text-align: center;
-}
-
-.pageTitle {
-  font-size: 2.5rem;
-  font-weight: var(--font-weight-bold);
-  margin-bottom: var(--spacing-sm);
-  background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1.2;
-}
-
-.pageSubtitle {
-  font-size: 1.125rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
+  height: calc(100vh - 73px); /* Account for GlobalHeader height */
 }
 
 /* Flow Controls */
@@ -140,10 +81,18 @@
 /* Content Container */
 .contentContainer {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: var(--spacing-xl) var(--spacing-xxl);
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+}
+
+.isVisualizing .contentContainer {
+  padding: 0;
+  max-width: none;
+  margin: 0;
 }
 
 /* Setup Container */
@@ -285,12 +234,9 @@
 /* Flow Container */
 .flowContainer {
   width: 100%;
-  height: 70vh;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--border-radius-lg);
+  flex-grow: 1;
+  position: relative;
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
 }
 
 /* Responsive Design */
