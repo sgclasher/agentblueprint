@@ -75,11 +75,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   const handleRegenerateClick = async () => {
     if (onRegenerateTimeline && currentProfile) {
       try {
-        console.log('[Timeline] Selected provider:', selectedProvider);
         const result = await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
-        if (result && typeof result === 'object' && 'provider' in result) {
-          console.log('[Timeline] Provider actually run:', result.provider);
-        }
       } catch (error) {
         console.error('Error regenerating timeline:', error);
       }
@@ -202,6 +198,8 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
       setBlueProgressBarHeight('0px');
     }
   }, [activeSection, sections, TIMELINE_SPACING_MD_PX, DOT_HALF_HEIGHT_PX, DOT_FULL_HEIGHT_PX]);
+
+
 
   return (
     <aside className={styles.timelineSidebar}>

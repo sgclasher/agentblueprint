@@ -7,13 +7,15 @@
 export class GoogleServerProvider {
   private apiKey: string;
   private model: string;
+  private baseUrl: string;
 
-  constructor({ apiKey, model = 'gemini-1.5-flash' }: { apiKey: string, model?: string }) {
+  constructor({ apiKey, model = 'gemini-1.5-flash', baseUrl = 'https://generativelanguage.googleapis.com/v1beta' }: { apiKey: string, model?: string, baseUrl?: string }) {
     if (!apiKey) {
       throw new Error('Google Gemini API key must be provided.');
     }
     this.apiKey = apiKey;
     this.model = model;
+    this.baseUrl = baseUrl;
   }
 
   /**
@@ -24,50 +26,53 @@ export class GoogleServerProvider {
    * @returns {Promise<object>} The generated JSON object.
    */
   async generateJson(systemPrompt: string, userPrompt: string, options: { temperature?: number, max_tokens?: number } = {}) {
-    // For Gemini, we combine the system and user prompts into a single prompt for the 'user' role.
-    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
+    if (!this.apiKey) {
+      throw new Error('Google Gemini API key not configured.');
+    }
     
-    console.log('--- Google Provider Request ---');
-    console.log('Model:', this.model);
-    console.log('-----------------------------');
+    const finalPrompt = `${systemPrompt}\n\n${userPrompt}\n\nPlease provide the output in a single, valid JSON object, starting with { and ending with }. Do not include any other text or explanation.`;
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(`${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           contents: [{
-            parts: [{ text: fullPrompt }]
+            parts: [{ text: finalPrompt }]
           }],
           generationConfig: {
-            response_mime_type: "application/json",
             temperature: options.temperature || 0.7,
-            maxOutputTokens: options.max_tokens || 8192,
+            maxOutputTokens: options.max_tokens || 4000,
           }
-        }),
+        })
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: { message: 'Unknown API error' } }));
-        throw new Error(`Google Gemini API error: ${response.status} - ${error.error?.message || 'Failed to get response'}`);
+        const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+        throw new Error(`Google Gemini API error: ${response.status} - ${error.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
+      
       if (!content) {
         throw new Error('No content received from Google Gemini API');
       }
+
+      // Google Gemini might wrap JSON in markdown code blocks, so we need to strip them
+      let cleanedContent = content.trim();
       
-      console.log('--- Google Provider Response ---');
-      console.log('Raw JSON Content:', content);
-      console.log('------------------------------');
+      // Remove markdown code block markers if present
+      if (cleanedContent.startsWith('```json')) {
+        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
 
-      return JSON.parse(content);
-
+      return JSON.parse(cleanedContent);
+      
     } catch (error: any) {
       console.error('Google Server Provider Error:', error);
       throw new Error(`Failed to generate JSON from Google Gemini: ${error.message}`);

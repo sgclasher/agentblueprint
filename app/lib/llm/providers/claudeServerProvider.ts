@@ -33,12 +33,6 @@ export class ClaudeServerProvider {
     
 Please provide the output in a single, valid JSON object, starting with { and ending with }. Do not include any other text or explanation.`;
 
-    console.log('--- Claude Provider Request ---');
-    console.log('Model:', this.model);
-    console.log('System Prompt:', systemPrompt);
-    console.log('User Prompt:', finalUserPrompt);
-    console.log('-----------------------------');
-
     try {
       const response = await fetch(`${this.baseUrl}/messages`, {
         method: 'POST',
@@ -68,10 +62,6 @@ Please provide the output in a single, valid JSON object, starting with { and en
         throw new Error('No content received from Anthropic API');
       }
 
-      console.log('--- Claude Provider Response ---');
-      console.log('Raw JSON Content:', content);
-      console.log('------------------------------');
-
       // Claude often wraps JSON in markdown code blocks, so we need to strip them
       let cleanedContent = content.trim();
       
@@ -81,8 +71,6 @@ Please provide the output in a single, valid JSON object, starting with { and en
       } else if (cleanedContent.startsWith('```')) {
         cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
       }
-      
-      console.log('Cleaned JSON Content:', cleanedContent);
 
       return JSON.parse(cleanedContent);
 

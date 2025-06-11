@@ -37,12 +37,6 @@ export class OpenAIServerProvider {
       throw new Error('OpenAI API key not configured. Please set OPENAI_API_KEY environment variable.');
     }
 
-    console.log('--- OpenAI Provider Request ---');
-    console.log('Model:', this.model);
-    console.log('System Prompt:', systemPrompt);
-    console.log('User Prompt:', userPrompt);
-    console.log('-----------------------------');
-    
     try {
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
@@ -73,10 +67,6 @@ export class OpenAIServerProvider {
       if (!content) {
         throw new Error('No content received from OpenAI API');
       }
-
-      console.log('--- OpenAI Provider Response ---');
-      console.log('Raw JSON Content:', content);
-      console.log('------------------------------');
 
       // The provider's responsibility is just to return the parsed JSON, not to validate its structure.
       return JSON.parse(content);

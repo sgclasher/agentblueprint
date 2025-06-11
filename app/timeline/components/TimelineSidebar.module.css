@@ -112,10 +112,7 @@
   border: 2px solid var(--timeline-accent-blue); /* Blue border around the white active dot */
 }
 
-.timelineNavIcon {
-  /* This class is no longer used as icons are removed */
-  /* font-size: 0.8rem; */ 
-}
+
 
 .timelineNavContent {
   display: flex;
