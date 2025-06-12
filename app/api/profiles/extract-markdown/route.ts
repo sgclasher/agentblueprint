@@ -4,6 +4,56 @@ import { getUser } from '../../../lib/supabase';
 import { ProfileExtractionService } from '../../../services/profileExtractionService';
 import { postProcessProfile } from '../../../lib/profileFieldMapper';
 
+/**
+ * Analyze complex field extraction to identify what was found vs missing
+ */
+function analyzeComplexFieldExtraction(extractedData: Record<string, ExtractedField>) {
+  const criticalFields = [
+    'companyName',
+    'industry',
+    'employeeCount', 
+    'annualRevenue',
+    'primaryLocation',
+    'websiteUrl',
+    'strategicInitiatives'
+  ];
+
+  const fieldsFound: string[] = [];
+  const fieldsMissing: string[] = [];
+
+  criticalFields.forEach(field => {
+    if (extractedData[field] && extractedData[field].value !== undefined && extractedData[field].value !== null) {
+      // Check if array fields have content
+      if (Array.isArray(extractedData[field].value)) {
+        if (extractedData[field].value.length > 0) {
+          fieldsFound.push(field);
+        } else {
+          fieldsMissing.push(`${field} (empty array)`);
+        }
+      } else if (typeof extractedData[field].value === 'string') {
+        // Check if string fields have meaningful content
+        if (extractedData[field].value.trim().length > 0) {
+          fieldsFound.push(field);
+        } else {
+          fieldsMissing.push(`${field} (empty string)`);
+        }
+      } else {
+        fieldsFound.push(field);
+      }
+    } else {
+      fieldsMissing.push(field);
+    }
+  });
+
+  return {
+    fieldsFound,
+    fieldsMissing,
+    foundCount: fieldsFound.length,
+    missingCount: fieldsMissing.length,
+    extractionRate: (fieldsFound.length / criticalFields.length * 100).toFixed(1) + '%'
+  };
+}
+
 interface RequestBody {
   markdown: string;
   preferredProvider?: string;
@@ -82,11 +132,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<Extractio
 
     // Extract profile data from markdown
     console.log(`📝 Starting profile extraction for user ${user.id} with provider: ${preferredProvider || 'default'}`);
+    console.log(`📊 Markdown input analysis:`, {
+      characterCount: markdown.length,
+      lineCount: markdown.split('\n').length,
+      containsHeaders: /^#{1,6}\s/m.test(markdown!),
+      containsLists: /^[-*]\s/m.test(markdown!),
+      containsProblems: /problem|challenge|issue|pain point/i.test(markdown!),
+      containsAI: /ai|artificial intelligence|automation|machine learning|ml/i.test(markdown!),
+      containsInitiatives: /initiative|project|strategic|goal/i.test(markdown!)
+    });
     
     const extractionResult = await extractionService.extractProfileFromMarkdown(
       markdown,
       user.id,
-      preferredProvider || undefined
+      preferredProvider || null
     ) as ExtractionResult;
 
     if (!extractionResult.success) {
@@ -101,6 +160,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<Extractio
       );
     }
 
+    // Enhanced debugging for complex field extraction
+    const complexFieldsAnalysis = analyzeComplexFieldExtraction(extractionResult.data!);
+    console.log(`🔍 Complex fields extraction analysis:`, complexFieldsAnalysis);
+
     // Map extracted data to profile schema
     const mappedProfile = extractionService.mapToProfileSchema(extractionResult.data!);
     
@@ -110,13 +173,32 @@ export async function POST(request: NextRequest): Promise<NextResponse<Extractio
     // Generate extraction summary
     const summary = extractionService.generateExtractionSummary(extractionResult.data!) as ExtractionSummary;
 
-    // Log extraction metrics (useful for debugging and monitoring)
-    console.log(`✅ Profile extraction completed for user ${user.id}:`, {
+    // Enhanced logging for debugging and monitoring
+    const detailedMetrics = {
       totalFields: summary.totalFields,
       highConfidence: summary.highConfidenceFields,
+      mediumConfidence: summary.mediumConfidenceFields,
+      lowConfidence: summary.lowConfidenceFields,
       averageConfidence: extractionResult.averageConfidence,
-      provider: preferredProvider || 'default'
-    });
+      provider: preferredProvider || 'default',
+      extractedSections: summary.extractedSections,
+      complexFieldsFound: complexFieldsAnalysis.fieldsFound,
+      complexFieldsMissing: complexFieldsAnalysis.fieldsMissing,
+      validationWarnings: extractionResult.validationWarnings?.length || 0,
+      hasLowConfidenceFields: extractionResult.hasLowConfidenceFields,
+      lowConfidenceFieldsList: extractionResult.lowConfidenceFields
+    };
+    
+    console.log(`✅ Profile extraction completed for user ${user.id}:`, detailedMetrics);
+    
+    // Log warnings for missing critical fields
+    if (complexFieldsAnalysis.fieldsMissing.length > 0) {
+      console.warn(`⚠️ Missing critical fields for user ${user.id}:`, complexFieldsAnalysis.fieldsMissing);
+    }
+    
+    if (extractionResult.validationWarnings && extractionResult.validationWarnings.length > 0) {
+      console.warn(`⚠️ Validation warnings for user ${user.id}:`, extractionResult.validationWarnings);
+    }
 
     return NextResponse.json({
       success: true,

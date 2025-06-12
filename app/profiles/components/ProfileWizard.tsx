@@ -20,13 +20,7 @@ import { Profile } from '../../services/types';
 
 const WIZARD_STEPS = [
   { id: 'company', title: 'Company Overview', icon: '🏢' },
-  { id: 'strategic-initiatives', title: 'Strategic Initiatives', icon: '🎯' },
-  { id: 'problems', title: 'Problems & Opportunities', icon: '⚠️' },
-  { id: 'impact', title: 'Impact Analysis', icon: '💰' },
-  { id: 'solution', title: 'Solution Requirements', icon: '🔧' },
-  { id: 'decision', title: 'Decision Process', icon: '👥' },
-  { id: 'ai-assessment', title: 'AI Opportunities', icon: '🤖' },
-  { id: 'summary', title: 'Summary & Next Steps', icon: '📋' }
+  { id: 'summary', title: 'Review & Complete', icon: '✅' }
 ];
 
 interface ProfileWizardProps {
@@ -42,60 +36,11 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
     id: '',
     companyName: '',
     industry: '',
-    size: '',
-    annualRevenue: '',
     employeeCount: '',
+    annualRevenue: '',
     primaryLocation: '',
-    expectedOutcome: {
-      strategicInitiatives: [],
-      businessObjectives: ''
-    },
-    problems: {
-      businessProblems: [],
-      agenticOpportunities: []
-    },
-    solutions: {
-      capabilities: [],
-      differentiators: [],
-      competitorGaps: []
-    },
-    value: {
-      businessValue: {},
-      personalValue: {}
-    },
-    currentArchitecture: {
-      coreSystems: [],
-      integrations: '',
-      dataQuality: '',
-      technicalDebt: '',
-      aiReadiness: ''
-    },
-    valueSellingFramework: {
-      businessIssues: [],
-      problems: {
-        finance: {},
-        hr: {},
-        it: {},
-        customerService: {},
-        operations: {}
-      },
-      impact: {},
-      solutionCapabilities: [],
-      decisionMakers: {},
-      buyingProcess: {},
-      risksOfInaction: {}
-    },
-    aiOpportunityAssessment: {
-      currentTechnology: {},
-      aiReadinessScore: 5,
-      opportunities: [],
-      quickWins: [],
-      strategicInitiatives: [],
-      futureOpportunities: []
-    },
-    summary: {
-      nextSteps: []
-    }
+    websiteUrl: '',
+    strategicInitiatives: []
   });
   
   const [isGeneratingTimeline, setIsGeneratingTimeline] = useState(false);
@@ -134,42 +79,12 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
 
   const getStepValidationStatus = (stepIndex: number) => {
     switch (stepIndex) {
-      case 0:
+      case 0: // Company Overview
         return {
-          isValid: !!(profileData.companyName && profileData.industry && profileData.size),
-          requiredFields: ['Company Name', 'Industry', 'Company Size']
+          isValid: !!(profileData.companyName && profileData.industry),
+          requiredFields: ['Company Name', 'Industry']
         };
-      case 1:
-        return {
-          isValid: !!(profileData.expectedOutcome?.strategicInitiatives && profileData.expectedOutcome.strategicInitiatives.length > 0),
-          requiredFields: ['At least one Strategic Initiative']
-        };
-      case 2:
-        return {
-          isValid: !!((profileData.problems?.businessProblems && profileData.problems.businessProblems.length > 0) || (profileData.problems?.agenticOpportunities && profileData.problems.agenticOpportunities.length > 0)),
-          requiredFields: ['Business Problems or AI Opportunities']
-        };
-      case 3:
-        return {
-          isValid: !!getNestedValue(profileData, 'valueSellingFramework.impact.totalAnnualImpact'),
-          requiredFields: ['Total Annual Impact']
-        };
-      case 4:
-        return {
-          isValid: !!(getNestedValue(profileData, 'valueSellingFramework.solutionCapabilities')?.length > 0),
-          requiredFields: ['Solution Capabilities']
-        };
-      case 5:
-        return {
-          isValid: !!getNestedValue(profileData, 'valueSellingFramework.decisionMakers.economicBuyer.name'),
-          requiredFields: ['Economic Buyer Name']
-        };
-      case 6:
-        return {
-          isValid: !!profileData.aiOpportunityAssessment?.aiReadinessScore,
-          requiredFields: ['AI Readiness Score']
-        };
-      case 7:
+      case 1: // Review & Complete
         return {
           isValid: true,
           requiredFields: []
@@ -295,26 +210,12 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
     setExtractionResult(null);
   };
 
-
-
   const renderCurrentStep = () => {
     const currentStepId = WIZARD_STEPS[currentStep].id;
 
     switch (currentStepId) {
       case 'company':
         return <CompanyOverviewStep data={profileData} updateData={updateProfileData} />;
-      case 'strategic-initiatives':
-        return <StrategicInitiativesForm data={profileData} onChange={setProfileData} />;
-      case 'problems':
-        return <ProblemsOpportunitiesForm data={profileData} onChange={setProfileData} />;
-      case 'impact':
-        return <ImpactStep data={profileData} updateData={updateProfileData} />;
-      case 'solution':
-        return <SolutionStep data={profileData} updateData={updateProfileData} onToggle={handleArrayToggle} />;
-      case 'decision':
-        return <DecisionStep data={profileData} updateData={updateProfileData} />;
-      case 'ai-assessment':
-        return <AIAssessmentStep data={profileData} updateData={updateProfileData} />;
       case 'summary':
         return <SummaryStep data={profileData} updateData={updateProfileData} onGenerateTimeline={generateTimelineFromProfile} isGenerating={isGeneratingTimeline} />;
       default:

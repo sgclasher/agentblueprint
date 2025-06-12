@@ -1,7 +1,7 @@
 'use client';
 
 import React, { FC, ChangeEvent } from 'react';
-import { Profile } from '../../../services/types';
+import { Profile, StrategicInitiative } from '../../../services/types';
 import styles from './CompanyOverviewStep.module.css';
 
 interface StepProps {
@@ -15,102 +15,260 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
     'Education', 'Real Estate', 'Transportation', 'Energy', 'Other'
   ];
 
-  const companySizes = [
-    '1-50 employees',
-    '51-200 employees',
-    '201-1000 employees',
-    '1000+ employees'
-  ];
+  const addStrategicInitiative = () => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const newInitiative: StrategicInitiative = {
+      initiative: '',
+      contact: {
+        name: '',
+        title: '',
+        email: '',
+        linkedin: '',
+        phone: ''
+      }
+    };
+    updateData('strategicInitiatives', [...currentInitiatives, newInitiative]);
+  };
+
+  const updateStrategicInitiative = (index: number, field: string, value: string) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    
+    if (field.startsWith('contact.')) {
+      const contactField = field.replace('contact.', '');
+      updatedInitiatives[index] = {
+        ...updatedInitiatives[index],
+        contact: {
+          ...updatedInitiatives[index].contact,
+          [contactField]: value
+        }
+      };
+    } else {
+      updatedInitiatives[index] = {
+        ...updatedInitiatives[index],
+        [field]: value
+      };
+    }
+    
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const removeStrategicInitiative = (index: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = currentInitiatives.filter((_, i) => i !== index);
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
 
   return (
     <div className={styles.wizardStep}>
-      <h2>Company Overview</h2>
-      <p>Let's start with basic information about your client.</p>
+      <h2>Company Profile</h2>
+      <p>Enter the essential information about your client company.</p>
 
-      <div className={styles.formGrid}>
-        <div className={styles.formGroup}>
-          <label htmlFor="companyName">Company Name *</label>
-          <input
-            id="companyName"
-            type="text"
-            value={data.companyName || ''}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('companyName', e.target.value)}
-            placeholder="Enter company name"
-            required
-            className={styles.formInput}
-          />
-        </div>
+      {/* Basic Company Information */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Basic Information</h3>
+        <div className={styles.formGrid}>
+          <div className={styles.formGroup}>
+            <label htmlFor="companyName">Company Name *</label>
+            <input
+              id="companyName"
+              type="text"
+              value={data.companyName || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('companyName', e.target.value)}
+              placeholder="Enter company name"
+              required
+              className={styles.formInput}
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="industry">Industry *</label>
-          <select
-            id="industry"
-            value={data.industry || ''}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) => updateData('industry', e.target.value)}
-            required
-            className={styles.formSelect}
-          >
-            <option value="">Select industry</option>
-            {industries.map(industry => (
-              <option key={industry} value={industry}>{industry}</option>
-            ))}
-          </select>
-        </div>
+          <div className={styles.formGroup}>
+            <label htmlFor="industry">Industry *</label>
+            <select
+              id="industry"
+              value={data.industry || ''}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => updateData('industry', e.target.value)}
+              required
+              className={styles.formSelect}
+            >
+              <option value="">Select industry</option>
+              {industries.map(industry => (
+                <option key={industry} value={industry}>{industry}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className={styles.formGroup}>
-          <label>Company Size *</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-            {companySizes.map(size => (
-              <label key={size} className={`${styles.radioLabel} ${data.size === size ? styles.radioLabelSelected : ''}`}>
-                <input
-                  type="radio"
-                  name="companySize"
-                  value={size}
-                  checked={data.size === size}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('size', e.target.value)}
-                  className={styles.radioInput}
-                />
-                <span className={styles.radioText}>{size}</span>
-              </label>
-            ))}
+          <div className={styles.formGroup}>
+            <label htmlFor="employeeCount">Employee Count</label>
+            <input
+              id="employeeCount"
+              type="text"
+              value={data.employeeCount || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('employeeCount', e.target.value)}
+              placeholder="e.g., 500, 10,000+, 50-100"
+              className={styles.formInput}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="annualRevenue">Annual Revenue</label>
+            <input
+              id="annualRevenue"
+              type="text"
+              value={data.annualRevenue || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('annualRevenue', e.target.value)}
+              placeholder="e.g., $50M, $1.2B"
+              className={styles.formInput}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="primaryLocation">Primary Location</label>
+            <input
+              id="primaryLocation"
+              type="text"
+              value={data.primaryLocation || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('primaryLocation', e.target.value)}
+              placeholder="City, State/Country"
+              className={styles.formInput}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="websiteUrl">Website URL</label>
+            <input
+              id="websiteUrl"
+              type="url"
+              value={data.websiteUrl || ''}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('websiteUrl', e.target.value)}
+              placeholder="https://company.com"
+              className={styles.formInput}
+            />
           </div>
         </div>
+      </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="annualRevenue">Annual Revenue</label>
-          <input
-            id="annualRevenue"
-            type="text"
-            value={data.annualRevenue || ''}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('annualRevenue', e.target.value)}
-            placeholder="e.g., 50M, 1.2B"
-            className={styles.formInput}
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="employeeCount">Employee Count</label>
-          <input
-            id="employeeCount"
-            type="number"
-            value={data.employeeCount || ''}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('employeeCount', e.target.value)}
-            placeholder="Number of employees"
-            className={styles.formInput}
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="primaryLocation">Primary Location</label>
-          <input
-            id="primaryLocation"
-            type="text"
-            value={data.primaryLocation || ''}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('primaryLocation', e.target.value)}
-            placeholder="City, State/Country"
-            className={styles.formInput}
-          />
-        </div>
+      {/* Strategic Initiatives */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Strategic Initiatives</h3>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+          Add key business initiatives and their primary contacts.
+        </p>
+        
+        {data.strategicInitiatives?.map((initiative, index) => (
+          <div key={index} style={{ 
+            border: '1px solid var(--border-primary)', 
+            borderRadius: '8px', 
+            padding: '1rem', 
+            marginBottom: '1rem',
+            background: 'var(--bg-secondary)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Initiative {index + 1}</h4>
+              <button
+                type="button"
+                onClick={() => removeStrategicInitiative(index)}
+                style={{
+                  background: 'var(--accent-red)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Remove
+              </button>
+            </div>
+            
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                <label>Initiative Name</label>
+                <input
+                  type="text"
+                  value={initiative.initiative || ''}
+                  onChange={(e) => updateStrategicInitiative(index, 'initiative', e.target.value)}
+                  placeholder="e.g., Digital Transformation Program"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Contact Name</label>
+                <input
+                  type="text"
+                  value={initiative.contact?.name || ''}
+                  onChange={(e) => updateStrategicInitiative(index, 'contact.name', e.target.value)}
+                  placeholder="John Smith"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Title</label>
+                <input
+                  type="text"
+                  value={initiative.contact?.title || ''}
+                  onChange={(e) => updateStrategicInitiative(index, 'contact.title', e.target.value)}
+                  placeholder="CTO"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={initiative.contact?.email || ''}
+                  onChange={(e) => updateStrategicInitiative(index, 'contact.email', e.target.value)}
+                  placeholder="john@company.com"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>LinkedIn</label>
+                <input
+                  type="text"
+                  value={initiative.contact?.linkedin || ''}
+                  onChange={(e) => updateStrategicInitiative(index, 'contact.linkedin', e.target.value)}
+                  placeholder="linkedin.com/in/johnsmith"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Phone</label>
+                <input
+                  type="tel"
+                  value={initiative.contact?.phone || ''}
+                  onChange={(e) => updateStrategicInitiative(index, 'contact.phone', e.target.value)}
+                  placeholder="+1-555-0123"
+                  className={styles.formInput}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        <button
+          type="button"
+          onClick={addStrategicInitiative}
+          style={{
+            background: 'var(--accent-blue)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.75rem 1rem',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <span>+</span> Add Strategic Initiative
+        </button>
       </div>
     </div>
   );

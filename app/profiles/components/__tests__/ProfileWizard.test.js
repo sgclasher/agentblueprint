@@ -2,398 +2,578 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProfileWizard from '../ProfileWizard';
+import { jest } from '@jest/globals';
+
+// Mock encryption utilities before importing services
+jest.mock('../../../utils/encryption', () => ({
+  encrypt: jest.fn(),
+  decrypt: jest.fn()
+}));
+
+// Mock the AI service
+jest.mock('../../../services/aiService', () => ({
+  aiService: {
+    generateJson: jest.fn()
+  }
+}));
+
+// Now import the service after mocks are set up
+import { ProfileExtractionService } from '../../../services/profileExtractionService';
+import { aiService } from '../../../services/aiService';
 
 // Mock the markdownService
 jest.mock('../../../services/markdownService', () => ({
   markdownService: {
-    generateMarkdown: jest.fn(() => 'Generated markdown content'),
-  },
+    generateMarkdown: jest.fn().mockReturnValue('# Mock Markdown Content')
+  }
 }));
 
-// Mock the profileService  
+// Mock the profileService
 jest.mock('../../../services/profileService', () => ({
-  profileService: {
-    createProfile: jest.fn(() => Promise.resolve({ id: 'test-profile-id' })),
-  },
+  ProfileService: {
+    generateTimelineFromProfile: jest.fn()
+  }
 }));
 
-describe('ProfileWizard Enhanced Functionality', () => {
-  let mockOnComplete;
+describe('ProfileWizard MVP (2-Step Version)', () => {
+  const mockOnComplete = jest.fn();
+  const mockOnCancel = jest.fn();
 
   beforeEach(() => {
-    mockOnComplete = jest.fn();
     jest.clearAllMocks();
   });
 
-  describe('Company Overview Step', () => {
-    test('renders all required company overview fields', () => {
-      render(<ProfileWizard onComplete={mockOnComplete} />);
+  describe('Basic Functionality', () => {
+    test('renders first step (Company Profile) correctly', () => {
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
+      expect(screen.getByText('Company Profile')).toBeInTheDocument();
+      expect(screen.getByText('Enter the essential information about your client company.')).toBeInTheDocument();
+      
+      // Check for required fields
       expect(screen.getByLabelText(/company name/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/industry/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/company size/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/annual revenue/i)).toBeInTheDocument();
+      
+      // Check for optional fields
       expect(screen.getByLabelText(/employee count/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/annual revenue/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/primary location/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/website url/i)).toBeInTheDocument();
     });
 
-    test('validates required fields before proceeding', async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
+    test('shows strategic initiatives section', () => {
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
-      const nextButton = screen.getByRole('button', { name: /next/i });
-      await user.click(nextButton);
-      
-      expect(screen.getByText(/company name is required/i)).toBeInTheDocument();
+      expect(screen.getByText('Strategic Initiatives')).toBeInTheDocument();
+      expect(screen.getByText('Add key business initiatives and their primary contacts.')).toBeInTheDocument();
+      expect(screen.getByText('+ Add Strategic Initiative')).toBeInTheDocument();
     });
 
-    test('allows proceeding with valid company data', async () => {
+    test('can add and remove strategic initiatives', async () => {
       const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
+      // Add a strategic initiative
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      
+      expect(screen.getByText('Initiative 1')).toBeInTheDocument();
+      expect(screen.getByText('Remove')).toBeInTheDocument();
+      
+      // Remove the initiative
+      await user.click(screen.getByText('Remove'));
+      
+      expect(screen.queryByText('Initiative 1')).not.toBeInTheDocument();
+    });
+
+    test('navigates to second step (Review & Complete)', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Fill required fields
       await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/company size/i), 'Mid-Market');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
       
-      const nextButton = screen.getByRole('button', { name: /next/i });
-      await user.click(nextButton);
-      
-      expect(screen.getByText(/business issue/i)).toBeInTheDocument();
-    });
-  });
-
-  describe('Business Issue Step', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Navigate to Business Issue step
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.click(screen.getByRole('button', { name: /next/i }));
-    });
-
-    test('renders business issue checkboxes', () => {
-      expect(screen.getByText(/revenue growth pressure/i)).toBeInTheDocument();
-      expect(screen.getByText(/cost reduction mandate/i)).toBeInTheDocument();
-      expect(screen.getByText(/operational efficiency/i)).toBeInTheDocument();
-      expect(screen.getByText(/digital transformation/i)).toBeInTheDocument();
-    });
-
-    test('allows selecting multiple business issues', async () => {
-      const user = userEvent.setup();
-      
-      const revenueGrowth = screen.getByLabelText(/revenue growth pressure/i);
-      const costReduction = screen.getByLabelText(/cost reduction mandate/i);
-      
-      await user.click(revenueGrowth);
-      await user.click(costReduction);
-      
-      expect(revenueGrowth).toBeChecked();
-      expect(costReduction).toBeChecked();
-    });
-
-    test('allows entering custom business issue', async () => {
-      const user = userEvent.setup();
-      
-      const otherInput = screen.getByPlaceholderText(/specify other business issue/i);
-      await user.type(otherInput, 'Custom business challenge');
-      
-      expect(otherInput).toHaveValue('Custom business challenge');
-    });
-  });
-
-  describe('Problems/Challenges Step', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Navigate to Problems step
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.click(screen.getByRole('button', { name: /next/i }));
-      await user.click(screen.getByRole('button', { name: /next/i }));
-    });
-
-    test('renders department-specific problem sections', () => {
-      expect(screen.getByText(/finance department/i)).toBeInTheDocument();
-      expect(screen.getByText(/hr department/i)).toBeInTheDocument();
-      expect(screen.getByText(/it department/i)).toBeInTheDocument();
-      expect(screen.getByText(/customer service/i)).toBeInTheDocument();
-      expect(screen.getByText(/operations/i)).toBeInTheDocument();
-    });
-
-    test('allows selecting departmental problems', async () => {
-      const user = userEvent.setup();
-      
-      const financeProblems = screen.getAllByRole('checkbox');
-      const firstProblem = financeProblems[0];
-      
-      await user.click(firstProblem);
-      expect(firstProblem).toBeChecked();
-    });
-
-    test('allows entering additional challenges', async () => {
-      const user = userEvent.setup();
-      
-      const additionalChallenges = screen.getByPlaceholderText(/describe additional challenges/i);
-      await user.type(additionalChallenges, 'Additional challenge description');
-      
-      expect(additionalChallenges).toHaveValue('Additional challenge description');
-    });
-  });
-
-  describe('Impact Step', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Navigate to Impact step
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.click(screen.getByRole('button', { name: /next/i })); // Business Issue
-      await user.click(screen.getByRole('button', { name: /next/i })); // Problems
-      await user.click(screen.getByRole('button', { name: /next/i })); // Root Cause
-      await user.click(screen.getByRole('button', { name: /next/i })); // Impact
-    });
-
-    test('renders hard costs input fields', () => {
-      expect(screen.getByLabelText(/labor costs/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/error correction costs/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/system downtime costs/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/compliance penalties/i)).toBeInTheDocument();
-    });
-
-    test('renders soft costs selection fields', () => {
-      expect(screen.getByLabelText(/employee frustration/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/customer satisfaction decline/i)).toBeInTheDocument();
-    });
-
-    test('calculates total hard costs automatically', async () => {
-      const user = userEvent.setup();
-      
-      await user.type(screen.getByLabelText(/labor costs/i), '100000');
-      await user.type(screen.getByLabelText(/error correction costs/i), '50000');
-      
-      expect(screen.getByText(/total hard costs: \$150,000/i)).toBeInTheDocument();
-    });
-  });
-
-  describe('Solution Step', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Navigate to Solution step - simplified for testing
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      for (let i = 0; i < 5; i++) {
-        await user.click(screen.getByRole('button', { name: /next/i }));
-      }
-    });
-
-    test('renders solution capabilities section', () => {
-      expect(screen.getByText(/solution capabilities needed/i)).toBeInTheDocument();
-      expect(screen.getByText(/automate document processing/i)).toBeInTheDocument();
-      expect(screen.getByText(/streamline approval workflows/i)).toBeInTheDocument();
-    });
-
-    test('renders differentiation requirements', () => {
-      expect(screen.getByText(/differentiation requirements/i)).toBeInTheDocument();
-      expect(screen.getByText(/industry-specific expertise/i)).toBeInTheDocument();
-      expect(screen.getByText(/rapid implementation/i)).toBeInTheDocument();
-    });
-
-    test('renders ROI expectations fields', () => {
-      expect(screen.getByLabelText(/target cost reduction/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/target efficiency improvement/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/expected payback period/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/target roi/i)).toBeInTheDocument();
-    });
-
-    test('renders success metrics section', () => {
-      expect(screen.getByText(/success metrics/i)).toBeInTheDocument();
-      expect(screen.getByText(/process cycle time reduction/i)).toBeInTheDocument();
-      expect(screen.getByText(/error rate improvement/i)).toBeInTheDocument();
-    });
-  });
-
-  describe('Decision Step', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Navigate to Decision step
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      for (let i = 0; i < 6; i++) {
-        await user.click(screen.getByRole('button', { name: /next/i }));
-      }
-    });
-
-    test('renders decision makers fields', () => {
-      expect(screen.getByLabelText(/economic buyer name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/economic buyer title/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/budget authority/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/technical buyer name/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/champion name/i)).toBeInTheDocument();
-    });
-
-    test('renders buying process section', () => {
-      expect(screen.getByLabelText(/decision timeline/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/budget cycle/i)).toBeInTheDocument();
-      expect(screen.getByText(/evaluation criteria/i)).toBeInTheDocument();
-    });
-
-    test('renders risks of inaction section', () => {
-      expect(screen.getByText(/risks of inaction/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/continued cost escalation/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/employee attrition risk/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/estimated cost of inaction/i)).toBeInTheDocument();
-    });
-
-    test('allows entering decision maker information', async () => {
-      const user = userEvent.setup();
-      
-      await user.type(screen.getByLabelText(/economic buyer name/i), 'Sarah Chen');
-      await user.type(screen.getByLabelText(/economic buyer title/i), 'CEO');
-      await user.type(screen.getByLabelText(/budget authority/i), '1000000');
-      
-      expect(screen.getByDisplayValue('Sarah Chen')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('CEO')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('1000000')).toBeInTheDocument();
-    });
-  });
-
-  describe('AI Assessment Step', () => {
-    beforeEach(async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Navigate to AI Assessment step
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      for (let i = 0; i < 7; i++) {
-        await user.click(screen.getByRole('button', { name: /next/i }));
-      }
-    });
-
-    test('renders technology landscape section', () => {
-      expect(screen.getByText(/current technology landscape/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/primary erp/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/crm system/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/collaboration tools/i)).toBeInTheDocument();
-    });
-
-    test('renders AI readiness scoring section', () => {
-      expect(screen.getByText(/ai readiness score/i)).toBeInTheDocument();
-      expect(screen.getByText(/data availability and quality/i)).toBeInTheDocument();
-      expect(screen.getByText(/system integration capability/i)).toBeInTheDocument();
-      expect(screen.getByText(/technical team readiness/i)).toBeInTheDocument();
-    });
-
-    test('calculates total AI readiness score', () => {
-      const rangeInputs = screen.getAllByRole('slider');
-      expect(rangeInputs.length).toBeGreaterThan(0);
-      expect(screen.getByText(/total ai readiness score: 0\/10/i)).toBeInTheDocument();
-    });
-
-    test('allows adding AI opportunities', async () => {
-      const user = userEvent.setup();
-      
-      const addOpportunityButton = screen.getByRole('button', { name: /add opportunity/i });
-      await user.click(addOpportunityButton);
-      
-      expect(screen.getByText(/opportunity 1/i)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/invoice processing automation/i)).toBeInTheDocument();
-    });
-
-    test('allows adding quick wins', async () => {
-      const user = userEvent.setup();
-      
-      const addQuickWinButton = screen.getByRole('button', { name: /add quick win/i });
-      await user.click(addQuickWinButton);
-      
-      expect(screen.getByPlaceholderText(/automated ticket routing/i)).toBeInTheDocument();
-    });
-  });
-
-  describe('Profile Completion', () => {
-    test('completes profile creation successfully', async () => {
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Fill out minimal required data
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      
-      // Navigate through all steps
-      for (let i = 0; i < 8; i++) {
-        await user.click(screen.getByRole('button', { name: /next/i }));
-      }
-      
-      // Complete the profile
-      const completeButton = screen.getByRole('button', { name: /create profile/i });
-      await user.click(completeButton);
-      
-      await waitFor(() => {
-        expect(mockOnComplete).toHaveBeenCalled();
-      });
-    });
-
-    test('generates markdown with comprehensive data', async () => {
-      const { markdownService } = require('../../../services/markdownService');
-      const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      // Fill comprehensive data
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      // Navigate to next step
       await user.click(screen.getByRole('button', { name: /next/i }));
       
-      // Select business issues
-      await user.click(screen.getByLabelText(/revenue growth pressure/i));
-      await user.click(screen.getByRole('button', { name: /next/i }));
-      
-      // Navigate through remaining steps and complete
-      for (let i = 0; i < 6; i++) {
-        await user.click(screen.getByRole('button', { name: /next/i }));
-      }
-      
-      const completeButton = screen.getByRole('button', { name: /create profile/i });
-      await user.click(completeButton);
-      
-      await waitFor(() => {
-        expect(markdownService.generateMarkdown).toHaveBeenCalled();
-        expect(mockOnComplete).toHaveBeenCalled();
-      });
+      expect(screen.getByText('Review & Complete')).toBeInTheDocument();
+      expect(screen.getByText('Review your client profile information before creating the profile.')).toBeInTheDocument();
     });
-  });
 
-  describe('Navigation and UX', () => {
-    test('allows navigation backward through steps', async () => {
+    test('shows company information in review step', async () => {
       const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
+      // Fill out form
       await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByLabelText(/employee count/i), '500');
+      
+      // Navigate to review step
       await user.click(screen.getByRole('button', { name: /next/i }));
       
-      expect(screen.getByText(/business issue/i)).toBeInTheDocument();
-      
-      const backButton = screen.getByRole('button', { name: /back/i });
-      await user.click(backButton);
-      
-      expect(screen.getByLabelText(/company name/i)).toBeInTheDocument();
+      expect(screen.getByText('Test Corp')).toBeInTheDocument();
+      expect(screen.getByText('Technology')).toBeInTheDocument();
+      expect(screen.getByText('500')).toBeInTheDocument();
     });
 
-    test('displays progress indicator', () => {
-      render(<ProfileWizard onComplete={mockOnComplete} />);
-      
-      expect(screen.getByText(/step 1 of 9/i)).toBeInTheDocument();
-    });
-
-    test('preserves form data when navigating between steps', async () => {
+    test('can navigate back from review step', async () => {
       const user = userEvent.setup();
-      render(<ProfileWizard onComplete={mockOnComplete} />);
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
-      const companyNameInput = screen.getByLabelText(/company name/i);
-      await user.type(companyNameInput, 'Test Corp');
-      
+      // Fill required fields and navigate to review
+      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
       await user.click(screen.getByRole('button', { name: /next/i }));
+      
+      // Go back
       await user.click(screen.getByRole('button', { name: /back/i }));
       
+      expect(screen.getByText('Company Profile')).toBeInTheDocument();
       expect(screen.getByDisplayValue('Test Corp')).toBeInTheDocument();
+    });
+
+    test('shows progress indicator (2 steps)', () => {
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Check for 2-step progress indicator
+      const stepElements = screen.getAllByText(/Company Overview|Review & Complete/);
+      expect(stepElements).toHaveLength(2);
+    });
+
+    test('completes profile creation', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Fill required fields
+      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      
+      // Navigate to review and complete
+      await user.click(screen.getByRole('button', { name: /next/i }));
+      await user.click(screen.getByRole('button', { name: /create profile/i }));
+      
+      expect(mockOnComplete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          companyName: 'Test Corp',
+          industry: 'Technology'
+        })
+      );
+    });
+
+    test('shows validation errors for required fields', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Try to navigate without filling required fields
+      await user.click(screen.getByRole('button', { name: /next/i }));
+      
+      // Should show validation state (yellow indicator)
+      const stepIndicator = screen.getByTitle(/Company Overview.*Missing: Company Name, Industry/);
+      expect(stepIndicator).toBeInTheDocument();
+    });
+  });
+
+  describe('Import from Markdown', () => {
+    test('shows import button', () => {
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      expect(screen.getByText('📄 Import from Markdown')).toBeInTheDocument();
+    });
+
+    test('can toggle markdown preview', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      await user.click(screen.getByText('Show Markdown'));
+      
+      expect(screen.getByText('Markdown Preview')).toBeInTheDocument();
+    });
+  });
+});
+
+describe('Markdown Profile Import', () => {
+  let extractionService;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    aiService.generateJson = jest.fn();
+    extractionService = new ProfileExtractionService();
+  });
+
+  describe('ProfileExtractionService', () => {
+    describe('extractProfileFromMarkdown', () => {
+      it('should extract basic company information with confidence scores', async () => {
+        const markdown = `
+# Acme Corporation Profile
+
+**Company**: Acme Corporation
+**Industry**: Manufacturing
+**Employee Count**: 2500
+**Annual Revenue**: $500M
+**Primary Location**: San Francisco, CA
+**Website**: https://acme.com
+        `;
+
+        const mockAIResponse = {
+          companyName: { value: 'Acme Corporation', confidence: 0.95 },
+          industry: { value: 'Manufacturing', confidence: 0.90 },
+          employeeCount: { value: '2500', confidence: 0.88 },
+          annualRevenue: { value: '$500M', confidence: 0.92 },
+          primaryLocation: { value: 'San Francisco, CA', confidence: 0.93 },
+          websiteUrl: { value: 'https://acme.com', confidence: 0.90 }
+        };
+
+        aiService.generateJson.mockResolvedValue(mockAIResponse);
+
+        const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
+
+        expect(result.success).toBe(true);
+        expect(result.data.companyName.value).toBe('Acme Corporation');
+        expect(result.data.companyName.confidence).toBe(0.95);
+      });
+
+      it('should extract strategic initiatives with proper structure', async () => {
+        const markdown = `
+## Strategic Initiatives
+
+1. **Digital Transformation**
+   - Contact: John Smith, CTO
+   - Email: john.smith@acme.com
+   - LinkedIn: linkedin.com/in/johnsmith
+   - Phone: +1-555-0123
+
+2. **Market Expansion**
+   - Contact: Jane Doe, VP Sales
+        `;
+
+        const mockAIResponse = {
+          strategicInitiatives: {
+            value: [
+              {
+                initiative: 'Digital Transformation',
+                contact: {
+                  name: 'John Smith',
+                  title: 'CTO',
+                  email: 'john.smith@acme.com',
+                  linkedin: 'linkedin.com/in/johnsmith',
+                  phone: '+1-555-0123'
+                }
+              },
+              {
+                initiative: 'Market Expansion',
+                contact: {
+                  name: 'Jane Doe',
+                  title: 'VP Sales',
+                  email: '',
+                  linkedin: '',
+                  phone: ''
+                }
+              }
+            ],
+            confidence: 0.87
+          }
+        };
+
+        aiService.generateJson.mockResolvedValue(mockAIResponse);
+
+        const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
+
+        expect(result.success).toBe(true);
+        expect(result.data.strategicInitiatives.value).toHaveLength(2);
+        expect(result.data.strategicInitiatives.value[0].initiative).toBe('Digital Transformation');
+      });
+
+      it('should handle extraction errors gracefully', async () => {
+        const markdown = 'Invalid markdown content';
+
+        aiService.generateJson.mockRejectedValue(new Error('AI extraction failed'));
+
+        const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
+
+        expect(result.success).toBe(false);
+        expect(result.error).toBe('AI extraction failed');
+        expect(result.data).toBeNull();
+      });
+
+      it('should handle partial extraction with low confidence scores', async () => {
+        const markdown = `
+# Company Profile
+
+Some vague information about a company...
+        `;
+
+        const mockAIResponse = {
+          companyName: { value: 'Unknown Company', confidence: 0.25 },
+          industry: { value: '', confidence: 0.10 }
+        };
+
+        aiService.generateJson.mockResolvedValue(mockAIResponse);
+
+        const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
+
+        expect(result.success).toBe(true);
+        expect(result.hasLowConfidenceFields).toBe(true);
+        expect(result.lowConfidenceFields).toContain('industry');
+      });
+
+      it('should validate extracted data structure', async () => {
+        const markdown = `# Test Profile`;
+
+        const mockAIResponse = {
+          companyName: { value: 'Test Company', confidence: 0.90 },
+          strategicInitiatives: {
+            value: 'not-an-array', // Invalid structure - should be array
+            confidence: 0.80
+          }
+        };
+
+        aiService.generateJson.mockResolvedValue(mockAIResponse);
+
+        const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
+
+        expect(result.success).toBe(true);
+        expect(result.validationWarnings).toContain('strategicInitiatives should be an array of strategic initiative objects');
+      });
+
+      // ===== SIMPLIFIED MVP FIELD EXTRACTION TESTS =====
+      describe('MVP Field Extraction', () => {
+        it('should extract all MVP fields from comprehensive markdown', async () => {
+          const markdown = `
+# TechFlow Solutions Profile
+
+## Company Information
+**Name**: TechFlow Solutions
+**Industry**: Manufacturing Technology
+**Employee Count**: 2500
+**Annual Revenue**: $500M
+**Primary Location**: Austin, Texas
+**Website**: https://techflow.com
+
+## Strategic Initiatives
+
+### Digital Operations Program
+- **Leader**: Jennifer Walsh, COO
+- **Email**: j.walsh@techflow.com
+- **Phone**: 555-0123
+
+### Market Research Initiative  
+- **Lead**: David Kim, Strategy Director
+- **LinkedIn**: linkedin.com/in/david-kim-strategy
+          `;
+
+          const mockAIResponse = {
+            companyName: { value: 'TechFlow Solutions', confidence: 0.95 },
+            industry: { value: 'Manufacturing Technology', confidence: 0.90 },
+            employeeCount: { value: '2500', confidence: 0.88 },
+            annualRevenue: { value: '$500M', confidence: 0.92 },
+            primaryLocation: { value: 'Austin, Texas', confidence: 0.93 },
+            websiteUrl: { value: 'https://techflow.com', confidence: 0.85 },
+            strategicInitiatives: {
+              value: [
+                {
+                  initiative: 'Digital Operations Program',
+                  contact: {
+                    name: 'Jennifer Walsh',
+                    title: 'COO',
+                    email: 'j.walsh@techflow.com',
+                    linkedin: '',
+                    phone: '555-0123'
+                  }
+                },
+                {
+                  initiative: 'Market Research Initiative',
+                  contact: {
+                    name: 'David Kim',
+                    title: 'Strategy Director',
+                    email: '',
+                    linkedin: 'linkedin.com/in/david-kim-strategy',
+                    phone: ''
+                  }
+                }
+              ],
+              confidence: 0.82
+            }
+          };
+
+          aiService.generateJson.mockResolvedValue(mockAIResponse);
+
+          const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
+
+          expect(result.success).toBe(true);
+          
+          // Verify all MVP fields are extracted
+          expect(result.data.companyName.value).toBe('TechFlow Solutions');
+          expect(result.data.industry.value).toBe('Manufacturing Technology');
+          expect(result.data.employeeCount.value).toBe('2500');
+          expect(result.data.annualRevenue.value).toBe('$500M');
+          expect(result.data.primaryLocation.value).toBe('Austin, Texas');
+          expect(result.data.websiteUrl.value).toBe('https://techflow.com');
+          expect(result.data.strategicInitiatives.value).toHaveLength(2);
+          
+          // Verify strategic initiatives structure
+          expect(result.data.strategicInitiatives.value[0].initiative).toBe('Digital Operations Program');
+          expect(result.data.strategicInitiatives.value[0].contact.phone).toBe('555-0123');
+          expect(result.data.strategicInitiatives.value[1].contact.linkedin).toBe('linkedin.com/in/david-kim-strategy');
+        });
+
+        it('should extract simplified field paths correctly in mapToProfileSchema', () => {
+          const extractedData = {
+            companyName: {
+              value: 'Test Company',
+              confidence: 0.90
+            },
+            industry: {
+              value: 'Technology',
+              confidence: 0.85
+            },
+            strategicInitiatives: {
+              value: [
+                {
+                  initiative: 'Initiative 1',
+                  contact: { name: 'John Doe', title: 'Manager' }
+                }
+              ],
+              confidence: 0.85
+            }
+          };
+
+          const mappedProfile = extractionService.mapToProfileSchema(extractedData);
+
+          // Verify simplified structure mapping
+          expect(mappedProfile.companyName).toBe('Test Company');
+          expect(mappedProfile.industry).toBe('Technology');
+          
+          expect(mappedProfile.strategicInitiatives).toHaveLength(1);
+          expect(mappedProfile.strategicInitiatives[0].initiative).toBe('Initiative 1');
+          expect(mappedProfile.strategicInitiatives[0].contact.name).toBe('John Doe');
+        });
+      });
+    });
+
+    describe('mapToProfileSchema', () => {
+      it('should map extracted data to profile schema correctly', () => {
+        const extractedData = {
+          companyName: { value: 'Test Corp', confidence: 0.90 },
+          industry: { value: 'Technology', confidence: 0.85 },
+          annualRevenue: { value: '$100M', confidence: 0.80 }
+        };
+
+        const mappedProfile = extractionService.mapToProfileSchema(extractedData);
+
+        expect(mappedProfile.companyName).toBe('Test Corp');
+        expect(mappedProfile.industry).toBe('Technology');
+        expect(mappedProfile.annualRevenue).toBe('$100M');
+      });
+
+      it('should skip fields with low confidence', () => {
+        const extractedData = {
+          companyName: { value: 'Test Corp', confidence: 0.90 },
+          industry: { value: 'Unknown', confidence: 0.20 } // Low confidence
+        };
+
+        const mappedProfile = extractionService.mapToProfileSchema(extractedData, 0.30);
+
+        expect(mappedProfile.companyName).toBe('Test Corp');
+        expect(mappedProfile.industry).toBeUndefined();
+      });
+    });
+  });
+
+  describe('API Integration', () => {
+    it('should call extraction API endpoint with markdown content', async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            companyName: { value: 'Test Corp', confidence: 0.90 }
+          }
+        })
+      });
+
+      const response = await fetch('/api/profiles/extract-markdown', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          markdown: '# Test Profile',
+          userId: 'user123'
+        })
+      });
+
+      const result = await response.json();
+
+      expect(result.success).toBe(true);
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/profiles/extract-markdown',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+      );
+    });
+
+    describe('Authentication Flow', () => {
+      it('should include Authorization header in API request', async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            success: true,
+            extractionResult: {
+              success: true,
+              data: {
+                companyName: { value: 'Test Corp', confidence: 0.90 }
+              }
+            }
+          })
+        });
+
+        const response = await fetch('/api/profiles/extract-markdown', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-access-token'
+          },
+          body: JSON.stringify({ markdown: '# Test Profile' })
+        });
+
+        const result = await response.json();
+
+        expect(result.success).toBe(true);
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/profiles/extract-markdown',
+          expect.objectContaining({
+            method: 'POST',
+            headers: expect.objectContaining({
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer test-access-token'
+            })
+          })
+        );
+      });
+
+      it('should handle 401 authentication errors gracefully', async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: false,
+          status: 401,
+          json: async () => ({
+            success: false,
+            error: 'Authentication required. Please sign in to use this feature.'
+          })
+        });
+
+        const response = await fetch('/api/profiles/extract-markdown', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ markdown: '# Test Profile' })
+        });
+
+        const result = await response.json();
+
+        expect(response.status).toBe(401);
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('Authentication required');
+      });
     });
   });
 }); 

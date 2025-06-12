@@ -55,9 +55,19 @@ export class GoogleServerProvider {
       }
 
       const data = await response.json();
+      console.log('[GoogleServerProvider] Full API response:', JSON.stringify(data, null, 2));
+      
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      console.log('[GoogleServerProvider] Extracted content:', content);
       
       if (!content) {
+        console.error('[GoogleServerProvider] No content in response. Full response structure:', {
+          hasCandidates: !!data.candidates,
+          candidatesLength: data.candidates?.length || 0,
+          candidate0: data.candidates?.[0],
+          contentPath: data.candidates?.[0]?.content,
+          partsPath: data.candidates?.[0]?.content?.parts
+        });
         throw new Error('No content received from Google Gemini API');
       }
 

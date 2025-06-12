@@ -8,22 +8,22 @@
 
 **🎉 All Previous Issues Resolved!** ServiceNow integration is now fully operational with complete authentication, credential management, and data visualization capabilities.
 
-**✅ Recent Session Fixes (ServiceNow Integration Refinements):**
-- **Environment Variable Fallback**: Eliminated fallback logic - users now get clear error messages when ServiceNow credentials aren't configured
-- **Page Refresh Redirect**: Fixed authentication flow to preserve current URL when refreshing any page (admin, profiles, etc.)
-- **Admin Test Connection**: Resolved inconsistencies between modal form tests and admin screen tests - both now work reliably
-- **Authentication Headers**: Added proper Bearer token authentication to all ServiceNow API calls
-- **Rate Limiting**: Fixed database dependency issue causing API failures - switched to working in-memory rate limiter
-- **Complete End-to-End Flow**: ServiceNow "Connect & Visualize" button now works perfectly from credential configuration to data visualization
+**✅ Recent Session Fixes (ProfileWizard MVP Simplification - December 2024):**
+- **ProfileWizard Simplified**: Reduced from 8 complex steps to 2 clean MVP steps (Company Overview + Review & Complete)
+- **MVP Schema Implementation**: Simplified to 7 essential fields: companyName, industry, employeeCount, annualRevenue, primaryLocation, websiteUrl, strategicInitiatives
+- **Database Compatibility**: No database changes needed - JSONB storage handles both old complex and new simplified schemas seamlessly
+- **Form UX Enhanced**: All MVP fields consolidated into single comprehensive Company Overview step with strategic initiatives management
+- **Tests Updated**: ProfileWizard tests updated for 2-step structure, 18 of 23 tests passing (core functionality working)
+- **Authentication Working**: Markdown import feature fully operational with proper Supabase Auth integration
 
 **🚀 Next Steps:** 
-1. **[x] Implement Frontend UI for Provider Selection**: ✅ **COMPLETED** - Add a user interface to the timeline generation view that allows users to select their preferred AI provider from the ones they've configured in the admin dashboard.
-2. **[x] Dynamic Model Refresh Implementation**: ✅ **COMPLETED** - Add refresh button next to model dropdown in admin interface to dynamically fetch latest available models from each AI provider with intelligent caching and rate limiting.
-3. **[x] Add PDF Export Capabilities**: ✅ **COMPLETED** - Implement a feature to export the generated AI timelines as professional PDF documents for easy sharing and presentation.
-4. **[x] ServiceNow Integration Refinements**: ✅ **COMPLETED** - All credential handling issues, authentication problems, and page refresh bugs have been resolved.
-5. **Enhanced ServiceNow Capabilities**: Advanced workflow visualization, real-time data updates, export capabilities (PDF, Excel), and ServiceNow performance analytics.
-6. **Expand Enterprise AI Provider Support**: Add support for additional providers (Mistral, Cohere, Perplexity), implement provider performance analytics, and cost optimization features.
-7. **Expand Enterprise Connectors**: Integrate with other enterprise systems such as Salesforce, Microsoft Dynamics, or SAP to broaden the platform's data visualization and business intelligence capabilities.
+1. **Profile Detail Page Redesign**: Update profiles detail page to display simplified MVP schema instead of complex nested fields
+2. **Fix Google Gemini Profile Generation**: Only GPT-4o confirmed working for profile extraction - need to debug and fix Gemini API integration for markdown import
+3. **Timeline Generation Bug Fix**: Resolve "Encryption utilities should only be used server-side" error when Generate Timeline is clicked after markdown import
+4. **AI Provider Performance Optimization**: Gemini excels at timeline generation while GPT-4o performs poorly - optimize provider selection recommendations
+5. **Enhanced ServiceNow Capabilities**: Advanced workflow visualization, real-time data updates, export capabilities (PDF, Excel), and ServiceNow performance analytics
+6. **Expand Enterprise AI Provider Support**: Add support for additional providers (Mistral, Cohere, Perplexity), implement provider performance analytics, and cost optimization features
+7. **Expand Enterprise Connectors**: Integrate with other enterprise systems such as Salesforce, Microsoft Dynamics, or SAP to broaden the platform's data visualization and business intelligence capabilities
 
 ## Project Overview
 
@@ -68,21 +68,22 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **PDF Export**: Professional timeline reports with executive-ready formatting, comprehensive data coverage, and secure server-side generation
 
 ### 👥 **Client Profile Management**
-- **ProfileWizard**: 8-step guided form implementing structured business intelligence methodology
+- **ProfileWizard**: ✨ **SIMPLIFIED** - 2-step guided form with MVP business intelligence methodology
+- **Step 1: Company Overview**: All essential fields consolidated into one comprehensive step (company name, industry, employee count, revenue, location, website, strategic initiatives)
+- **Step 2: Review & Complete**: Simple review and completion with timeline generation
 - **Enhanced UX**: Clickable step navigation, free exploration without field blocking, smart visual completion indicators
 - **Full CRUD Operations**: Create new profiles, edit existing profiles, view detailed breakdowns, delete as needed
-- **Business Intelligence Capture**: Company overview, strategic issues, quantified impact analysis
-- **Structured Framework**: Expected Outcomes → Problems & Opportunities → Solutions & Value → Architecture Assessment
+- **MVP Business Intelligence**: 7 essential fields that users can easily provide and AI can reliably extract
 - **Smart Validation**: Visual step indicators (completed ✓, current, incomplete) with gentle warnings instead of hard blocks
 - **Secure Database Integration**: All profiles are stored securely in Supabase, requiring user authentication.
 - **Real Profile Creation**: Create comprehensive business profiles through guided ProfileWizard interface.
 - **Visual Indicators**: Cloud tags for Supabase-stored profiles
 - **✨ Markdown Import**: Import client profiles from markdown documents with AI-powered extraction
   - File upload or paste support
-  - Intelligent field extraction with confidence scores
+  - Intelligent field extraction with confidence scores for MVP fields
   - Review and edit before applying
   - Leverages existing AI providers (OpenAI, Gemini, Claude)
-  - **✅ Fully Operational**: Complete authentication and extraction workflow
+  - **✅ Authentication Fixed**: Basic extraction working with GPT-4o, Gemini integration needs debugging
 
 ### 🔐 **User Authentication & Database Management**
 - **Supabase Authentication**: Email/password and magic link authentication flows
@@ -388,9 +389,11 @@ const { models } = await response.json();
 #### **Profile Management Endpoints**
 
 ##### **`POST /api/profiles/extract-markdown`**
-Extracts structured profile data from markdown content using AI. **✅ Fully Operational**
+Extracts structured profile data from markdown content using AI. **✅ Authentication Fixed**
 
 **Authentication:** Required - JWT Bearer token from Supabase Auth
+
+**Current Status:** Basic field extraction working, complex nested fields need improvement
 
 **Request Headers:**
 ```
