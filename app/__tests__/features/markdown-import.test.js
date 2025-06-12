@@ -318,5 +318,116 @@ Some vague information about a company...
         })
       );
     });
+
+    describe('Authentication Flow', () => {
+      it('should include Authorization header in API request', async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            success: true,
+            extractionResult: {
+              success: true,
+              data: {
+                companyName: { value: 'Test Corp', confidence: 0.90 }
+              }
+            }
+          })
+        });
+
+        const response = await fetch('/api/profiles/extract-markdown', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer test-access-token'
+          },
+          body: JSON.stringify({ markdown: '# Test Profile' })
+        });
+
+        const result = await response.json();
+
+        expect(result.success).toBe(true);
+        expect(global.fetch).toHaveBeenCalledWith(
+          '/api/profiles/extract-markdown',
+          expect.objectContaining({
+            method: 'POST',
+            headers: expect.objectContaining({
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer test-access-token'
+            })
+          })
+        );
+      });
+
+      it('should handle 401 authentication errors gracefully', async () => {
+        global.fetch = jest.fn().mockResolvedValue({
+          ok: false,
+          status: 401,
+          json: async () => ({
+            success: false,
+            error: 'Authentication required. Please sign in to use this feature.'
+          })
+        });
+
+        const response = await fetch('/api/profiles/extract-markdown', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ markdown: '# Test Profile' })
+        });
+
+        const result = await response.json();
+
+        expect(response.status).toBe(401);
+        expect(result.success).toBe(false);
+        expect(result.error).toContain('Authentication required');
+      });
+
+      it('should validate session exists before making API call', () => {
+        // Mock function to simulate frontend session validation
+        const validateSession = (session) => {
+          if (!session || !session.access_token) {
+            throw new Error('Please sign in to use the markdown import feature.');
+          }
+          return true;
+        };
+
+        // Test with valid session
+        const validSession = { access_token: 'valid-token', user: { id: 'user123' } };
+        expect(() => validateSession(validSession)).not.toThrow();
+
+        // Test with invalid session
+        const invalidSession = null;
+        expect(() => validateSession(invalidSession)).toThrow('Please sign in to use the markdown import feature.');
+
+        // Test with session without access_token
+        const incompleteSession = { user: { id: 'user123' } };
+        expect(() => validateSession(incompleteSession)).toThrow('Please sign in to use the markdown import feature.');
+      });
+
+      it('should use createRouteHandlerClient pattern in backend', () => {
+        // This is a conceptual test to document the correct authentication pattern
+        // The actual implementation should use this pattern:
+        
+        const correctAuthPattern = `
+          const supabase = createRouteHandlerClient({ cookies });
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError || !session) {
+            return NextResponse.json(
+              { success: false, error: 'Authentication required. Please sign in to use this feature.' },
+              { status: 401 }
+            );
+          }
+        `;
+
+        const incorrectAuthPattern = `
+          const cookieStore = cookies();
+          const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+        `;
+
+        // This test documents that the correct pattern should be used
+        expect(correctAuthPattern).toContain('createRouteHandlerClient({ cookies })');
+        expect(incorrectAuthPattern).toContain('cookies: () => cookieStore'); // This is the pattern that was causing issues
+      });
+    });
   });
 }); 

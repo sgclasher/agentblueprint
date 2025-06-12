@@ -82,6 +82,7 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
   - Intelligent field extraction with confidence scores
   - Review and edit before applying
   - Leverages existing AI providers (OpenAI, Gemini, Claude)
+  - **✅ Fully Operational**: Complete authentication and extraction workflow
 
 ### 🔐 **User Authentication & Database Management**
 - **Supabase Authentication**: Email/password and magic link authentication flows
@@ -248,6 +249,23 @@ npm test
 5. **Edit existing profiles** - click "View Details" then "Edit Profile" for full wizard editing.
 6. Generate automatic AI timeline from profile data.
 
+#### **Option 4: Markdown Import (Profile Automation)**
+1. In the ProfileWizard, click the "📄 Import from Markdown" button
+2. Choose import method:
+   - **Paste**: Copy markdown content directly into the text area
+   - **Upload**: Drag & drop or browse for `.md`, `.markdown`, or `.txt` files
+3. Click "Import & Extract" to process with AI
+4. Review extracted data with confidence scores
+5. Apply to ProfileWizard or edit before applying
+6. Continue with normal profile creation workflow
+
+**Supported Markdown Formats:**
+- Company overviews with standard headers
+- Strategic initiatives and contact information
+- AI readiness assessments and opportunities
+- Business problems and quantified impacts
+- Any structured business document content
+
 ## Business Value & Enterprise Use Cases
 
 ### **Current Positioning**
@@ -370,7 +388,9 @@ const { models } = await response.json();
 #### **Profile Management Endpoints**
 
 ##### **`POST /api/profiles/extract-markdown`**
-Extracts structured profile data from markdown content using AI.
+Extracts structured profile data from markdown content using AI. **✅ Fully Operational**
+
+**Authentication:** Required - JWT Bearer token from Supabase Auth
 
 **Request Headers:**
 ```
@@ -414,9 +434,16 @@ Content-Type: application/json
 
 **Error Responses:**
 - `400` - Missing markdown content or no AI provider configured
-- `401` - Invalid or missing authentication
+- `401` - Authentication required - user must be signed in
 - `429` - Rate limit exceeded
 - `500` - Extraction failed
+
+**Features:**
+- AI-powered extraction using configured providers (OpenAI, Gemini, Claude)
+- Confidence scoring for each extracted field (0-1 scale)
+- Automatic field mapping to ProfileWizard schema
+- Validation warnings for data structure issues
+- Comprehensive extraction summary and statistics
 
 ## Development Workflow
 

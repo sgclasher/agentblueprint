@@ -3,7 +3,7 @@
 import React, { useState, FC, ChangeEvent } from 'react';
 import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '../../lib/supabase';
 
 import StrategicInitiativesForm from './StrategicInitiativesForm';
 import ProblemsOpportunitiesForm from './ProblemsOpportunitiesForm';
@@ -229,40 +229,31 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
     try {
       setIsExtracting(true);
       
-      // Use a fresh instance of the Supabase client to ensure we get the latest session
-      const supabase = createClientComponentClient();
+      // Get the current session for authentication (matches working pattern from timeline components)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      // First, try to get the user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        console.error('User error:', userError);
-        // Try to refresh the session
-        const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
-        
-        if (sessionError || !session) {
-          console.error('Session refresh error:', sessionError);
-          alert('Your session has expired. Please sign in again.');
-          window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`;
-          return;
-        }
-      }
-      
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        alert('Unable to authenticate. Please refresh the page and try again.');
+      if (sessionError || !session) {
+        console.error('❌ Authentication failed for markdown import:', sessionError?.message);
+        alert('Please sign in to use the markdown import feature.');
         return;
       }
 
+      // Prepare headers with Authorization token (matches working timeline pattern)
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      console.log('📝 Making authenticated markdown import request...');
+
       const response = await fetch('/api/profiles/extract-markdown', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ markdown })
+        headers,
+        body: JSON.stringify({ markdown }),
+        credentials: 'same-origin'
       });
 
       const result = await response.json();
@@ -271,10 +262,11 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
         throw new Error(result.error || 'Extraction failed');
       }
 
+      console.log('✅ Markdown extraction successful');
       setExtractionResult(result.extractionResult);
       setShowMarkdownImport(false);
     } catch (error) {
-      console.error('Markdown import error:', error);
+      console.error('❌ Markdown import error:', error);
       alert(`Failed to extract profile data: ${(error as Error).message}`);
     } finally {
       setIsExtracting(false);
