@@ -62,4 +62,10 @@ jest.mock('next/server', () => ({
 
 // Make React available globally for tests
 import React from 'react';
-(global as any).React = React; 
+(global as any).React = React;
+
+// Mock encryption utilities
+jest.mock('./app/utils/encryption', () => ({
+  encrypt: jest.fn((data) => Promise.resolve(`encrypted_${JSON.stringify(data)}`)),
+  decrypt: jest.fn((data) => Promise.resolve(JSON.parse(data.replace('encrypted_', '')))),
+})); 

@@ -2,10 +2,45 @@
 
 ## 🎯 **Current Tasks**
 
-### **No Active Development Tasks**
-- All major features are complete and operational
-- Platform is production-ready with full multi-provider AI integration
-- Recent cleanup completed: removed 500+ lines of bloated code
+### **Active Development: Profile Automation - Markdown Import Feature**
+
+**Objective:** Build a profile automation feature that extracts client profile data from markdown input using AI.
+
+#### Implementation Checklist:
+
+**Phase 1: Schema Analysis & Test Setup**
+- [x] Analyze existing profile schema - Review ProfileWizard steps and Supabase schema
+- [x] Create test suite for markdown extraction - Write tests for the extraction logic
+- [x] Create sample markdown fixtures - Test data for various profile formats
+
+**Phase 2: UI Components**
+- [x] Add "Import from Markdown" button - Add import button to ProfileWizard header
+- [x] Create MarkdownImportModal component - Modal for file upload/paste interface
+- [x] Create ExtractionReview component - Display extracted data with confidence scores
+
+**Phase 3: AI Extraction Service**
+- [x] Create extraction prompt template - Structured prompt for profile field extraction
+- [x] Create ProfileExtractionService - Service to handle AI extraction logic
+- [x] Add field mapping logic - Map AI output to ProfileWizard schema
+
+**Phase 4: API Integration**
+- [x] Create markdown extraction API endpoint - Server-side extraction handler
+- [x] Add error handling and validation - Robust error handling for extraction
+
+**Phase 5: Integration & Polish**
+- [x] Wire up components to ProfileWizard - Connect import flow to wizard
+- [x] Add loading states and error messages - User feedback during extraction
+- [x] Test end-to-end flow - Verify complete import process
+
+**Phase 6: Documentation**
+- [x] Update documentation - Add usage instructions and API docs
+
+**Key Features:**
+- Import from markdown via file upload or paste
+- AI-powered extraction with confidence scores
+- Review extracted data before applying to wizard
+- No fallback logic - clear error messages on failure
+- Leverages existing aiService infrastructure
 
 ## 📋 **Next Priorities** 
 

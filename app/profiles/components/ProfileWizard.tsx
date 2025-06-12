@@ -3,6 +3,7 @@
 import React, { useState, FC, ChangeEvent } from 'react';
 import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 import StrategicInitiativesForm from './StrategicInitiativesForm';
 import ProblemsOpportunitiesForm from './ProblemsOpportunitiesForm';
@@ -12,6 +13,8 @@ import SolutionStep from './steps/SolutionStep';
 import DecisionStep from './steps/DecisionStep';
 import AIAssessmentStep from './steps/AIAssessmentStep';
 import SummaryStep from './steps/SummaryStep';
+import MarkdownImportModal from './MarkdownImportModal';
+import ExtractionReview from './ExtractionReview';
 import styles from './ProfileWizard.module.css';
 import { Profile } from '../../services/types';
 
@@ -97,6 +100,9 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
   
   const [isGeneratingTimeline, setIsGeneratingTimeline] = useState(false);
   const [showMarkdownPreview, setShowMarkdownPreview] = useState(false);
+  const [showMarkdownImport, setShowMarkdownImport] = useState(false);
+  const [extractionResult, setExtractionResult] = useState(null);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   const updateProfileData = (path: string, value: any) => {
     setProfileData(prev => {
@@ -217,6 +223,84 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
     } finally {
       setIsGeneratingTimeline(false);
     }
+  };
+
+  const handleMarkdownImport = async (markdown: string) => {
+    try {
+      setIsExtracting(true);
+      
+      // Use a fresh instance of the Supabase client to ensure we get the latest session
+      const supabase = createClientComponentClient();
+      
+      // First, try to get the user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.error('User error:', userError);
+        // Try to refresh the session
+        const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
+        
+        if (sessionError || !session) {
+          console.error('Session refresh error:', sessionError);
+          alert('Your session has expired. Please sign in again.');
+          window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`;
+          return;
+        }
+      }
+      
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        alert('Unable to authenticate. Please refresh the page and try again.');
+        return;
+      }
+
+      const response = await fetch('/api/profiles/extract-markdown', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ markdown })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Extraction failed');
+      }
+
+      setExtractionResult(result.extractionResult);
+      setShowMarkdownImport(false);
+    } catch (error) {
+      console.error('Markdown import error:', error);
+      alert(`Failed to extract profile data: ${(error as Error).message}`);
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleApplyExtractedData = (extractedProfile: Partial<Profile>) => {
+    // Merge extracted data with existing profile data
+    const mergedData = {
+      ...profileData,
+      ...extractedProfile,
+      // Preserve ID and metadata
+      id: profileData.id,
+      createdAt: profileData.createdAt,
+      updatedAt: profileData.updatedAt
+    };
+
+    setProfileData(mergedData);
+    setExtractionResult(null);
+    
+    // Navigate to the first step to review the imported data
+    setCurrentStep(0);
+  };
+
+  const handleCancelExtraction = () => {
+    setExtractionResult(null);
   };
 
 
@@ -441,6 +525,20 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
           }}>
             <button 
               type="button" 
+              onClick={() => setShowMarkdownImport(true)}
+              className="btn btn-secondary"
+              style={{
+                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--spacing-sm)'
+              }}
+            >
+              <span>📄</span> Import from Markdown
+            </button>
+            
+            <button 
+              type="button" 
               onClick={() => setShowMarkdownPreview(!showMarkdownPreview)}
               className="btn btn-secondary"
               style={{
@@ -486,6 +584,51 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
           </div>
         </div>
       </div>
+
+      {/* Markdown Import Modal */}
+      <MarkdownImportModal
+        isOpen={showMarkdownImport}
+        onClose={() => setShowMarkdownImport(false)}
+        onImport={handleMarkdownImport}
+        isProcessing={isExtracting}
+      />
+
+      {/* Extraction Review Modal */}
+      {extractionResult && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)',
+          padding: 'var(--spacing-xl)'
+        }}>
+          <div style={{
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(var(--backdrop-blur))',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 'var(--border-radius-xl)',
+            width: '90%',
+            maxWidth: '900px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            padding: 'var(--spacing-xl)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+          }}>
+            <ExtractionReview
+              extractionResult={extractionResult}
+              onApply={handleApplyExtractedData}
+              onCancel={handleCancelExtraction}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

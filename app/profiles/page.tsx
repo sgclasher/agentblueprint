@@ -364,11 +364,14 @@ export default function ProfilesPage() {
 
   if (showWizard) {
     return (
-      <ProfileWizard
-        onComplete={handleWizardComplete}
-        onCancel={handleWizardCancel}
-        initialData={{}}
-      />
+      <div style={{ minHeight: '100vh' }}>
+        <GlobalHeader />
+        <ProfileWizard
+          onComplete={handleWizardComplete}
+          onCancel={handleWizardCancel}
+          initialData={{}}
+        />
+      </div>
     );
   }
 

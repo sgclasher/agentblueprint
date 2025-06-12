@@ -77,6 +77,11 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Secure Database Integration**: All profiles are stored securely in Supabase, requiring user authentication.
 - **Real Profile Creation**: Create comprehensive business profiles through guided ProfileWizard interface.
 - **Visual Indicators**: Cloud tags for Supabase-stored profiles
+- **✨ Markdown Import**: Import client profiles from markdown documents with AI-powered extraction
+  - File upload or paste support
+  - Intelligent field extraction with confidence scores
+  - Review and edit before applying
+  - Leverages existing AI providers (OpenAI, Gemini, Claude)
 
 ### 🔐 **User Authentication & Database Management**
 - **Supabase Authentication**: Email/password and magic link authentication flows
@@ -361,6 +366,57 @@ const { models } = await response.json();
 - `POST /api/admin/test-credentials` - Test new credentials before saving
 - `POST /api/admin/encrypt-credentials` - Encrypt credentials server-side
 - `POST /api/admin/generate-encryption-key` - Generate new encryption keys
+
+#### **Profile Management Endpoints**
+
+##### **`POST /api/profiles/extract-markdown`**
+Extracts structured profile data from markdown content using AI.
+
+**Request Headers:**
+```
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "markdown": "# Company Profile\n\n**Company Name**: Acme Corp...",
+  "preferredProvider": "openai" // Optional: "openai", "gemini", or "claude"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "extractionResult": {
+    "data": {
+      "companyName": { "value": "Acme Corp", "confidence": 0.95 },
+      "industry": { "value": "Technology", "confidence": 0.88 }
+      // ... more fields
+    },
+    "hasLowConfidenceFields": false,
+    "lowConfidenceFields": [],
+    "validationWarnings": [],
+    "averageConfidence": 0.91,
+    "mappedProfile": { /* Profile object ready for use */ },
+    "summary": {
+      "totalFields": 15,
+      "highConfidenceFields": 12,
+      "mediumConfidenceFields": 3,
+      "lowConfidenceFields": 0,
+      "extractedSections": ["companyName", "industry", "aiOpportunityAssessment"]
+    }
+  }
+}
+```
+
+**Error Responses:**
+- `400` - Missing markdown content or no AI provider configured
+- `401` - Invalid or missing authentication
+- `429` - Rate limit exceeded
+- `500` - Extraction failed
 
 ## Development Workflow
 
