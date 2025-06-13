@@ -9,7 +9,7 @@ import { ArrowLeft, FileEdit, TrendingUp, Briefcase, Building2, BarChart, Store,
 import styles from './ProfileDetail.module.css';
 import { Profile } from '../../services/types';
 
-type ActiveTab = 'overview' | 'analysis' | 'contacts' | 'opportunities' | 'markdown';
+type ActiveTab = 'overview' | 'analysis' | 'contacts' | 'systems' | 'opportunities' | 'markdown';
 
 interface ProfileTabProps {
     profile: Profile;
@@ -58,7 +58,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
               <div className={styles.infoCard}>
               <h3>Profile Summary</h3>
               <div style={{ padding: 'var(--spacing-md)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
                   <div>
                     <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Strategic Initiatives</label>
                     <p style={{ margin: '0.25rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
@@ -84,6 +84,12 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
                           .filter((initiative: any) => initiative.contact?.name).length;
                         return `${contactCount} contact${contactCount === 1 ? '' : 's'}`;
                       })()}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Systems & Apps</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                      {profile.systemsAndApplications?.length || 0} system{(profile.systemsAndApplications?.length || 0) === 1 ? '' : 's'}
                     </p>
                   </div>
                   <div>
@@ -580,6 +586,173 @@ const ProfileContactsTab: FC<ProfileTabProps> = ({ profile }) => {
       );
 }
 
+const ProfileSystemsTab: FC<ProfileTabProps> = ({ profile }) => {
+    const systemsByCategory = (profile.systemsAndApplications || []).reduce((acc: any, system: any) => {
+        const category = system.category || 'Other';
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(system);
+        return acc;
+    }, {});
+
+    const categories = Object.keys(systemsByCategory).sort();
+
+    return (
+        <div className={styles.tabContent}>
+          <div className={styles.analysisSections}>
+            {profile.systemsAndApplications && profile.systemsAndApplications.length > 0 ? (
+              <div className={styles.analysisCard}>
+                <h3>Systems & Applications ({profile.systemsAndApplications.length})</h3>
+                
+                {categories.map((category) => (
+                  <div key={category} style={{ marginBottom: 'var(--spacing-xl)' }}>
+                    <h4 style={{ 
+                      fontSize: '1.1rem', 
+                      fontWeight: '600', 
+                      color: 'var(--text-primary)', 
+                      marginBottom: 'var(--spacing-lg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-sm)',
+                      paddingBottom: 'var(--spacing-sm)',
+                      borderBottom: '1px solid var(--border-primary)'
+                    }}>
+                      {category === 'CRM' ? '🤝' : 
+                       category === 'ERP' ? '🏭' : 
+                       category === 'Cloud Platform' ? '☁️' : 
+                       category === 'Database' ? '🗄️' : 
+                       category === 'Analytics' ? '📊' : 
+                       category === 'Communication' ? '💬' : 
+                       category === 'Security' ? '🔒' : 
+                       category === 'DevOps' ? '⚙️' : '📱'} {category} ({systemsByCategory[category].length})
+                    </h4>
+                    
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+                      gap: 'var(--spacing-lg)' 
+                    }}>
+                      {systemsByCategory[category].map((system: any, index: number) => (
+                        <div 
+                          key={index}
+                          style={{
+                            background: 'var(--bg-secondary)',
+                            border: '1px solid var(--border-primary)',
+                            borderRadius: 'var(--border-radius-lg)',
+                            padding: 'var(--spacing-lg)',
+                            position: 'relative'
+                          }}
+                        >
+                          {/* Criticality Badge */}
+                          {system.criticality && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 'var(--spacing-md)',
+                              right: 'var(--spacing-md)',
+                              background: system.criticality === 'High' ? 'var(--accent-red)' : 
+                                         system.criticality === 'Medium' ? 'var(--accent-yellow)' : 'var(--accent-blue)',
+                              color: 'white',
+                              borderRadius: 'var(--border-radius)',
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 'var(--font-weight-medium)'
+                            }}>
+                              {system.criticality === 'High' ? '🔥' : 
+                               system.criticality === 'Medium' ? '⚡' : '📋'} {system.criticality}
+                            </div>
+                          )}
+
+                          <h5 style={{ 
+                            margin: '0 0 var(--spacing-md) 0',
+                            fontSize: '1.1rem',
+                            color: 'var(--text-primary)',
+                            fontWeight: 'var(--font-weight-semibold)',
+                            paddingRight: system.criticality ? 'var(--spacing-xxl)' : '0'
+                          }}>
+                            {system.name || 'Unnamed System'}
+                          </h5>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                            {system.vendor && (
+                              <div>
+                                <span style={{ 
+                                  color: 'var(--text-secondary)', 
+                                  fontSize: '0.8rem', 
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>Vendor: </span>
+                                <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>{system.vendor}</span>
+                              </div>
+                            )}
+                            
+                            {system.version && (
+                              <div>
+                                <span style={{ 
+                                  color: 'var(--text-secondary)', 
+                                  fontSize: '0.8rem', 
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em'
+                                }}>Version: </span>
+                                <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>{system.version}</span>
+                              </div>
+                            )}
+                            
+                            {system.description && (
+                              <div style={{ marginTop: 'var(--spacing-sm)' }}>
+                                <span style={{ 
+                                  color: 'var(--text-secondary)', 
+                                  fontSize: '0.8rem', 
+                                  fontWeight: '600',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.05em',
+                                  display: 'block',
+                                  marginBottom: 'var(--spacing-xs)'
+                                }}>Description:</span>
+                                <p style={{ 
+                                  margin: 0, 
+                                  color: 'var(--text-primary)', 
+                                  fontSize: '0.9rem',
+                                  lineHeight: '1.5',
+                                  fontStyle: 'italic'
+                                }}>
+                                  {system.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.analysisCard}>
+                <h3>Systems & Applications</h3>
+                <div style={{
+                  padding: 'var(--spacing-xl)',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)',
+                  fontStyle: 'italic'
+                }}>
+                  <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)', opacity: 0.5 }}>💻</div>
+                  <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+                    No Systems & Applications Yet
+                  </h4>
+                  <p style={{ maxWidth: '500px', margin: '0 auto', lineHeight: '1.5' }}>
+                    Add systems and applications used by this client by editing the profile to see a comprehensive technology overview here.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+}
+
 const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
     return (
       <div className={styles.tabContent}>
@@ -877,6 +1050,12 @@ export default function ProfileDetailPage() {
             Contacts
           </button>
           <button 
+            className={`${styles.tabButton} ${activeTab === 'systems' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('systems')}
+          >
+            Systems
+          </button>
+          <button 
             className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('opportunities')}
           >
@@ -902,6 +1081,10 @@ export default function ProfileDetailPage() {
         
         {activeTab === 'contacts' && (
           <ProfileContactsTab profile={profile} />
+        )}
+        
+        {activeTab === 'systems' && (
+          <ProfileSystemsTab profile={profile} />
         )}
         
         {activeTab === 'opportunities' && (

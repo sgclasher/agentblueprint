@@ -1,7 +1,7 @@
 'use client';
 
 import React, { FC, ChangeEvent } from 'react';
-import { Profile, StrategicInitiative } from '../../../services/types';
+import { Profile, StrategicInitiative, SystemApplication } from '../../../services/types';
 import styles from './CompanyOverviewStep.module.css';
 
 interface StepProps {
@@ -161,6 +161,36 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
       successMetrics: currentMetrics
     };
     updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  // 🆕 Systems & Applications Management Functions
+  const addSystemApplication = () => {
+    const currentSystems = data.systemsAndApplications || [];
+    const newSystem: SystemApplication = {
+      name: '',
+      category: '',
+      vendor: '',
+      version: '',
+      description: '',
+      criticality: undefined
+    };
+    updateData('systemsAndApplications', [...currentSystems, newSystem]);
+  };
+
+  const updateSystemApplication = (index: number, field: string, value: string) => {
+    const currentSystems = data.systemsAndApplications || [];
+    const updatedSystems = [...currentSystems];
+    updatedSystems[index] = {
+      ...updatedSystems[index],
+      [field]: value
+    };
+    updateData('systemsAndApplications', updatedSystems);
+  };
+
+  const removeSystemApplication = (index: number) => {
+    const currentSystems = data.systemsAndApplications || [];
+    const updatedSystems = currentSystems.filter((_, i) => i !== index);
+    updateData('systemsAndApplications', updatedSystems);
   };
 
   return (
@@ -664,6 +694,142 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
           }}
         >
           <span>+</span> Add Strategic Initiative
+        </button>
+      </div>
+
+      {/* Systems & Applications */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Systems & Applications</h3>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+          Add key systems, applications, and technology infrastructure used by the client.
+        </p>
+        
+        {data.systemsAndApplications?.map((system, index) => (
+          <div key={index} style={{ 
+            border: '1px solid var(--border-primary)', 
+            borderRadius: '8px', 
+            padding: '1rem', 
+            marginBottom: '1rem',
+            background: 'var(--bg-secondary)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>System {index + 1}</h4>
+              <button
+                type="button"
+                onClick={() => removeSystemApplication(index)}
+                style={{
+                  background: 'var(--accent-red)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Remove
+              </button>
+            </div>
+            
+            <div className={styles.formGrid}>
+              <div className={styles.formGroup}>
+                <label>System Name *</label>
+                <input
+                  type="text"
+                  value={system.name || ''}
+                  onChange={(e) => updateSystemApplication(index, 'name', e.target.value)}
+                  placeholder="e.g., Salesforce CRM, SAP ERP"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Category</label>
+                <select
+                  value={system.category || ''}
+                  onChange={(e) => updateSystemApplication(index, 'category', e.target.value)}
+                  className={styles.formSelect}
+                >
+                  <option value="">Select category</option>
+                  <option value="CRM">🤝 CRM</option>
+                  <option value="ERP">🏭 ERP</option>
+                  <option value="Cloud Platform">☁️ Cloud Platform</option>
+                  <option value="Database">🗄️ Database</option>
+                  <option value="Analytics">📊 Analytics</option>
+                  <option value="Communication">💬 Communication</option>
+                  <option value="Security">🔒 Security</option>
+                  <option value="DevOps">⚙️ DevOps</option>
+                  <option value="Other">📱 Other</option>
+                </select>
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Vendor</label>
+                <input
+                  type="text"
+                  value={system.vendor || ''}
+                  onChange={(e) => updateSystemApplication(index, 'vendor', e.target.value)}
+                  placeholder="e.g., Salesforce, Microsoft, SAP"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Version/Edition</label>
+                <input
+                  type="text"
+                  value={system.version || ''}
+                  onChange={(e) => updateSystemApplication(index, 'version', e.target.value)}
+                  placeholder="e.g., Enterprise, v2023.1, Cloud"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                <label>Description</label>
+                <input
+                  type="text"
+                  value={system.description || ''}
+                  onChange={(e) => updateSystemApplication(index, 'description', e.target.value)}
+                  placeholder="Brief description of how this system is used"
+                  className={styles.formInput}
+                />
+              </div>
+              
+              <div className={styles.formGroup}>
+                <label>Business Criticality</label>
+                <select
+                  value={system.criticality || ''}
+                  onChange={(e) => updateSystemApplication(index, 'criticality', e.target.value)}
+                  className={styles.formSelect}
+                >
+                  <option value="">Select criticality</option>
+                  <option value="High">🔥 High - Mission Critical</option>
+                  <option value="Medium">⚡ Medium - Important</option>
+                  <option value="Low">📋 Low - Supporting</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        <button
+          type="button"
+          onClick={addSystemApplication}
+          style={{
+            background: 'var(--accent-green)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.75rem 1rem',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          <span>+</span> Add System/Application
         </button>
       </div>
     </div>

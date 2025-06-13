@@ -167,6 +167,64 @@ Contact info may be formatted as:
 - "Lead: Jane Doe (VP Sales) - jane.doe@company.com"
 - "Responsible: Mike Chen, Director"
 
+### 8. SYSTEMS & APPLICATIONS (systemsAndApplications) 🆕 **NEW MVP FIELD**
+Look for sections: "Technology Stack", "Systems", "Applications", "Software", "Infrastructure", "Tools", "IT Environment", "Current Technology"
+
+**CRITICAL**: Each system should include:
+- System/application name
+- Category (CRM, ERP, Cloud Platform, Database, Analytics, Communication, Security, DevOps, Other)
+- Vendor/provider
+- Version or edition
+- Description or usage context
+- Business criticality (High, Medium, Low)
+
+**SYSTEMS EXTRACTION PATTERNS**:
+Look for systems listed:
+- In "Technology Stack", "Current Systems", "IT Infrastructure" sections
+- In bullet points or tables with system names
+- In descriptions mentioning specific software products
+- References to CRM, ERP, databases, cloud platforms
+- Vendor names (Salesforce, Microsoft, SAP, Oracle, AWS, etc.)
+- Keywords: "using", "implemented", "running", "deployed", "system", "software", "platform", "application", "tool"
+
+**Example Markdown Patterns to Recognize**:
+
+### Technology Infrastructure
+- CRM: Salesforce Enterprise (Critical)
+- ERP: SAP S/4HANA (High priority)
+- Cloud Platform: Microsoft Azure
+- Database: PostgreSQL v14
+- Analytics: Tableau 2023.1
+
+### Current Systems
+**Customer Relationship Management**
+- Salesforce Professional Edition
+- Used for all customer interactions and sales pipeline
+- Business critical system
+
+**Enterprise Resource Planning**  
+- SAP ERP Central Component (ECC)
+- Version 6.0 EHP8
+- Core business operations system
+
+### IT Environment
+The organization currently uses:
+- Salesforce for CRM functionality
+- Microsoft Dynamics 365 for ERP
+- AWS for cloud infrastructure  
+- PostgreSQL for primary database
+- Slack for team communication
+
+**Category Recognition Patterns**:
+- CRM: Salesforce, HubSpot, Microsoft Dynamics CRM, Pipedrive
+- ERP: SAP, Oracle, NetSuite, Microsoft Dynamics 365, Workday
+- Cloud Platform: AWS, Azure, Google Cloud, Oracle Cloud
+- Database: PostgreSQL, MySQL, Oracle, SQL Server, MongoDB
+- Analytics: Tableau, Power BI, Looker, Qlik, Snowflake
+- Communication: Slack, Microsoft Teams, Zoom, Webex
+- Security: Okta, Auth0, CyberArk, Splunk, FireEye
+- DevOps: Jenkins, GitLab, Docker, Kubernetes, Terraform
+
 ## OUTPUT FORMAT:
 Return a JSON object with these exact field names:
 
@@ -208,6 +266,19 @@ Return a JSON object with these exact field names:
       }
     ], 
     "confidence": 0.8 
+  },
+  "systemsAndApplications": {
+    "value": [
+      {
+        "name": "System/Application Name",
+        "category": "CRM",
+        "vendor": "Vendor Name",
+        "version": "Version or Edition",
+        "description": "How the system is used",
+        "criticality": "High"
+      }
+    ],
+    "confidence": 0.8
   }
 }
 
@@ -288,6 +359,26 @@ export const PROFILE_FIELD_DEFINITIONS = {
       'Initiative: name, Contact: person details format',
       'Problems/challenges listed under initiative sections',
       'Business problems associated with specific initiatives'
+    ]
+  },
+  systemsAndApplications: {
+    type: 'array',
+    description: 'List of systems, applications, and technology infrastructure used by the organization',
+    itemStructure: {
+      name: 'string - Name of the system or application',
+      category: 'string - Technology category (CRM, ERP, Cloud Platform, Database, Analytics, Communication, Security, DevOps, Other)',
+      vendor: 'string - Vendor or provider name',
+      version: 'string - Version, edition, or release information',
+      description: 'string - How the system is used or its purpose',
+      criticality: 'string - Business criticality level (High, Medium, Low)'
+    },
+    recognitionPatterns: [
+      'Technology stack section',
+      'Current systems or IT infrastructure',
+      'Software applications lists',
+      'Vendor names and product mentions',
+      'System: name, version format',
+      'Technology environment descriptions'
     ]
   }
 };

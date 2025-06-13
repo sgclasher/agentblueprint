@@ -7,6 +7,7 @@ export interface Profile {
     primaryLocation?: string;
     websiteUrl?: string;
     strategicInitiatives?: StrategicInitiative[];
+    systemsAndApplications?: SystemApplication[];
     markdown?: string;
     createdAt?: string;
     updatedAt?: string;
@@ -39,6 +40,15 @@ export interface StrategicInitiative {
     estimatedBudget?: string;           // "$500K", "$2M-5M"
     priority?: 'High' | 'Medium' | 'Low';
     status?: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
+}
+
+export interface SystemApplication {
+    name: string;                       // "Salesforce CRM", "SAP ERP", "Microsoft Office 365"
+    category: string;                   // "CRM", "ERP", "Cloud Platform", "Database", "Analytics", "Communication"
+    vendor?: string;                    // "Salesforce", "SAP", "Microsoft"
+    version?: string;                   // "Enterprise", "v2023.1", "Cloud"
+    description?: string;               // Optional description of usage/purpose
+    criticality?: 'High' | 'Medium' | 'Low';  // Business criticality
 }
 
 // Archive complex interfaces for future use - these can be added back based on user feedback
