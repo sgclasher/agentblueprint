@@ -68,6 +68,40 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
               <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: 'var(--text-primary)' }}>
                 {initiative.initiative || `Initiative ${index + 1}`}
               </h4>
+              
+              {/* Business Problems Summary */}
+              {initiative.businessProblems && initiative.businessProblems.length > 0 && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ 
+                    fontSize: '0.875rem', 
+                    fontWeight: '600', 
+                    color: 'var(--text-secondary)', 
+                    marginBottom: '0.5rem' 
+                  }}>
+                    Business Problems ({initiative.businessProblems.length})
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                    {initiative.businessProblems.map((problem: string, problemIndex: number) => (
+                      <span 
+                        key={problemIndex}
+                        style={{
+                          display: 'inline-block',
+                          background: 'var(--accent-red-bg, rgba(239, 68, 68, 0.1))',
+                          color: 'var(--accent-red)',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: 'var(--border-radius)',
+                          fontSize: '0.7rem',
+                          border: '1px solid var(--accent-red-border, rgba(239, 68, 68, 0.2))',
+                          lineHeight: '1.2'
+                        }}
+                      >
+                        {problem}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                 {initiative.contact?.name && (
                   <div><strong>Contact:</strong> {initiative.contact.name} {initiative.contact.title && `(${initiative.contact.title})`}</div>

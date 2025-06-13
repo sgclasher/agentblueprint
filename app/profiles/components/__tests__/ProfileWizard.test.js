@@ -190,6 +190,161 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       expect(screen.getByText('Markdown Preview')).toBeInTheDocument();
     });
   });
+
+  describe('Business Problems Feature', () => {
+    test('can add business problems to strategic initiatives', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // First add a strategic initiative
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      
+      // Add initiative name
+      const initiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
+      await user.type(initiativeInput, 'Test Initiative');
+      
+      // Check that business problems section is present
+      expect(screen.getByText('Business Problems')).toBeInTheDocument();
+      expect(screen.getByText('+ Add Problem')).toBeInTheDocument();
+      
+      // Add a business problem
+      await user.click(screen.getByText('+ Add Problem'));
+      
+      // Check that problem input appears
+      const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
+      expect(problemInput).toBeInTheDocument();
+      
+      // Type in the problem
+      await user.type(problemInput, 'Manual reporting takes 5 hours per week');
+      
+      // Navigate to review step and check it's included
+      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.click(screen.getByRole('button', { name: /next/i }));
+      
+      // Check that business problems are shown in review
+      expect(screen.getByText('Business Problems (1)')).toBeInTheDocument();
+      expect(screen.getByText('Manual reporting takes 5 hours per week')).toBeInTheDocument();
+    });
+
+    test('can remove business problems', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Add initiative and problem
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      await user.click(screen.getByText('+ Add Problem'));
+      
+      // Add problem text
+      const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
+      await user.type(problemInput, 'Test problem');
+      
+      // Remove the problem
+      const removeButton = screen.getByTitle('Remove problem');
+      await user.click(removeButton);
+      
+      // Check that problem is removed
+      expect(screen.queryByDisplayValue('Test problem')).not.toBeInTheDocument();
+      expect(screen.getByText('No business problems added yet. Click "Add Problem" to start.')).toBeInTheDocument();
+    });
+
+    test('multiple initiatives can have their own business problems', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Add first initiative
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      const firstInitiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
+      await user.type(firstInitiativeInput, 'First Initiative');
+      
+      // Add problem to first initiative
+      const addProblemButtons = screen.getAllByText('+ Add Problem');
+      await user.click(addProblemButtons[0]);
+      const firstProblemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
+      await user.type(firstProblemInput, 'First initiative problem');
+      
+      // Add second initiative
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      const secondInitiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
+      await user.type(secondInitiativeInput, 'Second Initiative');
+      
+      // Add problem to second initiative
+      const updatedAddProblemButtons = screen.getAllByText('+ Add Problem');
+      await user.click(updatedAddProblemButtons[1]);
+      const problemInputs = screen.getAllByPlaceholderText(/manual data entry causing delays and errors/i);
+      await user.type(problemInputs[1], 'Second initiative problem');
+      
+      // Navigate to review and check both problems are shown
+      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.click(screen.getByRole('button', { name: /next/i }));
+      
+      // Both initiatives should show their problems
+      expect(screen.getByText('First initiative problem')).toBeInTheDocument();
+      expect(screen.getByText('Second initiative problem')).toBeInTheDocument();
+    });
+
+    test('business problems persist when navigating between steps', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Fill required fields
+      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      
+      // Add initiative and problem
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      await user.click(screen.getByText('+ Add Problem'));
+      const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
+      await user.type(problemInput, 'Persistent problem');
+      
+      // Navigate to review
+      await user.click(screen.getByRole('button', { name: /next/i }));
+      expect(screen.getByText('Persistent problem')).toBeInTheDocument();
+      
+      // Navigate back
+      await user.click(screen.getByRole('button', { name: /back/i }));
+      
+      // Check that problem is still there
+      expect(screen.getByDisplayValue('Persistent problem')).toBeInTheDocument();
+    });
+
+    test('completes profile creation with business problems', async () => {
+      const user = userEvent.setup();
+      render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+      
+      // Fill required fields
+      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      
+      // Add initiative with business problem
+      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      const initiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
+      await user.type(initiativeInput, 'Digital Transformation');
+      
+      await user.click(screen.getByText('+ Add Problem'));
+      const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
+      await user.type(problemInput, 'Legacy system integration issues');
+      
+      // Complete the wizard
+      await user.click(screen.getByRole('button', { name: /next/i }));
+      await user.click(screen.getByRole('button', { name: /create profile/i }));
+      
+      // Check that the profile was created with business problems
+      expect(mockOnComplete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          companyName: 'Test Corp',
+          industry: 'Technology',
+          strategicInitiatives: expect.arrayContaining([
+            expect.objectContaining({
+              initiative: 'Digital Transformation',
+              businessProblems: ['Legacy system integration issues']
+            })
+          ])
+        })
+      );
+    });
+  });
 });
 
 describe('Markdown Profile Import', () => {

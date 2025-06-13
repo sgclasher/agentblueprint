@@ -9,7 +9,7 @@ import { ArrowLeft, FileEdit, TrendingUp, Briefcase, Building2, BarChart, Store,
 import styles from './ProfileDetail.module.css';
 import { Profile } from '../../services/types';
 
-type ActiveTab = 'overview' | 'analysis' | 'opportunities' | 'markdown';
+type ActiveTab = 'overview' | 'analysis' | 'contacts' | 'opportunities' | 'markdown';
 
 interface ProfileTabProps {
     profile: Profile;
@@ -36,7 +36,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
                 </div>
                 <div className={styles.infoItem}>
                   <label>Annual Revenue</label>
-                  <span>{profile.annualRevenue ? `$${profile.annualRevenue}` : 'Not specified'}</span>
+                  <span>{profile.annualRevenue || 'Not specified'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <label>Primary Location</label>
@@ -54,63 +54,56 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
                 </div>
               </div>
             </div>
-    
-            {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 && (
-              <div className={styles.infoCard}>
-                <h3>Strategic Initiatives ({profile.strategicInitiatives.length})</h3>
-                <div className={styles.initiativesList}>
-                  {profile.strategicInitiatives.map((initiative: any, index: number) => (
-                    <div key={index} className={styles.initiativeItem}>
-                      <div className={styles.initiativeDescription}>{initiative.initiative || `Initiative ${index + 1}`}</div>
-                      {initiative.contact && (
-                        <div className={styles.initiativeContact}>
-                          <strong>{initiative.contact.name}</strong>
-                          {initiative.contact.title && ` (${initiative.contact.title})`}
-                          {initiative.contact.email && (
-                            <>
-                              <br />
-                              <a href={`mailto:${initiative.contact.email}`} style={{ color: 'var(--accent-blue)' }}>
-                                {initiative.contact.email}
-                              </a>
-                            </>
-                          )}
-                          {initiative.contact.phone && (
-                            <>
-                              <br />
-                              <a href={`tel:${initiative.contact.phone}`} style={{ color: 'var(--accent-blue)' }}>
-                                {initiative.contact.phone}
-                              </a>
-                            </>
-                          )}
-                          {initiative.contact.linkedin && (
-                            <>
-                              <br />
-                              <a href={initiative.contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)' }}>
-                                LinkedIn Profile
-                              </a>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
-            {(!profile.strategicInitiatives || profile.strategicInitiatives.length === 0) && (
-              <div className={styles.infoCard}>
-                <h3>Strategic Initiatives</h3>
-                <div style={{
-                  padding: 'var(--spacing-lg)',
-                  textAlign: 'center',
-                  color: 'var(--text-secondary)',
-                  fontStyle: 'italic'
-                }}>
-                  No strategic initiatives have been added yet. You can add them by editing this profile.
+            <div className={styles.infoCard}>
+              <h3>Profile Summary</h3>
+              <div style={{ padding: 'var(--spacing-md)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Strategic Initiatives</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                      {profile.strategicInitiatives?.length || 0} initiative{(profile.strategicInitiatives?.length || 0) === 1 ? '' : 's'}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Business Problems</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                      {(() => {
+                        const totalProblems = (profile.strategicInitiatives || [])
+                          .reduce((total: number, initiative: any) => 
+                            total + (initiative.businessProblems?.length || 0), 0);
+                        return `${totalProblems} problem${totalProblems === 1 ? '' : 's'}`;
+                      })()}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Key Contacts</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                      {(() => {
+                        const contactCount = (profile.strategicInitiatives || [])
+                          .filter((initiative: any) => initiative.contact?.name).length;
+                        return `${contactCount} contact${contactCount === 1 ? '' : 's'}`;
+                      })()}
+                    </p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Profile Status</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                      {(profile.status || 'draft').charAt(0).toUpperCase() + (profile.status || 'draft').slice(1)}
+                    </p>
+                  </div>
                 </div>
+                
+                {profile.notes && (
+                  <div style={{ marginTop: 'var(--spacing-lg)', paddingTop: 'var(--spacing-lg)', borderTop: '1px solid var(--border-secondary)' }}>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Notes</label>
+                    <p style={{ margin: '0.5rem 0', fontSize: '0.95rem', color: 'var(--text-primary)', lineHeight: '1.5' }}>
+                      {profile.notes}
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       );
@@ -120,35 +113,286 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
     return (
         <div className={styles.tabContent}>
           <div className={styles.analysisSections}>
-            {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 && (
+            {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 ? (
               <div className={styles.analysisCard}>
-                <h3>Strategic Initiative Contacts</h3>
-                <div className={styles.contactsGrid}>
+                <h3>Strategic Initiatives & Business Problems</h3>
+                <div className={styles.initiativesList}>
                   {profile.strategicInitiatives.map((initiative: any, index: number) => (
-                    initiative.contact && (
-                      <div key={index} className={styles.contactCard}>
-                        <h4>{initiative.contact.name || 'Contact Name Not Available'}</h4>
-                        <p className={styles.contactTitle}>{initiative.contact.title || 'Title Not Specified'}</p>
-                        <p className={styles.contactInitiative}><strong>Initiative:</strong> {initiative.initiative || `Initiative ${index + 1}`}</p>
-                        <div className={styles.contactDetails}>
-                          {initiative.contact.email && (
-                            <p><strong>Email:</strong> <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a></p>
-                          )}
-                          {initiative.contact.phone && (
-                            <p><strong>Phone:</strong> <a href={`tel:${initiative.contact.phone!}`}>{initiative.contact.phone}</a></p>
-                          )}
-                          {initiative.contact.linkedin && (
-                            <p><strong>LinkedIn:</strong> <a href={initiative.contact.linkedin!} target="_blank" rel="noopener noreferrer">{initiative.contact.linkedin}</a></p>
-                          )}
-                        </div>
+                    <div key={index} style={{ 
+                      background: 'var(--bg-secondary)', 
+                      border: '1px solid var(--border-primary)', 
+                      borderRadius: 'var(--border-radius-lg)', 
+                      padding: 'var(--spacing-lg)',
+                      marginBottom: 'var(--spacing-lg)'
+                    }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'flex-start',
+                        marginBottom: 'var(--spacing-md)'
+                      }}>
+                        <h4 style={{ 
+                          margin: 0, 
+                          fontSize: '1.25rem', 
+                          color: 'var(--text-primary)',
+                          fontWeight: 'var(--font-weight-semibold)'
+                        }}>
+                          {initiative.initiative || `Initiative ${index + 1}`}
+                        </h4>
+                        <span style={{
+                          background: 'var(--glass-bg)',
+                          border: '1px solid var(--border-primary)',
+                          borderRadius: 'var(--border-radius)',
+                          padding: '0.25rem 0.75rem',
+                          fontSize: '0.75rem',
+                          color: 'var(--text-secondary)',
+                          fontWeight: 'var(--font-weight-medium)'
+                        }}>
+                          Initiative #{index + 1}
+                        </span>
                       </div>
-                    )
+                      
+                      {/* Business Problems Section */}
+                      {initiative.businessProblems && initiative.businessProblems.length > 0 ? (
+                        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+                          <h5 style={{ 
+                            fontSize: '1rem', 
+                            fontWeight: '600', 
+                            color: 'var(--text-primary)', 
+                            marginBottom: 'var(--spacing-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--spacing-sm)'
+                          }}>
+                            🚨 Business Problems ({initiative.businessProblems.length})
+                          </h5>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                            {initiative.businessProblems.map((problem: string, problemIndex: number) => (
+                              <div 
+                                key={problemIndex}
+                                style={{
+                                  background: 'var(--accent-red-bg, rgba(239, 68, 68, 0.05))',
+                                  border: '1px solid var(--accent-red-border, rgba(239, 68, 68, 0.2))',
+                                  borderRadius: 'var(--border-radius)',
+                                  padding: 'var(--spacing-md)',
+                                  position: 'relative'
+                                }}
+                              >
+                                <div style={{
+                                  position: 'absolute',
+                                  top: 'var(--spacing-sm)',
+                                  right: 'var(--spacing-sm)',
+                                  background: 'var(--accent-red)',
+                                  color: 'white',
+                                  borderRadius: 'var(--border-radius-full)',
+                                  width: '20px',
+                                  height: '20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'var(--font-weight-bold)'
+                                }}>
+                                  {problemIndex + 1}
+                                </div>
+                                <p style={{
+                                  margin: 0,
+                                  color: 'var(--text-primary)',
+                                  fontSize: '0.95rem',
+                                  lineHeight: '1.5',
+                                  paddingRight: 'var(--spacing-lg)'
+                                }}>
+                                  {problem}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          marginBottom: 'var(--spacing-lg)',
+                          padding: 'var(--spacing-md)',
+                          background: 'var(--bg-primary)',
+                          border: '1px solid var(--border-secondary)',
+                          borderRadius: 'var(--border-radius)',
+                          textAlign: 'center'
+                        }}>
+                          <p style={{ 
+                            margin: 0, 
+                            color: 'var(--text-secondary)', 
+                            fontStyle: 'italic',
+                            fontSize: '0.9rem'
+                          }}>
+                            No business problems identified for this initiative yet.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Contact Information Summary */}
+                      {initiative.contact?.name && (
+                        <div style={{ 
+                          paddingTop: 'var(--spacing-md)', 
+                          borderTop: '1px solid var(--border-secondary)' 
+                        }}>
+                          <h5 style={{ 
+                            fontSize: '0.9rem', 
+                            fontWeight: '600', 
+                            color: 'var(--text-secondary)', 
+                            marginBottom: 'var(--spacing-sm)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                          }}>
+                            Initiative Lead
+                          </h5>
+                          <p style={{ 
+                            margin: 0, 
+                            color: 'var(--text-primary)',
+                            fontSize: '0.95rem'
+                          }}>
+                            <strong>{initiative.contact.name}</strong>
+                            {initiative.contact.title && ` • ${initiative.contact.title}`}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
+            ) : (
+              <div className={styles.analysisCard}>
+                <h3>Strategic Initiatives & Business Problems</h3>
+                <div style={{
+                  padding: 'var(--spacing-xl)',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)',
+                  fontStyle: 'italic'
+                }}>
+                  <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)', opacity: 0.5 }}>📊</div>
+                  <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+                    No Strategic Initiatives Yet
+                  </h4>
+                  <p>Add strategic initiatives with their associated business problems by editing this profile to see detailed analysis here.</p>
+                </div>
+              </div>
             )}
+          </div>
+        </div>
+      );
+}
 
-            {(!profile.strategicInitiatives || profile.strategicInitiatives.length === 0 || !profile.strategicInitiatives.some((init: any) => init.contact)) && (
+const ProfileContactsTab: FC<ProfileTabProps> = ({ profile }) => {
+    const contactsWithInitiatives = (profile.strategicInitiatives || [])
+      .map((initiative: any, index: number) => ({
+        ...initiative.contact,
+        initiatives: [{ name: initiative.initiative || `Initiative ${index + 1}`, index }]
+      }))
+      .filter((contact: any) => contact.name);
+
+    // Group contacts by name (in case same person leads multiple initiatives)
+    const groupedContacts = contactsWithInitiatives.reduce((acc: any[], contact: any) => {
+      const existing = acc.find(c => c.name === contact.name && c.email === contact.email);
+      if (existing) {
+        existing.initiatives.push(...contact.initiatives);
+      } else {
+        acc.push(contact);
+      }
+      return acc;
+    }, []);
+
+    return (
+        <div className={styles.tabContent}>
+          <div className={styles.analysisSections}>
+            {groupedContacts.length > 0 ? (
+              <div className={styles.analysisCard}>
+                <h3>Strategic Initiative Contacts ({groupedContacts.length})</h3>
+                <div className={styles.contactsGrid}>
+                  {groupedContacts.map((contact: any, index: number) => (
+                    <div key={index} className={styles.contactCard}>
+                      <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                        <h4 style={{ 
+                          margin: '0 0 var(--spacing-xs) 0',
+                          fontSize: '1.25rem',
+                          color: 'var(--text-primary)'
+                        }}>
+                          {contact.name}
+                        </h4>
+                        <p className={styles.contactTitle} style={{ 
+                          margin: 0,
+                          fontSize: '1rem',
+                          color: 'var(--text-secondary)',
+                          fontWeight: 'var(--font-weight-medium)'
+                        }}>
+                          {contact.title || 'Title Not Specified'}
+                        </p>
+                      </div>
+
+                      {/* Related Strategic Initiatives */}
+                      <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                        <h5 style={{ 
+                          fontSize: '0.875rem', 
+                          fontWeight: '600', 
+                          color: 'var(--text-secondary)', 
+                          marginBottom: 'var(--spacing-sm)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em'
+                        }}>
+                          Leads {contact.initiatives.length} Initiative{contact.initiatives.length === 1 ? '' : 's'}
+                        </h5>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-xs)' }}>
+                          {contact.initiatives.map((initiative: any, initIndex: number) => (
+                            <span 
+                              key={initIndex}
+                              style={{
+                                padding: '0.5rem 0.75rem',
+                                background: 'var(--glass-bg)',
+                                border: '1px solid var(--border-primary)',
+                                borderRadius: 'var(--border-radius)',
+                                fontSize: '0.875rem',
+                                color: 'var(--text-primary)',
+                                fontWeight: 'var(--font-weight-medium)'
+                              }}
+                            >
+                              {initiative.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Contact Details */}
+                      <div className={styles.contactDetails} style={{ 
+                        paddingTop: 'var(--spacing-md)', 
+                        borderTop: '1px solid var(--border-secondary)' 
+                      }}>
+                        {contact.email && (
+                          <p style={{ margin: '0 0 var(--spacing-sm) 0' }}>
+                            <strong style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Email:</strong><br />
+                            <a href={`mailto:${contact.email}`} style={{ color: 'var(--accent-blue)', fontSize: '0.95rem' }}>
+                              {contact.email}
+                            </a>
+                          </p>
+                        )}
+                        {contact.phone && (
+                          <p style={{ margin: '0 0 var(--spacing-sm) 0' }}>
+                            <strong style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Phone:</strong><br />
+                            <a href={`tel:${contact.phone}`} style={{ color: 'var(--accent-blue)', fontSize: '0.95rem' }}>
+                              {contact.phone}
+                            </a>
+                          </p>
+                        )}
+                        {contact.linkedin && (
+                          <p style={{ margin: '0 0 var(--spacing-sm) 0' }}>
+                            <strong style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>LinkedIn:</strong><br />
+                            <a href={contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)', fontSize: '0.95rem' }}>
+                              View Profile
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
               <div className={styles.analysisCard}>
                 <h3>Strategic Initiative Contacts</h3>
                 <div style={{
@@ -157,35 +401,16 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
                   color: 'var(--text-secondary)',
                   fontStyle: 'italic'
                 }}>
-                  <p>No contact information available for strategic initiatives.</p>
-                  <p style={{ marginTop: 'var(--spacing-md)', fontSize: '0.9rem' }}>
-                    Add strategic initiatives with contact details by editing this profile to see key stakeholder information here.
+                  <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)', opacity: 0.5 }}>👥</div>
+                  <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+                    No Contacts Available
+                  </h4>
+                  <p style={{ maxWidth: '400px', margin: '0 auto', lineHeight: '1.5' }}>
+                    Add strategic initiatives with contact information by editing this profile to see key stakeholder details here.
                   </p>
                 </div>
               </div>
             )}
-
-            <div className={styles.analysisCard}>
-              <h3>Profile Summary</h3>
-              <div style={{ padding: 'var(--spacing-md)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
-                  <div>
-                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)' }}>Company</label>
-                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>{profile.companyName}</p>
-                  </div>
-                  <div>
-                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)' }}>Industry</label>
-                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>{profile.industry}</p>
-                  </div>
-                </div>
-                <div>
-                  <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)' }}>Total Strategic Initiatives</label>
-                  <p style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>
-                    {profile.strategicInitiatives?.length || 0} initiative{(profile.strategicInitiatives?.length || 0) === 1 ? '' : 's'} identified
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       );
@@ -482,6 +707,12 @@ export default function ProfileDetailPage() {
             Analysis
           </button>
           <button 
+            className={`${styles.tabButton} ${activeTab === 'contacts' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('contacts')}
+          >
+            Contacts
+          </button>
+          <button 
             className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('opportunities')}
           >
@@ -503,6 +734,10 @@ export default function ProfileDetailPage() {
         
         {activeTab === 'analysis' && (
           <ProfileAnalysisTab profile={profile} />
+        )}
+        
+        {activeTab === 'contacts' && (
+          <ProfileContactsTab profile={profile} />
         )}
         
         {activeTab === 'opportunities' && (

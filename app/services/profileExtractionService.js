@@ -168,6 +168,20 @@ export class ProfileExtractionService {
               warnings.push(`${fieldName}[${index}].contact has no contact information provided`);
             }
           }
+
+          // Check business problems structure
+          if (initiative.businessProblems !== undefined) {
+            if (!Array.isArray(initiative.businessProblems)) {
+              warnings.push(`${fieldName}[${index}].businessProblems should be an array of problem strings`);
+            } else {
+              // Validate each business problem
+              initiative.businessProblems.forEach((problem, problemIndex) => {
+                if (typeof problem !== 'string' || problem.trim().length === 0) {
+                  warnings.push(`${fieldName}[${index}].businessProblems[${problemIndex}] should be a non-empty string`);
+                }
+              });
+            }
+          }
         });
       }
     }
@@ -283,6 +297,22 @@ export class ProfileExtractionService {
                 item.contact[field] = '';
               }
             });
+          }
+
+          // Ensure businessProblems array exists and is properly formatted
+          if (item.businessProblems !== undefined) {
+            if (Array.isArray(item.businessProblems)) {
+              // Clean business problems - remove empty strings and trim
+              item.businessProblems = item.businessProblems
+                .filter(problem => typeof problem === 'string' && problem.trim().length > 0)
+                .map(problem => problem.trim());
+            } else {
+              // If businessProblems is not an array, initialize as empty array
+              item.businessProblems = [];
+            }
+          } else {
+            // Initialize businessProblems array if not present
+            item.businessProblems = [];
           }
           
           return item.initiative && item.initiative.trim().length > 0;

@@ -277,6 +277,64 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                 </div>
               </div>
             )}
+
+            {/* Strategic Initiative Business Problems */}
+            {(() => {
+              const totalProblems = (profile.strategicInitiatives || [])
+                .reduce((total: number, initiative: any) => 
+                  total + (initiative.businessProblems?.length || 0), 0);
+              
+              if (totalProblems > 0) {
+                const allProblems = (profile.strategicInitiatives || [])
+                  .flatMap((initiative: any) => initiative.businessProblems || [])
+                  .filter((problem: string) => problem && problem.trim());
+
+                return (
+                  <div style={{ marginBottom: 'var(--spacing-md)' }}>
+                    <span style={{
+                      fontSize: '0.9rem',
+                      fontWeight: 'var(--font-weight-semibold)',
+                      color: 'var(--text-secondary)',
+                      display: 'block',
+                      marginBottom: 'var(--spacing-sm)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>Business Problems ({totalProblems}):</span>
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 'var(--spacing-xs)'
+                    }}>
+                      {allProblems.slice(0, 2).map((problem: string, index: number) => (
+                        <span key={index} style={{
+                          padding: '0.3rem 0.75rem',
+                          background: 'var(--accent-red-bg, rgba(239, 68, 68, 0.1))',
+                          color: 'var(--accent-red)',
+                          borderRadius: 'var(--border-radius)',
+                          fontSize: '0.75rem',
+                          fontWeight: 'var(--font-weight-semibold)',
+                          border: '1px solid var(--accent-red-border, rgba(239, 68, 68, 0.2))',
+                          backdropFilter: 'blur(10px)'
+                        }}>{problem}</span>
+                      ))}
+                      {allProblems.length > 2 && (
+                        <span style={{
+                          padding: '0.3rem 0.75rem',
+                          background: 'var(--profile-tag-more-bg)',
+                          color: 'var(--profile-tag-more-color)',
+                          borderRadius: 'var(--border-radius)',
+                          fontSize: '0.75rem',
+                          fontWeight: 'var(--font-weight-semibold)',
+                          border: '1px solid var(--profile-tag-more-border)',
+                          backdropFilter: 'blur(10px)'
+                        }}>+{allProblems.length - 2} more</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
     
           <div style={{

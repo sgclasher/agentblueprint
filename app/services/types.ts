@@ -30,6 +30,7 @@ export interface StrategicInitiative {
         linkedin: string;
         phone: string;
     };
+    businessProblems: string[];
 }
 
 // Archive complex interfaces for future use - these can be added back based on user feedback

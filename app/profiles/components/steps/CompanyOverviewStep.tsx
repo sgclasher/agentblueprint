@@ -25,7 +25,8 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
         email: '',
         linkedin: '',
         phone: ''
-      }
+      },
+      businessProblems: []
     };
     updateData('strategicInitiatives', [...currentInitiatives, newInitiative]);
   };
@@ -56,6 +57,40 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
   const removeStrategicInitiative = (index: number) => {
     const currentInitiatives = data.strategicInitiatives || [];
     const updatedInitiatives = currentInitiatives.filter((_, i) => i !== index);
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const addBusinessProblem = (initiativeIndex: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentProblems = updatedInitiatives[initiativeIndex].businessProblems || [];
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      businessProblems: [...currentProblems, '']
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const removeBusinessProblem = (initiativeIndex: number, problemIndex: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentProblems = updatedInitiatives[initiativeIndex].businessProblems || [];
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      businessProblems: currentProblems.filter((_, i) => i !== problemIndex)
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const updateBusinessProblem = (initiativeIndex: number, problemIndex: number, value: string) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentProblems = [...(updatedInitiatives[initiativeIndex].businessProblems || [])];
+    currentProblems[problemIndex] = value;
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      businessProblems: currentProblems
+    };
     updateData('strategicInitiatives', updatedInitiatives);
   };
 
@@ -247,6 +282,91 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                   className={styles.formInput}
                 />
               </div>
+            </div>
+
+            {/* Business Problems Section */}
+            <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-primary)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h5 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                  Business Problems
+                </h5>
+                <button
+                  type="button"
+                  onClick={() => addBusinessProblem(index)}
+                  style={{
+                    background: 'var(--accent-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '0.25rem 0.5rem',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
+                  }}
+                >
+                  <span>+</span> Add Problem
+                </button>
+              </div>
+              
+              {(initiative.businessProblems || []).length === 0 ? (
+                <p style={{ 
+                  fontSize: '0.875rem', 
+                  color: 'var(--text-secondary)', 
+                  fontStyle: 'italic',
+                  margin: '0.5rem 0'
+                }}>
+                  No business problems added yet. Click "Add Problem" to start.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {(initiative.businessProblems || []).map((problem, problemIndex) => (
+                    <div key={problemIndex} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                      <input
+                        type="text"
+                        value={problem}
+                        onChange={(e) => updateBusinessProblem(index, problemIndex, e.target.value)}
+                        placeholder="e.g., Manual data entry causing delays and errors"
+                        className={styles.formInput}
+                        style={{ flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeBusinessProblem(index, problemIndex)}
+                        style={{
+                          background: 'var(--accent-red)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '0.5rem',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          minWidth: '32px',
+                          height: '32px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title="Remove problem"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {(initiative.businessProblems || []).length > 0 && (
+                <p style={{ 
+                  fontSize: '0.75rem', 
+                  color: 'var(--text-secondary)', 
+                  margin: '0.75rem 0 0 0',
+                  lineHeight: '1.4'
+                }}>
+                  💡 Tip: Be specific about problems this initiative aims to solve (e.g., "Customer support response time averages 24 hours").
+                </p>
+              )}
             </div>
           </div>
         ))}

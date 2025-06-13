@@ -310,14 +310,18 @@ export class ProfileRepository {
 
   /**
    * Transform database record to expected profile format
+   * Includes data migration for backward compatibility
    */
   static transformFromDatabase(dbRecord) {
     // Extract profile data and ensure Supabase ID takes precedence
     const { id: oldId, ...profileDataWithoutId } = dbRecord.profile_data || {};
     
+    // Data migration: Ensure strategic initiatives have businessProblems field
+    const migratedProfileData = ProfileRepository.migrateProfileData(profileDataWithoutId);
+    
     return {
       id: dbRecord.id, // Always use the Supabase UUID as the primary ID
-      ...profileDataWithoutId, // Spread profile data but exclude any old ID
+      ...migratedProfileData, // Spread migrated profile data
       markdown: dbRecord.markdown_content,
       createdAt: dbRecord.created_at,
       updatedAt: dbRecord.updated_at,
@@ -327,5 +331,51 @@ export class ProfileRepository {
       // Store the original localStorage ID for reference if needed
       _originalId: oldId || null
     };
+  }
+
+  /**
+   * Migrate profile data to ensure compatibility with current schema
+   * @param {Object} profileData - Raw profile data from database
+   * @returns {Object} Migrated profile data
+   */
+  static migrateProfileData(profileData: any): any {
+    if (!profileData) return profileData;
+
+    // Clone the profile data to avoid mutations
+    const migrated = { ...profileData };
+
+    // Migration: Add businessProblems field to strategic initiatives
+    if (migrated.strategicInitiatives && Array.isArray(migrated.strategicInitiatives)) {
+      migrated.strategicInitiatives = migrated.strategicInitiatives.map(initiative => {
+        // If businessProblems field doesn't exist, add it as empty array
+        if (!initiative.hasOwnProperty('businessProblems')) {
+          return {
+            ...initiative,
+            businessProblems: []
+          };
+        }
+        
+        // If businessProblems exists but is null/undefined, initialize as empty array
+        if (initiative.businessProblems == null) {
+          return {
+            ...initiative,
+            businessProblems: []
+          };
+        }
+        
+        // If businessProblems exists but is not an array, initialize as empty array
+        if (!Array.isArray(initiative.businessProblems)) {
+          return {
+            ...initiative,
+            businessProblems: []
+          };
+        }
+        
+        // businessProblems field is valid, return as-is
+        return initiative;
+      });
+    }
+
+    return migrated;
   }
 }

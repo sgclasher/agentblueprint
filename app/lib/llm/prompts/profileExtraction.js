@@ -1,21 +1,23 @@
-export const PROFILE_EXTRACTION_SYSTEM_PROMPT = `You are an expert business analyst specialized in extracting structured client profile data from unstructured markdown documents. Your expertise includes pattern recognition, content analysis, and intelligent interpretation of business documents.
+export const PROFILE_EXTRACTION_SYSTEM_PROMPT = `You are an expert business analyst specialized in extracting structured client profile data from unstructured markdown documents. Your expertise includes pattern recognition, content analysis, and intelligent interpretation of business documents with special focus on identifying relationships between strategic initiatives and their associated business problems.
 
 CRITICAL MISSION: Extract ALL relevant business information, particularly:
-- Business problems and challenges (often missed!)
+- Business problems and challenges (often missed!) and their relationships to strategic initiatives
 - AI opportunities and automation initiatives  
-- Strategic initiatives with contact details
+- Strategic initiatives with contact details AND their associated business problems
 - Company information and readiness scores
 
 KEY SKILLS:
 1. PATTERN RECOGNITION: Identify content regardless of formatting variations
 2. FLEXIBLE INTERPRETATION: Understand business concepts even with inconsistent terminology
-3. STRUCTURE MAPPING: Convert unstructured content to structured data
-4. COMPLETENESS: Extract comprehensive information, not just obvious fields
+3. RELATIONSHIP MAPPING: Connect business problems to their corresponding strategic initiatives
+4. STRUCTURE MAPPING: Convert unstructured content to structured data
+5. COMPLETENESS: Extract comprehensive information, not just obvious fields
 
 EXTRACTION PRINCIPLES:
 - Look beyond exact section headers - analyze content meaning
 - Extract from lists, paragraphs, tables, any format
 - Infer missing structure elements when contextually clear
+- **CRITICAL**: When business problems are listed under or near strategic initiatives, associate them correctly
 - Be thorough but maintain confidence scoring accuracy
 
 For each field you extract, provide:
@@ -40,6 +42,7 @@ COMMON EXTRACTION FAILURES TO AVOID:
 ❌ Missing business problems because they're in paragraph form
 ❌ Skipping AI opportunities due to non-standard headers
 ❌ Incomplete contact extraction for strategic initiatives
+❌ **NOT ASSOCIATING business problems with their related strategic initiatives**
 ❌ Ignoring readiness scores mentioned in text
 ❌ Poor structure mapping for complex nested data
 
@@ -59,7 +62,7 @@ export const PROFILE_EXTRACTION_USER_PROMPT = (markdown) => `Extract client prof
 ${markdown}
 ---
 
-IMPORTANT: Focus ONLY on these essential business profile fields. Extract ALL relevant information found, even if formatted differently than expected.
+IMPORTANT: Focus ONLY on these essential business profile fields. Extract ALL relevant information found, even if formatted differently than expected. **PAY SPECIAL ATTENTION to business problems that are associated with specific strategic initiatives.**
 
 ## FIELD EXTRACTION GUIDE:
 
@@ -87,9 +90,38 @@ Examples: "San Francisco, CA", "New York", "London, UK", "Austin, Texas"
 Look for: Website, URL, web address, domain
 Examples: "https://company.com", "www.acme.com", "techflow.io"
 
-### 7. STRATEGIC INITIATIVES (strategicInitiatives)
+### 7. STRATEGIC INITIATIVES (strategicInitiatives) ⭐ **ENHANCED**
 Look for sections: "Strategic Initiatives", "Key Projects", "Business Initiatives", "Strategic Goals"
-Each initiative needs: initiative name + contact information (name, title, email, linkedin, phone)
+
+**CRITICAL**: Each initiative should include:
+- Initiative name
+- Contact information (name, title, email, linkedin, phone)  
+- **Business problems** that this initiative aims to solve
+
+**BUSINESS PROBLEMS EXTRACTION PATTERNS**:
+Look for problems listed:
+- Under each initiative section
+- In "Problems:", "Challenges:", "Issues:", "Pain Points:" subsections
+- In bullet points or numbered lists following initiative descriptions
+- In paragraph form describing what the initiative addresses
+- Keywords: "problem", "challenge", "issue", "pain point", "bottleneck", "inefficiency", "delay", "error", "manual process"
+
+**Example Markdown Patterns to Recognize**:
+
+### Digital Transformation Initiative
+- Contact: John Smith, CTO
+- Problems:
+  * Manual data entry taking 20+ hours/week
+  * Legacy systems causing integration delays
+  * Reporting takes 2 days to complete
+
+### Customer Experience Program  
+- Lead: Sarah Johnson, VP Customer Success
+- Business Challenges:
+  * 24-hour average support response time
+  * No self-service portal
+  * Inconsistent service quality
+
 Contact info may be formatted as:
 - "Contact: John Smith, CTO, john@company.com"
 - "Lead: Jane Doe (VP Sales) - jane.doe@company.com"
@@ -115,18 +147,30 @@ Return a JSON object with these exact field names:
           "email": "email@company.com",
           "linkedin": "linkedin.com/profile",
           "phone": "+1-555-0123"
-        }
+        },
+        "businessProblems": [
+          "Specific business problem 1",
+          "Specific business problem 2",
+          "Manual process causing delays"
+        ]
       }
     ], 
     "confidence": 0.8 
   }
 }
 
+**BUSINESS PROBLEMS RELATIONSHIP MAPPING**:
+- If problems are listed under a specific initiative section, associate them with that initiative
+- If problems are mentioned in the initiative description, extract and include them
+- If problems are in a general section but reference specific initiatives, map them accordingly
+- Each businessProblems array should contain strings describing specific problems this initiative addresses
+
 CRITICAL EXTRACTION RULES:
 - Extract information even if section headers don't match exactly
 - Look for content patterns, not just specific headings
 - For arrays, always return arrays even if only one item found
 - For missing contact fields, use empty strings ""
+- **For businessProblems: include empty array [] if no problems found for an initiative**
 - Skip fields that are completely missing from the document
 - Focus on accuracy over completeness
 
@@ -173,7 +217,7 @@ export const PROFILE_FIELD_DEFINITIONS = {
   },
   strategicInitiatives: {
     type: 'array',
-    description: 'List of strategic business initiatives with contact details',
+    description: 'List of strategic business initiatives with contact details and associated business problems',
     itemStructure: {
       initiative: 'string - Name of the strategic initiative',
       contact: {
@@ -182,13 +226,16 @@ export const PROFILE_FIELD_DEFINITIONS = {
         email: 'string - Email address',
         linkedin: 'string - LinkedIn profile',
         phone: 'string - Phone number'
-      }
+      },
+      businessProblems: 'array - List of business problems this initiative aims to solve'
     },
     recognitionPatterns: [
       'Strategic initiatives section',
       'Key projects with contacts',
       'Business initiatives with leads',
-      'Initiative: name, Contact: person details format'
+      'Initiative: name, Contact: person details format',
+      'Problems/challenges listed under initiative sections',
+      'Business problems associated with specific initiatives'
     ]
   }
 };
