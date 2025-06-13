@@ -90,13 +90,20 @@ Examples: "San Francisco, CA", "New York", "London, UK", "Austin, Texas"
 Look for: Website, URL, web address, domain
 Examples: "https://company.com", "www.acme.com", "techflow.io"
 
-### 7. STRATEGIC INITIATIVES (strategicInitiatives) ⭐ **ENHANCED**
+### 7. STRATEGIC INITIATIVES (strategicInitiatives) ⭐ **ENHANCED WITH BUSINESS INTELLIGENCE**
 Look for sections: "Strategic Initiatives", "Key Projects", "Business Initiatives", "Strategic Goals"
 
 **CRITICAL**: Each initiative should include:
 - Initiative name
 - Contact information (name, title, email, linkedin, phone)  
 - **Business problems** that this initiative aims to solve
+- **🆕 PHASE 1 BUSINESS INTELLIGENCE FIELDS**:
+  - Priority level (High, Medium, Low)
+  - Status (Planning, In Progress, On Hold, Completed)
+  - Target timeline (Q3 2025, 18 months, etc.)
+  - Estimated budget ($500K, $2M-5M, etc.)
+  - Expected outcomes (specific goals and improvements)
+  - Success metrics (measurable KPIs and targets)
 
 **BUSINESS PROBLEMS EXTRACTION PATTERNS**:
 Look for problems listed:
@@ -106,21 +113,49 @@ Look for problems listed:
 - In paragraph form describing what the initiative addresses
 - Keywords: "problem", "challenge", "issue", "pain point", "bottleneck", "inefficiency", "delay", "error", "manual process"
 
+**BUSINESS INTELLIGENCE EXTRACTION PATTERNS**:
+- **Priority**: Look for "Priority:", "High priority", "Critical", "Low priority", urgency indicators
+- **Status**: Look for "Status:", "In progress", "Planning phase", "Completed", "On hold"
+- **Timeline**: Look for "Timeline:", "Target:", "Deadline:", "Q1 2025", "6 months", "18 months"
+- **Budget**: Look for "Budget:", "Investment:", "Cost:", "$500K", "$2M", "million", financial amounts
+- **Expected Outcomes**: Look for "Outcomes:", "Goals:", "Objectives:", "Expected results:", "Targets:"
+- **Success Metrics**: Look for "Metrics:", "KPIs:", "Success criteria:", "Measurements:", specific targets with numbers
+
 **Example Markdown Patterns to Recognize**:
 
 ### Digital Transformation Initiative
-- Contact: John Smith, CTO
+- Contact: John Smith, CTO, john@company.com
+- Priority: High
+- Status: In Progress
+- Timeline: Q3 2025
+- Budget: $2.5M
 - Problems:
   * Manual data entry taking 20+ hours/week
   * Legacy systems causing integration delays
   * Reporting takes 2 days to complete
+- Expected Outcomes:
+  * Reduce manual work by 80%
+  * Achieve real-time reporting
+- Success Metrics:
+  * Data processing time < 2 hours
+  * System uptime > 99.5%
 
 ### Customer Experience Program  
 - Lead: Sarah Johnson, VP Customer Success
+- Priority: Medium
+- Status: Planning
+- Target Timeline: 18 months
+- Estimated Budget: $1.2M
 - Business Challenges:
   * 24-hour average support response time
   * No self-service portal
   * Inconsistent service quality
+- Goals:
+  * Reduce response time to 4 hours
+  * Implement self-service portal
+- KPIs:
+  * Customer satisfaction > 9.0
+  * First-call resolution > 80%
 
 Contact info may be formatted as:
 - "Contact: John Smith, CTO, john@company.com"
@@ -152,6 +187,18 @@ Return a JSON object with these exact field names:
           "Specific business problem 1",
           "Specific business problem 2",
           "Manual process causing delays"
+        ],
+        "priority": "High",
+        "status": "In Progress",
+        "targetTimeline": "Q3 2025",
+        "estimatedBudget": "$2.5M",
+        "expectedOutcomes": [
+          "Reduce operational costs by 25%",
+          "Improve efficiency by 40%"
+        ],
+        "successMetrics": [
+          "Customer satisfaction > 8.5",
+          "Processing time < 2 hours"
         ]
       }
     ], 

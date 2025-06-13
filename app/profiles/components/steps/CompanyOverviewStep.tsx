@@ -94,6 +94,75 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
     updateData('strategicInitiatives', updatedInitiatives);
   };
 
+  // 🆕 Phase 1: Business Intelligence Helper Functions
+  const addExpectedOutcome = (initiativeIndex: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentOutcomes = updatedInitiatives[initiativeIndex].expectedOutcomes || [];
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      expectedOutcomes: [...currentOutcomes, '']
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const removeExpectedOutcome = (initiativeIndex: number, outcomeIndex: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentOutcomes = updatedInitiatives[initiativeIndex].expectedOutcomes || [];
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      expectedOutcomes: currentOutcomes.filter((_, i) => i !== outcomeIndex)
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const updateExpectedOutcome = (initiativeIndex: number, outcomeIndex: number, value: string) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentOutcomes = [...(updatedInitiatives[initiativeIndex].expectedOutcomes || [])];
+    currentOutcomes[outcomeIndex] = value;
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      expectedOutcomes: currentOutcomes
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const addSuccessMetric = (initiativeIndex: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentMetrics = updatedInitiatives[initiativeIndex].successMetrics || [];
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      successMetrics: [...currentMetrics, '']
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const removeSuccessMetric = (initiativeIndex: number, metricIndex: number) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentMetrics = updatedInitiatives[initiativeIndex].successMetrics || [];
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      successMetrics: currentMetrics.filter((_, i) => i !== metricIndex)
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  const updateSuccessMetric = (initiativeIndex: number, metricIndex: number, value: string) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentMetrics = [...(updatedInitiatives[initiativeIndex].successMetrics || [])];
+    currentMetrics[metricIndex] = value;
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      successMetrics: currentMetrics
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
   return (
     <div className={styles.wizardStep}>
       <h2>Company Profile</h2>
@@ -284,89 +353,296 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
               </div>
             </div>
 
-            {/* Business Problems Section */}
+            {/* Business Intelligence Section */}
             <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-primary)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h5 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
-                  Business Problems
-                </h5>
-                <button
-                  type="button"
-                  onClick={() => addBusinessProblem(index)}
-                  style={{
-                    background: 'var(--accent-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '0.25rem 0.5rem',
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem'
-                  }}
-                >
-                  <span>+</span> Add Problem
-                </button>
+              <h5 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                📊 Business Intelligence
+              </h5>
+              
+              {/* Priority, Status, Timeline, Budget Row */}
+              <div className={styles.formGrid} style={{ marginBottom: '1.5rem' }}>
+                <div className={styles.formGroup}>
+                  <label>Priority</label>
+                  <select
+                    value={initiative.priority || ''}
+                    onChange={(e) => updateStrategicInitiative(index, 'priority', e.target.value)}
+                    className={styles.formSelect}
+                  >
+                    <option value="">Select priority</option>
+                    <option value="High">🔥 High</option>
+                    <option value="Medium">⚡ Medium</option>
+                    <option value="Low">📋 Low</option>
+                  </select>
+                </div>
+                
+                <div className={styles.formGroup}>
+                  <label>Status</label>
+                  <select
+                    value={initiative.status || ''}
+                    onChange={(e) => updateStrategicInitiative(index, 'status', e.target.value)}
+                    className={styles.formSelect}
+                  >
+                    <option value="">Select status</option>
+                    <option value="Planning">📝 Planning</option>
+                    <option value="In Progress">🚀 In Progress</option>
+                    <option value="On Hold">⏸️ On Hold</option>
+                    <option value="Completed">✅ Completed</option>
+                  </select>
+                </div>
+                
+                <div className={styles.formGroup}>
+                  <label>Target Timeline</label>
+                  <input
+                    type="text"
+                    value={initiative.targetTimeline || ''}
+                    onChange={(e) => updateStrategicInitiative(index, 'targetTimeline', e.target.value)}
+                    placeholder="e.g., Q3 2025, 18 months"
+                    className={styles.formInput}
+                  />
+                </div>
+                
+                <div className={styles.formGroup}>
+                  <label>Estimated Budget</label>
+                  <input
+                    type="text"
+                    value={initiative.estimatedBudget || ''}
+                    onChange={(e) => updateStrategicInitiative(index, 'estimatedBudget', e.target.value)}
+                    placeholder="e.g., $500K, $2M-5M"
+                    className={styles.formInput}
+                  />
+                </div>
+              </div>
+
+              {/* Business Problems Section */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                    🚨 Business Problems
+                  </h6>
+                  <button
+                    type="button"
+                    onClick={() => addBusinessProblem(index)}
+                    style={{
+                      background: 'var(--accent-green)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}
+                  >
+                    <span>+</span> Add Problem
+                  </button>
+                </div>
+                
+                {(initiative.businessProblems || []).length === 0 ? (
+                  <p style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'var(--text-secondary)', 
+                    fontStyle: 'italic',
+                    margin: '0.5rem 0'
+                  }}>
+                    No business problems added yet. Click "Add Problem" to start.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {(initiative.businessProblems || []).map((problem, problemIndex) => (
+                      <div key={problemIndex} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        <input
+                          type="text"
+                          value={problem}
+                          onChange={(e) => updateBusinessProblem(index, problemIndex, e.target.value)}
+                          placeholder="e.g., Manual data entry causing delays and errors"
+                          className={styles.formInput}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeBusinessProblem(index, problemIndex)}
+                          style={{
+                            background: 'var(--accent-red)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0.5rem',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            minWidth: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          title="Remove problem"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Expected Outcomes Section */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                    🎯 Expected Outcomes
+                  </h6>
+                  <button
+                    type="button"
+                    onClick={() => addExpectedOutcome(index)}
+                    style={{
+                      background: 'var(--accent-blue)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}
+                  >
+                    <span>+</span> Add Outcome
+                  </button>
+                </div>
+                
+                {(initiative.expectedOutcomes || []).length === 0 ? (
+                  <p style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'var(--text-secondary)', 
+                    fontStyle: 'italic',
+                    margin: '0.5rem 0'
+                  }}>
+                    No expected outcomes added yet. Click "Add Outcome" to start.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {(initiative.expectedOutcomes || []).map((outcome, outcomeIndex) => (
+                      <div key={outcomeIndex} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        <input
+                          type="text"
+                          value={outcome}
+                          onChange={(e) => updateExpectedOutcome(index, outcomeIndex, e.target.value)}
+                          placeholder="e.g., Reduce operational costs by 25%"
+                          className={styles.formInput}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExpectedOutcome(index, outcomeIndex)}
+                          style={{
+                            background: 'var(--accent-red)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0.5rem',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            minWidth: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          title="Remove outcome"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Success Metrics Section */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h6 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                    📈 Success Metrics
+                  </h6>
+                  <button
+                    type="button"
+                    onClick={() => addSuccessMetric(index)}
+                    style={{
+                      background: 'var(--accent-purple, #8b5cf6)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}
+                  >
+                    <span>+</span> Add Metric
+                  </button>
+                </div>
+                
+                {(initiative.successMetrics || []).length === 0 ? (
+                  <p style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'var(--text-secondary)', 
+                    fontStyle: 'italic',
+                    margin: '0.5rem 0'
+                  }}>
+                    No success metrics added yet. Click "Add Metric" to start.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {(initiative.successMetrics || []).map((metric, metricIndex) => (
+                      <div key={metricIndex} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        <input
+                          type="text"
+                          value={metric}
+                          onChange={(e) => updateSuccessMetric(index, metricIndex, e.target.value)}
+                          placeholder="e.g., Customer satisfaction > 8.5"
+                          className={styles.formInput}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSuccessMetric(index, metricIndex)}
+                          style={{
+                            background: 'var(--accent-red)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0.5rem',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            minWidth: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          title="Remove metric"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
-              {(initiative.businessProblems || []).length === 0 ? (
-                <p style={{ 
-                  fontSize: '0.875rem', 
-                  color: 'var(--text-secondary)', 
-                  fontStyle: 'italic',
-                  margin: '0.5rem 0'
-                }}>
-                  No business problems added yet. Click "Add Problem" to start.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {(initiative.businessProblems || []).map((problem, problemIndex) => (
-                    <div key={problemIndex} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                      <input
-                        type="text"
-                        value={problem}
-                        onChange={(e) => updateBusinessProblem(index, problemIndex, e.target.value)}
-                        placeholder="e.g., Manual data entry causing delays and errors"
-                        className={styles.formInput}
-                        style={{ flex: 1 }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeBusinessProblem(index, problemIndex)}
-                        style={{
-                          background: 'var(--accent-red)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          padding: '0.5rem',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                          minWidth: '32px',
-                          height: '32px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                        title="Remove problem"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {(initiative.businessProblems || []).length > 0 && (
-                <p style={{ 
-                  fontSize: '0.75rem', 
-                  color: 'var(--text-secondary)', 
-                  margin: '0.75rem 0 0 0',
-                  lineHeight: '1.4'
-                }}>
-                  💡 Tip: Be specific about problems this initiative aims to solve (e.g., "Customer support response time averages 24 hours").
-                </p>
-              )}
+              <p style={{ 
+                fontSize: '0.75rem', 
+                color: 'var(--text-secondary)', 
+                margin: '1rem 0 0 0',
+                lineHeight: '1.4'
+              }}>
+                💡 Tip: Add specific, measurable outcomes and metrics to track initiative success.
+              </p>
             </div>
           </div>
         ))}

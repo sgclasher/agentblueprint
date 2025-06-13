@@ -54,8 +54,8 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
                 </div>
               </div>
             </div>
-
-            <div className={styles.infoCard}>
+    
+              <div className={styles.infoCard}>
               <h3>Profile Summary</h3>
               <div style={{ padding: 'var(--spacing-md)' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
@@ -139,18 +139,66 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
                         }}>
                           {initiative.initiative || `Initiative ${index + 1}`}
                         </h4>
-                        <span style={{
-                          background: 'var(--glass-bg)',
-                          border: '1px solid var(--border-primary)',
-                          borderRadius: 'var(--border-radius)',
-                          padding: '0.25rem 0.75rem',
-                          fontSize: '0.75rem',
-                          color: 'var(--text-secondary)',
-                          fontWeight: 'var(--font-weight-medium)'
-                        }}>
-                          Initiative #{index + 1}
-                        </span>
+                        <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+                          {initiative.priority && (
+                            <span style={{
+                              background: initiative.priority === 'High' ? 'var(--accent-red)' : 
+                                         initiative.priority === 'Medium' ? 'var(--accent-yellow)' : 'var(--accent-blue)',
+                              color: 'white',
+                              borderRadius: 'var(--border-radius)',
+                              padding: '0.25rem 0.75rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 'var(--font-weight-medium)'
+                            }}>
+                              {initiative.priority === 'High' ? '🔥' : initiative.priority === 'Medium' ? '⚡' : '📋'} {initiative.priority}
+                            </span>
+                          )}
+                          {initiative.status && (
+                            <span style={{
+                              background: initiative.status === 'Completed' ? 'var(--accent-green)' : 
+                                         initiative.status === 'In Progress' ? 'var(--accent-blue)' : 
+                                         initiative.status === 'Planning' ? 'var(--accent-yellow)' : 'var(--text-secondary)',
+                              color: 'white',
+                              borderRadius: 'var(--border-radius)',
+                              padding: '0.25rem 0.75rem',
+                              fontSize: '0.75rem',
+                              fontWeight: 'var(--font-weight-medium)'
+                            }}>
+                              {initiative.status === 'Completed' ? '✅' : 
+                               initiative.status === 'In Progress' ? '🚀' : 
+                               initiative.status === 'Planning' ? '📝' : 
+                               initiative.status === 'On Hold' ? '⏸️' : ''} {initiative.status}
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      
+                      {/* Timeline and Budget Information */}
+                      {(initiative.targetTimeline || initiative.estimatedBudget) && (
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                          gap: 'var(--spacing-md)',
+                          marginBottom: 'var(--spacing-lg)',
+                          padding: 'var(--spacing-md)',
+                          background: 'var(--bg-primary)',
+                          borderRadius: 'var(--border-radius)',
+                          border: '1px solid var(--border-secondary)'
+                        }}>
+                          {initiative.targetTimeline && (
+                            <div>
+                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600' }}>🗓️ Timeline: </span>
+                              <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>{initiative.targetTimeline}</span>
+                            </div>
+                          )}
+                          {initiative.estimatedBudget && (
+                            <div>
+                              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600' }}>💰 Budget: </span>
+                              <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>{initiative.estimatedBudget}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       
                       {/* Business Problems Section */}
                       {initiative.businessProblems && initiative.businessProblems.length > 0 ? (
@@ -228,6 +276,122 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
                         </div>
                       )}
 
+                      {/* Expected Outcomes Section */}
+                      {initiative.expectedOutcomes && initiative.expectedOutcomes.length > 0 ? (
+                        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+                          <h5 style={{ 
+                            fontSize: '1rem', 
+                            fontWeight: '600', 
+                            color: 'var(--text-primary)', 
+                            marginBottom: 'var(--spacing-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--spacing-sm)'
+                          }}>
+                            🎯 Expected Outcomes ({initiative.expectedOutcomes.length})
+                          </h5>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                            {initiative.expectedOutcomes.map((outcome: string, outcomeIndex: number) => (
+                              <div 
+                                key={outcomeIndex}
+                                style={{
+                                  background: 'var(--accent-blue-bg, rgba(59, 130, 246, 0.05))',
+                                  border: '1px solid var(--accent-blue-border, rgba(59, 130, 246, 0.2))',
+                                  borderRadius: 'var(--border-radius)',
+                                  padding: 'var(--spacing-md)',
+                                  position: 'relative'
+                                }}
+                              >
+                                <div style={{
+                                  position: 'absolute',
+                                  top: 'var(--spacing-sm)',
+                                  right: 'var(--spacing-sm)',
+                                  background: 'var(--accent-blue)',
+                                  color: 'white',
+                                  borderRadius: 'var(--border-radius-full)',
+                                  width: '20px',
+                                  height: '20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'var(--font-weight-bold)'
+                                }}>
+                                  {outcomeIndex + 1}
+                                </div>
+                                <p style={{
+                                  margin: 0,
+                                  color: 'var(--text-primary)',
+                                  fontSize: '0.95rem',
+                                  lineHeight: '1.5',
+                                  paddingRight: 'var(--spacing-lg)'
+                                }}>
+                                  {outcome}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Success Metrics Section */}
+                      {initiative.successMetrics && initiative.successMetrics.length > 0 ? (
+                        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+                          <h5 style={{ 
+                            fontSize: '1rem', 
+                            fontWeight: '600', 
+                            color: 'var(--text-primary)', 
+                            marginBottom: 'var(--spacing-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--spacing-sm)'
+                          }}>
+                            📈 Success Metrics ({initiative.successMetrics.length})
+                          </h5>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                            {initiative.successMetrics.map((metric: string, metricIndex: number) => (
+                              <div 
+                                key={metricIndex}
+                                style={{
+                                  background: 'var(--accent-purple-bg, rgba(139, 92, 246, 0.05))',
+                                  border: '1px solid var(--accent-purple-border, rgba(139, 92, 246, 0.2))',
+                                  borderRadius: 'var(--border-radius)',
+                                  padding: 'var(--spacing-md)',
+                                  position: 'relative'
+                                }}
+                              >
+                                <div style={{
+                                  position: 'absolute',
+                                  top: 'var(--spacing-sm)',
+                                  right: 'var(--spacing-sm)',
+                                  background: 'var(--accent-purple, #8b5cf6)',
+                                  color: 'white',
+                                  borderRadius: 'var(--border-radius-full)',
+                                  width: '20px',
+                                  height: '20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'var(--font-weight-bold)'
+                                }}>
+                                  {metricIndex + 1}
+                                </div>
+                                <p style={{
+                                  margin: 0,
+                                  color: 'var(--text-primary)',
+                                  fontSize: '0.95rem',
+                                  lineHeight: '1.5',
+                                  paddingRight: 'var(--spacing-lg)'
+                                }}>
+                                  {metric}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
                       {/* Contact Information Summary */}
                       {initiative.contact?.name && (
                         <div style={{ 
@@ -249,7 +413,7 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
                             color: 'var(--text-primary)',
                             fontSize: '0.95rem'
                           }}>
-                            <strong>{initiative.contact.name}</strong>
+                          <strong>{initiative.contact.name}</strong>
                             {initiative.contact.title && ` • ${initiative.contact.title}`}
                           </p>
                         </div>
@@ -307,7 +471,7 @@ const ProfileContactsTab: FC<ProfileTabProps> = ({ profile }) => {
                 <h3>Strategic Initiative Contacts ({groupedContacts.length})</h3>
                 <div className={styles.contactsGrid}>
                   {groupedContacts.map((contact: any, index: number) => (
-                    <div key={index} className={styles.contactCard}>
+                      <div key={index} className={styles.contactCard}>
                       <div style={{ marginBottom: 'var(--spacing-md)' }}>
                         <h4 style={{ 
                           margin: '0 0 var(--spacing-xs) 0',

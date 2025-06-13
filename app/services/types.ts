@@ -31,6 +31,14 @@ export interface StrategicInitiative {
         phone: string;
     };
     businessProblems: string[];
+    
+    // 🆕 Phase 1: Business Intelligence Fields
+    expectedOutcomes?: string[];        // "Reduce costs by 25%", "Improve efficiency by 40%"
+    successMetrics?: string[];          // "Customer satisfaction > 8.5", "Processing time < 2 hours"
+    targetTimeline?: string;            // "Q3 2025", "18 months"
+    estimatedBudget?: string;           // "$500K", "$2M-5M"
+    priority?: 'High' | 'Medium' | 'Low';
+    status?: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
 }
 
 // Archive complex interfaces for future use - these can be added back based on user feedback
