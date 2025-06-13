@@ -1,3 +1,63 @@
+# Current Task - Fix Gemini JSON Parsing Error & Document
+
+**✅ TASK COMPLETED SUCCESSFULLY**
+
+**Objective**: The Gemini model is returning slightly malformed JSON (often with trailing commas), which causes parsing to fail. This task will make the system more robust by integrating the `jsonrepair` library to automatically fix these common errors before parsing.
+
+**Plan:**
+
+*   **Task 1: Install the `jsonrepair` Library.** ✅
+    *   **Action**: Add `jsonrepair` to the project's dependencies using `npm install jsonrepair`.
+
+*   **Task 2: Implement `jsonrepair` in the `GoogleServerProvider`.** ✅
+    *   **File**: `app/lib/llm/providers/googleServerProvider.ts`
+    *   **Action**: Import the `jsonrepair` function and use it to clean the JSON string returned by the Gemini API *before* attempting to parse it with `JSON.parse()`.
+
+*   **Task 3: Add a Test for Malformed JSON Repair.** ✅
+    *   **File**: `app/__tests__/features/google-provider.test.ts`
+    *   **Action**: Add a new test case that simulates the Gemini API returning a JSON string with a trailing comma.
+    *   **Assertion**: The test will assert that the `generateJson` method can successfully parse the malformed string without throwing an error, thanks to the `jsonrepair` library.
+
+*   **Task 4: Run All Tests and Verify the Fix.** ✅
+    *   **Action**: Run the entire test suite to ensure the fix works and has not introduced any regressions.
+
+*   **Task 5: Strengthen the JSON Output Instructions in the System Prompt.** ✅
+    *   **File**: `app/lib/llm/prompts/profileExtraction.js`
+    *   **Action**: As a final preventative measure, add more explicit instructions to the `PROFILE_EXTRACTION_SYSTEM_PROMPT` to prevent the model from making this mistake in the future.
+
+*   **Task 6: Update `README.md` Documentation.** ✅
+    *   **File**: `README.md`
+    *   **Action**: Add documentation for the `jsonrepair` library under a relevant section like `AI Integration & LLM Services` to inform future developers about its purpose and usage in the project. Include a link to the official documentation.
+
+---
+
+# Current Task - Correct Gemini Preview Model Names
+
+**✅ TASK COMPLETED SUCCESSFULLY**
+
+**Objective**: The "Import & Extract" markdown automation is failing for Google Gemini because it is likely using an incorrect model name. The Gemini 2.5 models are in a preview status and require the full, correct preview names (e.g., `gemini-2.5-pro-preview-06-05` instead of `gemini-2.5-pro`) to avoid a 404 error. This task will add logic to the `GoogleServerProvider` to automatically correct these common mistakes, making the system more robust.
+
+**Plan:**
+
+*   **Task 1: Create a Failing Test Case.** ✅
+    *   **File**: `app/__tests__/features/google-provider.test.ts`
+    *   **Action**: Add a new test that instantiates `GoogleServerProvider` with known incorrect model names like `gemini-2.5-pro` and `gemini-2.5-flash`.
+    *   **Assertion**: The test will assert that the provider's `getStatus()` method returns a status containing the *corrected* full preview model name (e.g., `Google gemini-2.5-pro-preview-06-05`). This test is expected to fail initially, confirming the current bug.
+
+*   **Task 2: Locate and Read `GoogleServerProvider.ts`.** ✅
+    *   **Action**: Find and read `app/lib/llm/providers/googleServerProvider.ts` to understand its current implementation before modifying it.
+
+*   **Task 3: Implement Model Name Correction.** ✅
+    *   **File**: `app/lib/llm/providers/googleServerProvider.ts`
+    *   **Action**: Modify the constructor of `GoogleServerProvider` to include a mapping of known incorrect model names to their correct, full preview counterparts.
+    *   **Details**: The constructor will check the provided model name against this map and use the corrected name for all subsequent API calls. This will make the system resilient to common configuration errors.
+
+*   **Task 4: Run Tests and Verify Fix.** ✅
+    *   **Action**: Run the entire test suite.
+    *   **Assertion**: Verify that the new test case passes and that no existing functionality has been broken by the change.
+
+---
+
 # Current Task - Add Business Problems to Strategic Initiatives
 
 ## **🎉 TASK COMPLETED SUCCESSFULLY** ✅

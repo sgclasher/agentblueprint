@@ -75,10 +75,26 @@ describe('GoogleServerProvider', () => {
       // The provider itself doesn't validate model names - it relies on Google's API
       // This means invalid models will only be caught when making actual API calls
       expect(provider.getStatus().configured).toBe(true);
-      expect(provider.getStatus().provider).toBe('Google gemini-2.5-flash');
+      expect(provider.getStatus().provider).toBe('Google gemini-2.5-flash-preview-05-20');
       
       // Note: In a real scenario, this would fail with a 404 when generateJson is called
       // but we don't want to make actual API calls in tests
+    });
+
+    it('should automatically correct known invalid preview model names', () => {
+      const corrections = {
+        'gemini-2.5-pro': 'gemini-2.5-pro-preview-06-05',
+        'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',
+      };
+
+      for (const [invalid, corrected] of Object.entries(corrections)) {
+        const provider = new GoogleServerProvider({
+          apiKey: validApiKey,
+          model: invalid,
+        });
+        const status = provider.getStatus();
+        expect(status.provider).toBe(`Google ${corrected}`);
+      }
     });
   });
 
@@ -94,12 +110,12 @@ describe('GoogleServerProvider', () => {
         ok: false,
         status: 404,
         json: () => Promise.resolve({
-          error: { message: 'models/gemini-2.5-flash is not found for API version v1beta' }
+          error: { message: 'models/gemini-1.5-flash is not found for API version v1beta' }
         })
       });
 
       await expect(provider.generateJson('system', 'user')).rejects.toThrow(
-        'Failed to generate JSON from Google Gemini'
+        "Model 'gemini-1.5-flash' not found. Try using 'gemini-1.5-flash' instead. Original error: models/gemini-1.5-flash is not found for API version v1beta"
       );
     });
   });
@@ -201,22 +217,27 @@ describe('GoogleServerProvider', () => {
       });
 
       await expect(provider.generateJson(systemPrompt, userPrompt)).rejects.toThrow(
-        'Google Gemini API error: 400 - Invalid API key'
+        "Invalid request to Gemini API. Check model name 'gemini-1.5-pro' and request format. Error: Invalid API key"
       );
     });
 
-    it('should throw an error if the response content is missing', async () => {
+    it('should repair and parse JSON with a trailing comma', async () => {
       const provider = new GoogleServerProvider({ apiKey: mockApiKey, model });
-      const malformedResponse = { candidates: [] };
+      const malformedApiResponse = {
+        candidates: [{
+          content: {
+            parts: [{ text: '{"translation":"bonjour",}' }] // trailing comma
+          }
+        }]
+      };
 
       (fetch as jest.Mock).mockResolvedValueOnce({
         ok: true,
-        json: async () => malformedResponse,
+        json: async () => malformedApiResponse,
       });
 
-      await expect(provider.generateJson(systemPrompt, userPrompt)).rejects.toThrow(
-        'No content received from Google Gemini API'
-      );
+      const result = await provider.generateJson(systemPrompt, userPrompt);
+      expect(result).toEqual({ translation: 'bonjour' });
     });
     
     it('should throw a generic error for network issues', async () => {

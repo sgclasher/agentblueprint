@@ -33,10 +33,15 @@ Confidence scoring guidelines:
 
 OUTPUT FORMAT REQUIREMENTS:
 - Use dot-notation field names exactly as specified (e.g., "problems.businessProblems")
-- For arrays: Always return arrays even for single items
-- For objects: Include all specified sub-fields, use empty strings for missing data
-- For numbers: Extract as actual numbers, not strings
-- Maintain data types as specified in the schema
+- For arrays: Always return arrays even for single items.
+- For objects: Include all specified sub-fields, use empty strings for missing data.
+- For numbers: Extract as actual numbers, not strings.
+- Maintain data types as specified in the schema.
+- **CRITICAL JSON RULES**:
+  - The final output must be a single, perfectly-formed JSON object.
+  - Do NOT include any text before the opening '{' or after the closing '}'.
+  - Do NOT use trailing commas in objects or arrays.
+  - Ensure all strings (including object keys) are enclosed in double quotes.
 
 COMMON EXTRACTION FAILURES TO AVOID:
 ❌ Missing business problems because they're in paragraph form

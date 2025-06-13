@@ -318,6 +318,7 @@ npm test
 - **Dynamic Model Fetching**: API endpoint `/api/admin/fetch-models` provides cached, rate-limited access to latest models
 - **Centralized Prompt Management**: Prompts stored in dedicated directory for better organization
 - **JSON Response Validation**: Services consuming the `aiService` validate returned JSON structure
+- **Malformed JSON Repair**: Automatically repairs common JSON errors (like trailing commas) from LLMs using the [`jsonrepair`](https://www.npmjs.com/package/jsonrepair) library before parsing.
 - **Advanced Prompt Engineering**: Sophisticated prompt-building strategy for high-quality, specific outputs
 - **Environment Configuration**: Easy setup verification via the `/api/debug-env` endpoint
 

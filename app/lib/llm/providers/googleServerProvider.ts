@@ -1,3 +1,5 @@
+import { jsonrepair } from 'jsonrepair';
+
 /**
  * Google Gemini Server Provider
  *
@@ -11,15 +13,10 @@ export class GoogleServerProvider {
 
   // Valid model mappings for API compatibility
   private static readonly MODEL_MAPPINGS: { [key: string]: string } = {
-    'gemini-1.5-flash': 'gemini-1.5-flash',
-    'gemini-1.5-pro': 'gemini-1.5-pro',
-    'gemini-2.0-flash': 'gemini-2.0-flash',
-    'gemini-1.5-flash-8b': 'gemini-1.5-flash-8b',
     // 2.5 models are still in preview - use correct preview names from API docs
     'gemini-2.5-pro': 'gemini-2.5-pro-preview-06-05',  // Map to actual preview model
-    'gemini-2.5-pro-preview-06-05': 'gemini-2.5-pro-preview-06-05',  // Direct mapping
     'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',  // Map to actual preview model
-    'gemini-2.5-flash-preview-05-20': 'gemini-2.5-flash-preview-05-20',  // Direct mapping
+    
     // Common fallbacks - use stable models for reliability
     'gemini-pro': 'gemini-1.5-pro',  // Use stable 1.5 Pro
     'gemini-flash': 'gemini-1.5-flash'  // Use stable 1.5 Flash
@@ -52,7 +49,7 @@ export class GoogleServerProvider {
       // Common aliases
       'gemini-pro', 'gemini-flash'
     ];
-    return validModels.includes(modelName);
+    return Object.values(GoogleServerProvider.MODEL_MAPPINGS).includes(modelName) || validModels.includes(modelName);
   }
 
   /**
@@ -79,6 +76,7 @@ export class GoogleServerProvider {
         parts: [{ text: finalPrompt }]
       }],
       generationConfig: {
+        response_mime_type: "application/json",
         temperature: options.temperature || 0.7,
         maxOutputTokens: options.max_tokens || 4000,
         candidateCount: 1,
@@ -112,6 +110,7 @@ export class GoogleServerProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(requestBody)
       });
@@ -128,6 +127,10 @@ export class GoogleServerProvider {
           console.warn(`[GoogleServerProvider] Model ${this.model} not found. Suggesting fallback to ${fallbackModel}`);
           throw new Error(`Model '${this.model}' not found. Try using '${fallbackModel}' instead. Original error: ${errorData.error?.message || 'Model not available'}`);
         } else if (response.status === 400) {
+          // Add a check for JSON parsing issues in the prompt itself
+          if (errorData.error?.message.includes('JSON')) {
+              throw new Error(`Invalid JSON request to Gemini API. Check prompt formatting. Error: ${errorData.error?.message}`);
+          }
           throw new Error(`Invalid request to Gemini API. Check model name '${this.model}' and request format. Error: ${errorData.error?.message || 'Bad request'}`);
         } else if (response.status === 403) {
           throw new Error(`Gemini API access denied. Check your API key permissions. Error: ${errorData.error?.message || 'Forbidden'}`);
@@ -188,9 +191,10 @@ export class GoogleServerProvider {
       console.log('[GoogleServerProvider] Cleaned content for JSON parsing:', cleanedContent.substring(0, 200) + '...');
 
       try {
-        return JSON.parse(cleanedContent);
+        const repaired = jsonrepair(cleanedContent);
+        return JSON.parse(repaired);
       } catch (parseError) {
-        console.error('[GoogleServerProvider] JSON parsing failed:', parseError);
+        console.error('[GoogleServerProvider] JSON parsing failed even after repair:', parseError);
         console.error('[GoogleServerProvider] Content that failed to parse:', cleanedContent);
         throw new Error(`Failed to parse JSON response from Gemini: ${parseError}. Raw content: ${cleanedContent.substring(0, 200)}...`);
       }
