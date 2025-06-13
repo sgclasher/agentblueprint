@@ -42,8 +42,8 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       render(<CompanyOverviewStep data={dataWithInitiative} updateData={mockUpdateData} />);
       
       // Check that business problems section is rendered
-      expect(screen.getByText('Business Problems')).toBeInTheDocument();
-      expect(screen.getByText('+ Add Problem')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /business problems/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add problem/i })).toBeInTheDocument();
       expect(screen.getByText('No business problems added yet. Click "Add Problem" to start.')).toBeInTheDocument();
     });
 
@@ -67,7 +67,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       render(<CompanyOverviewStep data={dataWithInitiative} updateData={mockUpdateData} />);
       
       // Click add problem button
-      await user.click(screen.getByText('+ Add Problem'));
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       
       // Check that updateData was called with correct parameters
       expect(mockUpdateData).toHaveBeenCalledWith('strategicInitiatives', [{
@@ -135,7 +135,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       // Find the problem input and update it
       const problemInput = screen.getByDisplayValue('Old problem text');
       await user.clear(problemInput);
-      await user.type(problemInput, 'Updated problem text');
+      fireEvent.change(problemInput, { target: { value: 'Updated problem text' } });
       
       // Check that updateData was called with updated text
       expect(mockUpdateData).toHaveBeenCalledWith('strategicInitiatives', [{
@@ -209,7 +209,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
 
       render(<CompanyOverviewStep data={dataWithProblems} updateData={mockUpdateData} />);
       
-      expect(screen.getByText(/💡 Tip: Be specific about problems/)).toBeInTheDocument();
+      expect(screen.getByText(/tip: add specific, measurable outcomes/i)).toBeInTheDocument();
     });
 
     test('handles multiple initiatives with business problems', () => {
@@ -232,7 +232,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       render(<CompanyOverviewStep data={dataWithMultipleInitiatives} updateData={mockUpdateData} />);
       
       // Should have two business problems sections
-      const businessProblemsHeaders = screen.getAllByText('Business Problems');
+      const businessProblemsHeaders = screen.getAllByRole('heading', { name: /business problems/i });
       expect(businessProblemsHeaders).toHaveLength(2);
       
       // Should have correct number of problem inputs
@@ -261,7 +261,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       render(<CompanyOverviewStep data={dataWithoutBusinessProblems} updateData={mockUpdateData} />);
       
       // Should still render the business problems section
-      expect(screen.getByText('Business Problems')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /business problems/i })).toBeInTheDocument();
       expect(screen.getByText('No business problems added yet. Click "Add Problem" to start.')).toBeInTheDocument();
     });
 
@@ -285,7 +285,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       render(<CompanyOverviewStep data={dataWithoutBusinessProblems} updateData={mockUpdateData} />);
       
       // Click add problem button
-      await user.click(screen.getByText('+ Add Problem'));
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       
       // Check that updateData was called with businessProblems field added
       expect(mockUpdateData).toHaveBeenCalledWith('strategicInitiatives', [{
@@ -307,7 +307,7 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       render(<CompanyOverviewStep data={mockProfileData} updateData={mockUpdateData} />);
       
       // Should show add initiative button
-      expect(screen.getByText('+ Add Strategic Initiative')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /add strategic initiative/i })).toBeInTheDocument();
       
       // Should not show any business problems sections
       expect(screen.queryByText('Business Problems')).not.toBeInTheDocument();
@@ -340,5 +340,104 @@ describe('CompanyOverviewStep - Business Problems Feature', () => {
       
       expect(screen.getByText('No business problems added yet. Click "Add Problem" to start.')).toBeInTheDocument();
     });
+  });
+});
+
+describe('CompanyOverviewStep - Systems & Applications Feature', () => {
+  const mockUpdateData = jest.fn();
+  
+  const mockProfileData = {
+    companyName: 'Test Corp',
+    industry: 'Technology',
+    strategicInitiatives: [],
+    systemsAndApplications: []
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('renders the systems & applications section', () => {
+    render(<CompanyOverviewStep data={mockProfileData} updateData={mockUpdateData} />);
+    
+    expect(screen.getByText('Systems & Applications')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /add system\/application/i })).toBeInTheDocument();
+  });
+
+  test('can add a new system/application', async () => {
+    const user = userEvent.setup();
+    render(<CompanyOverviewStep data={mockProfileData} updateData={mockUpdateData} />);
+    
+    await user.click(screen.getByRole('button', { name: /add system\/application/i }));
+    
+    expect(mockUpdateData).toHaveBeenCalledWith('systemsAndApplications', [
+      {
+        name: '',
+        category: '',
+        vendor: '',
+        version: '',
+        description: '',
+        criticality: undefined,
+      },
+    ]);
+  });
+
+  test('can update a system/application\'s fields', async () => {
+    const user = userEvent.setup();
+    const dataWithSystem = {
+      ...mockProfileData,
+      systemsAndApplications: [{
+        name: '',
+        category: '',
+        vendor: '',
+        version: '',
+        description: '',
+        criticality: undefined,
+      }]
+    };
+    render(<CompanyOverviewStep data={dataWithSystem} updateData={mockUpdateData} />);
+
+    const nameInput = screen.getByPlaceholderText('e.g., Salesforce CRM, SAP ERP');
+    fireEvent.change(nameInput, { target: { value: 'Salesforce CRM' } });
+
+    expect(mockUpdateData).toHaveBeenCalledWith('systemsAndApplications', [
+      expect.objectContaining({ name: 'Salesforce CRM' })
+    ]);
+
+    const categorySelect = screen.getByDisplayValue('Select category');
+    await user.selectOptions(categorySelect, 'CRM');
+
+    expect(mockUpdateData).toHaveBeenCalledWith('systemsAndApplications', [
+      expect.objectContaining({ category: 'CRM' })
+    ]);
+  });
+
+  test('can remove a system/application', async () => {
+    const user = userEvent.setup();
+    const dataWithSystem = {
+      ...mockProfileData,
+      systemsAndApplications: [{ name: 'Test System', category: 'CRM' }]
+    };
+    render(<CompanyOverviewStep data={dataWithSystem} updateData={mockUpdateData} />);
+
+    expect(screen.getByText('System 1')).toBeInTheDocument();
+
+    const removeButton = screen.getByRole('button', { name: 'Remove' });
+    await user.click(removeButton);
+
+    expect(mockUpdateData).toHaveBeenCalledWith('systemsAndApplications', []);
+  });
+
+  test('handles an empty systemsAndApplications array', () => {
+    render(<CompanyOverviewStep data={mockProfileData} updateData={mockUpdateData} />);
+    expect(screen.queryByText('System 1')).not.toBeInTheDocument();
+  });
+
+  test('handles undefined systemsAndApplications property gracefully', () => {
+    const dataWithoutSystems = { ...mockProfileData, systemsAndApplications: undefined };
+    render(<CompanyOverviewStep data={dataWithoutSystems} updateData={mockUpdateData} />);
+    
+    expect(screen.getByRole('button', { name: /add system\/application/i })).toBeInTheDocument();
+    expect(screen.queryByText('System 1')).not.toBeInTheDocument();
   });
 }); 

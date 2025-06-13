@@ -172,19 +172,18 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
       vendor: '',
       version: '',
       description: '',
-      criticality: undefined
+      criticality: undefined,
     };
     updateData('systemsAndApplications', [...currentSystems, newSystem]);
   };
 
   const updateSystemApplication = (index: number, field: string, value: string) => {
-    const currentSystems = data.systemsAndApplications || [];
-    const updatedSystems = [...currentSystems];
-    updatedSystems[index] = {
-      ...updatedSystems[index],
-      [field]: value
+    const currentSystems = [...(data.systemsAndApplications || [])];
+    currentSystems[index] = {
+      ...currentSystems[index],
+      [field]: value,
     };
-    updateData('systemsAndApplications', updatedSystems);
+    updateData('systemsAndApplications', currentSystems);
   };
 
   const removeSystemApplication = (index: number) => {
@@ -704,7 +703,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
           Add key systems, applications, and technology infrastructure used by the client.
         </p>
         
-        {data.systemsAndApplications?.map((system, index) => (
+        {(data.systemsAndApplications || []).map((system, index) => (
           <div key={index} style={{ 
             border: '1px solid var(--border-primary)', 
             borderRadius: '8px', 

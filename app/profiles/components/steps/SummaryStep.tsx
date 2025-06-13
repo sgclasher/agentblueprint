@@ -121,6 +121,37 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
         </div>
       )}
 
+      {/* Systems & Applications Summary */}
+      {data.systemsAndApplications && data.systemsAndApplications.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+            Systems & Applications ({data.systemsAndApplications.length})
+          </h3>
+          {data.systemsAndApplications.map((system, index) => (
+            <div
+              key={index}
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-primary)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem',
+              }}
+            >
+              <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: 'var(--text-primary)' }}>
+                {system.name || `System ${index + 1}`}
+              </h4>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                {system.category && <div><strong>Category:</strong> {system.category}</div>}
+                {system.vendor && <div><strong>Vendor:</strong> {system.vendor}</div>}
+                {system.version && <div><strong>Version:</strong> {system.version}</div>}
+                {system.description && <div style={{ marginTop: '0.5rem' }}><em>{system.description}</em></div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Completion Notes */}
       <div style={{ marginBottom: '2rem' }}>
         <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Notes (Optional)</h3>
@@ -146,8 +177,6 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
           />
         </div>
       </div>
-
-
 
       {/* Action Buttons */}
       <div style={{ 

@@ -101,13 +101,39 @@ TechFlow Solutions is a leading manufacturing technology company specializing in
 - Procurement cycle time < 2 days
 - Working capital reduction of $15M
 
-## Current Technology Landscape
+## Systems & Applications
 
-- **Primary ERP**: SAP S/4HANA
-- **CRM System**: Salesforce Enterprise
-- **Manufacturing Execution**: Wonderware MES
-- **Collaboration Tools**: Microsoft 365, Teams
-- **Integration Platform**: MuleSoft Anypoint
+### SAP S/4HANA
+- **Category**: ERP
+- **Vendor**: SAP
+- **Version**: 2023
+- **Description**: Core system for finance, supply chain, and manufacturing operations.
+- **Criticality**: High
+
+### Salesforce Sales Cloud
+- **Category**: CRM
+- **Vendor**: Salesforce
+- **Version**: Enterprise Edition
+- **Description**: Used by the sales team for lead management and customer tracking.
+- **Criticality**: High
+
+### Wonderware MES
+- **Category**: Manufacturing
+- **Vendor**: AVEVA
+- **Description**: Manages and monitors work-in-progress on the factory floor.
+- **Criticality**: Medium
+
+### Microsoft 365
+- **Category**: Communication
+- **Vendor**: Microsoft
+- **Description**: Primary suite for email, collaboration (Teams), and office productivity.
+- **Criticality**: High
+
+### MuleSoft Anypoint Platform
+- **Category**: Integration
+- **Vendor**: Salesforce
+- **Description**: Connects various on-premise and cloud applications.
+- **Criticality**: Medium
 
 ## AI Readiness Assessment
 
