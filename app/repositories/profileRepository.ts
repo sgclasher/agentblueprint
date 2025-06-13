@@ -6,20 +6,24 @@
  */
 
 import { supabase } from '../lib/supabase';
+import { markdownService } from '../services/markdownService';
+import { Profile, StrategicInitiative } from '../services/types';
 
 export class ProfileRepository {
   /**
    * Create a new profile
-   * @param {Object} profileData - Profile data to create
+   * @param {Partial<Profile>} profileData - Profile data to create
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<Object>} Created profile with ID
    */
-  static async createProfile(profileData, userId) {
+  static async createProfile(profileData: Partial<Profile>, userId: string) {
     if (!userId) {
       throw new Error('User authentication is required to create a profile.');
     }
 
     try {
+      const { markdown, ...dataForJson } = profileData;
+
       const { data, error } = await supabase
         .from('client_profiles')
         .insert([{
@@ -28,8 +32,8 @@ export class ProfileRepository {
           description: `${profileData.industry} profile for ${profileData.companyName}`,
           industry: profileData.industry,
           company_size: profileData.size,
-          profile_data: profileData,
-          markdown_content: profileData.markdown || null
+          profile_data: dataForJson,
+          markdown_content: markdownService.generateMarkdown(profileData)
         }])
         .select()
         .single();
@@ -51,7 +55,7 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<Array>} Array of user profiles
    */
-  static async getProfiles(userId) {
+  static async getProfiles(userId: string) {
     if (!userId) {
       // Return empty array for non-authenticated state, as UI might call this before auth check
       return [];
@@ -82,9 +86,22 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<Object|null>} Profile data or null
    */
-  static async getProfile(profileId, userId) {
+  static async getProfile(profileId: string, userId: string) {
     if (!userId) {
       throw new Error('User authentication is required to fetch a profile.');
+    }
+
+    console.log('[ProfileRepository] getProfile called with:', { profileId, userId });
+
+    // Debug: Check what profiles exist for this user
+    try {
+      const { data: allProfiles } = await supabase
+        .from('client_profiles')
+        .select('id, user_id, name')
+        .eq('user_id', userId);
+      console.log('[ProfileRepository] All profiles for user:', allProfiles?.map(p => ({ id: p.id, name: p.name })));
+    } catch (debugError) {
+      console.log('[ProfileRepository] Debug query failed:', debugError);
     }
 
     try {
@@ -95,15 +112,24 @@ export class ProfileRepository {
         .eq('user_id', userId)
         .single();
 
+      console.log('[ProfileRepository] Supabase query result:', { 
+        hasData: !!data, 
+        error: error?.code || 'none',
+        errorMessage: error?.message 
+      });
+
       if (error) {
         // 'PGRST116' is the code for "Not Found", which is not a throw-worthy error.
         if (error.code !== 'PGRST116') {
           console.error('❌ Supabase getProfile error:', error);
           throw error;
+        } else {
+          console.log('[ProfileRepository] Profile not found (PGRST116) - no matching record');
         }
         return null;
       }
 
+      console.log('[ProfileRepository] Profile found, transforming data');
       return data ? this.transformFromDatabase(data) : null;
     } catch (error) {
       console.error('❌ Exception in getProfile:', error);
@@ -118,12 +144,14 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<Object>} Updated profile
    */
-  static async updateProfile(profileId, updates, userId) {
+  static async updateProfile(profileId: string, updates: Partial<Profile>, userId: string) {
     if (!userId) {
       throw new Error('User authentication is required to update a profile.');
     }
 
     try {
+      const { markdown, ...dataForJson } = updates;
+
       const { data, error } = await supabase
         .from('client_profiles')
         .update({
@@ -131,8 +159,8 @@ export class ProfileRepository {
           description: updates.companyName ? `${updates.industry || ''} profile for ${updates.companyName}` : undefined,
           industry: updates.industry || undefined,
           company_size: updates.size || undefined,
-          profile_data: updates,
-          markdown_content: updates.markdown || undefined,
+          profile_data: dataForJson,
+          markdown_content: markdownService.generateMarkdown(updates),
           updated_at: new Date().toISOString()
         })
         .eq('id', profileId)
@@ -158,7 +186,7 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<boolean>} Success status
    */
-  static async deleteProfile(profileId, userId) {
+  static async deleteProfile(profileId: string, userId: string) {
     if (!userId) {
       throw new Error('User authentication is required to delete a profile.');
     }
@@ -192,7 +220,7 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<Object|null>} Cached timeline data or null
    */
-  static async getCachedTimeline(profileId, userId) {
+  static async getCachedTimeline(profileId: string, userId: string) {
     if (!userId) {
       console.warn('⚠️ No userId provided to getCachedTimeline');
       return null;
@@ -236,7 +264,7 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<boolean>} Success status
    */
-  static async saveTimeline(profileId, timelineData, scenarioType, userId) {
+  static async saveTimeline(profileId: string, timelineData: any, scenarioType: string, userId: string) {
     if (!userId) {
       throw new Error('User authentication is required to save timeline.');
     }
@@ -277,7 +305,7 @@ export class ProfileRepository {
    * @param {string} userId - User ID (from Supabase Auth)
    * @returns {Promise<boolean>} Success status
    */
-  static async clearTimelineCache(profileId, userId) {
+  static async clearTimelineCache(profileId: string, userId: string) {
     if (!userId) {
       throw new Error('User authentication is required to clear timeline cache.');
     }
@@ -305,6 +333,128 @@ export class ProfileRepository {
   }
 
   // =============================================
+  // AI Opportunities Caching Methods
+  // =============================================
+
+  /**
+   * Get cached AI opportunities for a profile
+   * @param {string} profileId - Profile ID
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<Object|null>} Cached opportunities data or null
+   */
+  static async getCachedOpportunities(profileId: string, userId: string) {
+    if (!userId) {
+      console.warn('⚠️ No userId provided to getCachedOpportunities');
+      return null;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('client_profiles')
+        .select('opportunities_data, last_opportunities_generated_at')
+        .eq('id', profileId)
+        .eq('user_id', userId)
+        .single();
+        
+      if (error) {
+        if (error.code !== 'PGRST116') { // Not a "not found" error
+          console.error('❌ Supabase getCachedOpportunities error:', error);
+        }
+        return null;
+      }
+      
+      if (!data?.opportunities_data) {
+        return null; // No cached opportunities exist
+      }
+      
+      return {
+        opportunities: data.opportunities_data,
+        generatedAt: data.last_opportunities_generated_at,
+        provider: data.opportunities_data.analysisMetadata?.provider || 'unknown'
+      };
+    } catch (error) {
+      console.error('❌ Exception in getCachedOpportunities:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save AI opportunities to database
+   * @param {string} profileId - Profile ID
+   * @param {Object} opportunitiesData - Opportunities data to save
+   * @param {string} provider - AI provider used for generation
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<boolean>} Success status
+   */
+  static async saveOpportunities(profileId: string, opportunitiesData: any, provider: string, userId: string) {
+    if (!userId) {
+      throw new Error('User authentication is required to save opportunities.');
+    }
+    
+    try {
+      // Add metadata to opportunities data
+      const opportunitiesWithMeta = {
+        ...opportunitiesData,
+        provider,
+        generatedAt: new Date().toISOString(),
+        version: '1.0'
+      };
+
+      const { error } = await supabase
+        .from('client_profiles')
+        .update({
+          opportunities_data: opportunitiesWithMeta,
+          last_opportunities_generated_at: new Date().toISOString()
+        })
+        .eq('id', profileId)
+        .eq('user_id', userId);
+        
+      if (error) {
+        console.error('❌ Supabase saveOpportunities error:', error);
+        throw error;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Exception in saveOpportunities:', error);
+      throw new Error('Failed to save opportunities to database.');
+    }
+  }
+
+  /**
+   * Clear cached opportunities for a profile
+   * @param {string} profileId - Profile ID
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<boolean>} Success status
+   */
+  static async clearOpportunitiesCache(profileId: string, userId: string) {
+    if (!userId) {
+      throw new Error('User authentication is required to clear opportunities cache.');
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('client_profiles')
+        .update({
+          opportunities_data: null,
+          last_opportunities_generated_at: null
+        })
+        .eq('id', profileId)
+        .eq('user_id', userId);
+        
+      if (error) {
+        console.error('❌ Supabase clearOpportunitiesCache error:', error);
+        throw error;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Exception in clearOpportunitiesCache:', error);
+      throw new Error('Failed to clear opportunities cache.');
+    }
+  }
+
+  // =============================================
   // Utility Methods
   // =============================================
 
@@ -312,7 +462,7 @@ export class ProfileRepository {
    * Transform database record to expected profile format
    * Includes data migration for backward compatibility
    */
-  static transformFromDatabase(dbRecord) {
+  static transformFromDatabase(dbRecord: any) {
     // Extract profile data and ensure Supabase ID takes precedence
     const { id: oldId, ...profileDataWithoutId } = dbRecord.profile_data || {};
     
@@ -346,7 +496,7 @@ export class ProfileRepository {
 
     // Migration: Add businessProblems field to strategic initiatives
     if (migrated.strategicInitiatives && Array.isArray(migrated.strategicInitiatives)) {
-      migrated.strategicInitiatives = migrated.strategicInitiatives.map(initiative => {
+      migrated.strategicInitiatives = migrated.strategicInitiatives.map((initiative: StrategicInitiative) => {
         // If businessProblems field doesn't exist, add it as empty array
         if (!initiative.hasOwnProperty('businessProblems')) {
           return {

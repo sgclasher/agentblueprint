@@ -754,96 +754,480 @@ const ProfileSystemsTab: FC<ProfileTabProps> = ({ profile }) => {
 }
 
 const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
-    return (
-      <div className={styles.tabContent}>
-        <div className={styles.opportunitiesPlaceholder}>
-          <h3>AI Opportunity Analysis</h3>
-          <div style={{
-            padding: 'var(--spacing-xl)',
-            textAlign: 'center',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 'var(--border-radius-lg)',
-            margin: 'var(--spacing-lg) 0'
+    const [opportunities, setOpportunities] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [isCached, setIsCached] = useState(false);
+    
+    useEffect(() => {
+      // Load cached opportunities on component mount
+      loadCachedOpportunities();
+    }, [profile.id]);
+
+    const loadCachedOpportunities = async () => {
+      try {
+        // Get current session for authorization
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          console.warn('No valid session for loading cached opportunities');
+          return;
+        }
+
+        const response = await fetch(`/api/profiles/analyze-opportunities?profileId=${profile.id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.opportunities) {
+            setOpportunities(data.opportunities);
+            setIsCached(data.cached);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to load cached opportunities:', error);
+      }
+    };
+
+    const generateOpportunities = async (forceRegenerate = false) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Get current session for authorization
+        const { supabase } = await import('../../lib/supabase');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          throw new Error('Authentication required. Please sign in.');
+        }
+
+        const response = await fetch('/api/profiles/analyze-opportunities', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            profileId: profile.id,
+            forceRegenerate
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to generate opportunities');
+        }
+
+        if (data.success) {
+          setOpportunities(data.opportunities);
+          setIsCached(data.cached);
+        } else {
+          throw new Error(data.error || 'Analysis failed');
+        }
+
+      } catch (error: any) {
+        console.error('Error generating opportunities:', error);
+        setError(error.message || 'Failed to generate AI opportunities analysis');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const renderOpportunityCard = (opportunity: any, index: number) => (
+      <div 
+        key={index}
+        style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-primary)',
+          borderRadius: 'var(--border-radius-lg)',
+          padding: 'var(--spacing-lg)',
+          marginBottom: 'var(--spacing-lg)'
+        }}
+      >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: 'var(--spacing-md)'
+        }}>
+          <h4 style={{
+            margin: 0,
+            fontSize: '1.25rem',
+            color: 'var(--text-primary)',
+            fontWeight: 'var(--font-weight-semibold)',
+            flex: 1,
+            paddingRight: 'var(--spacing-md)'
           }}>
-            <div style={{ 
-              fontSize: '3rem', 
-              marginBottom: 'var(--spacing-lg)',
-              opacity: 0.5 
-            }}>🤖</div>
-            <h4 style={{ 
-              color: 'var(--text-primary)', 
-              marginBottom: 'var(--spacing-md)',
-              fontSize: '1.5rem'
-            }}>AI Opportunities Coming Soon</h4>
-            <p style={{ 
-              color: 'var(--text-secondary)', 
-              lineHeight: '1.6',
-              maxWidth: '600px',
-              margin: '0 auto var(--spacing-lg) auto'
+            {opportunity.title}
+          </h4>
+          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center', flexShrink: 0 }}>
+            <span style={{
+              background: opportunity.category === 'Process Automation' ? 'var(--accent-blue)' :
+                         opportunity.category === 'Decision Support' ? 'var(--accent-purple, #8b5cf6)' :
+                         opportunity.category === 'Customer Experience' ? 'var(--accent-green)' :
+                         opportunity.category === 'Data Analytics' ? 'var(--accent-yellow)' :
+                         opportunity.category === 'Workforce Augmentation' ? 'var(--accent-blue)' :
+                         'var(--accent-red)',
+              color: 'white',
+              borderRadius: 'var(--border-radius)',
+              padding: '0.25rem 0.75rem',
+              fontSize: '0.75rem',
+              fontWeight: 'var(--font-weight-medium)'
             }}>
-              This section will analyze your company's strategic initiatives and profile information to identify specific AI transformation opportunities tailored to your business context.
-            </p>
+              {opportunity.category}
+            </span>
+            <span style={{
+              background: opportunity.businessImpact?.confidenceLevel === 'High' ? 'var(--accent-green)' :
+                         opportunity.businessImpact?.confidenceLevel === 'Medium' ? 'var(--accent-yellow)' :
+                         'var(--accent-red)',
+              color: 'white',
+              borderRadius: 'var(--border-radius)',
+              padding: '0.25rem 0.75rem',
+              fontSize: '0.75rem',
+              fontWeight: 'var(--font-weight-medium)'
+            }}>
+              {opportunity.businessImpact?.confidenceLevel || 'Unknown'} Confidence
+            </span>
+          </div>
+        </div>
+
+        <p style={{
+          margin: '0 0 var(--spacing-lg) 0',
+          color: 'var(--text-primary)',
+          fontSize: '0.95rem',
+          lineHeight: '1.5'
+        }}>
+          {opportunity.description}
+        </p>
+
+        {/* Business Impact Section */}
+        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+          <h5 style={{
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: 'var(--text-primary)',
+            marginBottom: 'var(--spacing-md)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-sm)'
+          }}>
+            💰 Business Impact
+          </h5>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: 'var(--spacing-md)',
+            marginBottom: 'var(--spacing-md)'
+          }}>
             <div style={{
               background: 'var(--glass-bg)',
-              border: '1px solid var(--border-primary)',
+              border: '1px solid var(--border-secondary)',
               borderRadius: 'var(--border-radius)',
-              padding: 'var(--spacing-md)',
-              margin: 'var(--spacing-lg) auto',
-              maxWidth: '500px'
+              padding: 'var(--spacing-md)'
             }}>
-              <h5 style={{ 
-                color: 'var(--text-primary)', 
-                marginBottom: 'var(--spacing-sm)',
-                fontSize: '1.1rem'
-              }}>What we'll analyze:</h5>
-              <ul style={{ 
-                textAlign: 'left', 
-                color: 'var(--text-secondary)',
-                paddingLeft: 'var(--spacing-lg)'
-              }}>
-                <li>Strategic initiatives and business priorities</li>
-                <li>Industry-specific AI use cases</li>
-                <li>Company size and resource considerations</li>
-                <li>Potential ROI and implementation roadmap</li>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600' }}>💎 ROI: </span>
+              <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 'var(--font-weight-semibold)' }}>
+                {opportunity.businessImpact?.estimatedROI || 'TBD'}
+              </span>
+            </div>
+            <div style={{
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--border-secondary)',
+              borderRadius: 'var(--border-radius)',
+              padding: 'var(--spacing-md)'
+            }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600' }}>⚡ Time to Value: </span>
+              <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 'var(--font-weight-semibold)' }}>
+                {opportunity.businessImpact?.timeToValue || 'TBD'}
+              </span>
+            </div>
+          </div>
+          {opportunity.businessImpact?.primaryMetrics && opportunity.businessImpact.primaryMetrics.length > 0 && (
+            <div>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600', marginBottom: 'var(--spacing-xs)', display: 'block' }}>Key Metrics:</span>
+              <ul style={{ margin: 0, paddingLeft: 'var(--spacing-lg)', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                {opportunity.businessImpact.primaryMetrics.map((metric: string, metricIndex: number) => (
+                  <li key={metricIndex} style={{ marginBottom: 'var(--spacing-xs)' }}>{metric}</li>
+                ))}
               </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Implementation Section */}
+        <div style={{ marginBottom: 'var(--spacing-lg)' }}>
+          <h5 style={{
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: 'var(--text-primary)',
+            marginBottom: 'var(--spacing-md)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-sm)'
+          }}>
+            🔧 Implementation
+          </h5>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 'var(--spacing-md)',
+            marginBottom: 'var(--spacing-md)'
+          }}>
+            <div>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600' }}>Complexity: </span>
+              <span style={{
+                color: opportunity.implementation?.complexity === 'Low' ? 'var(--accent-green)' :
+                       opportunity.implementation?.complexity === 'Medium' ? 'var(--accent-yellow)' :
+                       'var(--accent-red)',
+                fontSize: '0.9rem',
+                fontWeight: 'var(--font-weight-semibold)'
+              }}>
+                {opportunity.implementation?.complexity || 'TBD'}
+              </span>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600' }}>Timeline: </span>
+              <span style={{ color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                {opportunity.implementation?.timeframe || 'TBD'}
+              </span>
             </div>
           </div>
         </div>
 
-        {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 && (
-          <div style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-primary)',
-            borderRadius: 'var(--border-radius-lg)',
-            padding: 'var(--spacing-lg)',
-            marginTop: 'var(--spacing-lg)'
-          }}>
-            <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
-              Current Strategic Context
-            </h4>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--spacing-md)' }}>
-              Based on your {profile.strategicInitiatives.length} strategic initiative{profile.strategicInitiatives.length === 1 ? '' : 's'}, we'll identify AI opportunities that align with your business priorities.
-            </p>
+        {/* AI Technologies */}
+        {opportunity.aiTechnologies && opportunity.aiTechnologies.length > 0 && (
+          <div style={{ paddingTop: 'var(--spacing-md)', borderTop: '1px solid var(--border-secondary)' }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '600', marginBottom: 'var(--spacing-sm)', display: 'block' }}>AI Technologies:</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
-              {profile.strategicInitiatives.map((initiative: any, index: number) => (
+              {opportunity.aiTechnologies.map((tech: string, techIndex: number) => (
                 <span 
-                  key={index}
+                  key={techIndex}
                   style={{
-                    padding: '0.5rem 1rem',
+                    padding: '0.25rem 0.5rem',
                     background: 'var(--glass-bg)',
                     border: '1px solid var(--border-primary)',
                     borderRadius: 'var(--border-radius)',
-                    fontSize: '0.9rem',
+                    fontSize: '0.75rem',
                     color: 'var(--text-primary)'
                   }}
                 >
-                  {initiative.initiative || `Initiative ${index + 1}`}
+                  {tech}
                 </span>
               ))}
             </div>
           </div>
         )}
+      </div>
+    );
+
+    return (
+      <div className={styles.tabContent}>
+        <div className={styles.analysisSections}>
+          {/* Header Section */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 'var(--spacing-lg)',
+            padding: 'var(--spacing-lg)',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 'var(--border-radius-lg)'
+          }}>
+            <div>
+              <h3 style={{ margin: '0 0 var(--spacing-sm) 0' }}>AI Opportunity Analysis</h3>
+              <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+                Comprehensive AI transformation opportunities tailored to your business context
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
+              {opportunities && isCached && (
+                <button
+                  className="btn btn-secondary btn-small"
+                  onClick={() => generateOpportunities(true)}
+                  disabled={isLoading}
+                >
+                  🔄 Regenerate
+                </button>
+              )}
+              <button
+                className="btn btn-primary"
+                onClick={() => generateOpportunities(false)}
+                disabled={isLoading}
+              >
+                {isLoading ? '⏳ Analyzing...' : opportunities ? '🔄 Refresh' : '🤖 Generate Analysis'}
+              </button>
+            </div>
+          </div>
+
+          {/* Cache Status */}
+          {opportunities && (
+            <div style={{
+              background: isCached ? 'var(--accent-blue-bg, rgba(59, 130, 246, 0.05))' : 'var(--accent-green-bg, rgba(34, 197, 94, 0.05))',
+              border: isCached ? '1px solid var(--accent-blue-border, rgba(59, 130, 246, 0.2))' : '1px solid var(--accent-green-border, rgba(34, 197, 94, 0.2))',
+              borderRadius: 'var(--border-radius)',
+              padding: 'var(--spacing-md)',
+              marginBottom: 'var(--spacing-lg)',
+              fontSize: '0.875rem'
+            }}>
+              {isCached ? '📋 Showing cached analysis' : '✨ Fresh analysis generated'} • 
+              Generated: {new Date(opportunities.generatedAt).toLocaleString()}
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div style={{
+              background: 'var(--accent-red-bg, rgba(239, 68, 68, 0.05))',
+              border: '1px solid var(--accent-red-border, rgba(239, 68, 68, 0.2))',
+              borderRadius: 'var(--border-radius)',
+              padding: 'var(--spacing-lg)',
+              marginBottom: 'var(--spacing-lg)',
+              textAlign: 'center'
+            }}>
+              <h4 style={{ color: 'var(--accent-red)', marginBottom: 'var(--spacing-sm)' }}>Analysis Failed</h4>
+              <p style={{ color: 'var(--text-primary)', margin: 0 }}>{error}</p>
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && (
+            <div style={{
+              textAlign: 'center',
+              padding: 'var(--spacing-xl)',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius-lg)'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)' }}>🤖</div>
+              <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+                Analyzing AI Opportunities...
+              </h4>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                Our AI is analyzing your strategic initiatives, business problems, and systems to identify tailored opportunities.
+              </p>
+            </div>
+          )}
+
+          {/* Results */}
+          {opportunities && !isLoading && (
+            <>
+              {/* Executive Summary */}
+              {opportunities.executiveSummary && (
+                <div style={{
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: 'var(--border-radius-lg)',
+                  padding: 'var(--spacing-lg)',
+                  marginBottom: 'var(--spacing-lg)'
+                }}>
+                  <h4 style={{ 
+                    margin: '0 0 var(--spacing-md) 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-sm)'
+                  }}>
+                    📊 Executive Summary
+                    {opportunities.overallReadinessScore && (
+                      <span style={{
+                        background: opportunities.overallReadinessScore >= 80 ? 'var(--accent-green)' :
+                                   opportunities.overallReadinessScore >= 60 ? 'var(--accent-yellow)' :
+                                   'var(--accent-red)',
+                        color: 'white',
+                        borderRadius: 'var(--border-radius)',
+                        padding: '0.25rem 0.75rem',
+                        fontSize: '0.75rem',
+                        fontWeight: 'var(--font-weight-medium)'
+                      }}>
+                        Readiness: {opportunities.overallReadinessScore}/100
+                      </span>
+                    )}
+                  </h4>
+                  <p style={{
+                    margin: 0,
+                    color: 'var(--text-primary)',
+                    fontSize: '1rem',
+                    lineHeight: '1.6'
+                  }}>
+                    {opportunities.executiveSummary}
+                  </p>
+                </div>
+              )}
+
+              {/* Opportunities List */}
+              {opportunities.opportunities && opportunities.opportunities.length > 0 && (
+                <div>
+                  <h4 style={{ 
+                    marginBottom: 'var(--spacing-lg)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-sm)'
+                  }}>
+                    🚀 AI Opportunities ({opportunities.opportunities.length})
+                  </h4>
+                  {opportunities.opportunities.map(renderOpportunityCard)}
+                </div>
+              )}
+
+              {/* Priority Recommendations */}
+              {opportunities.priorityRecommendations && opportunities.priorityRecommendations.length > 0 && (
+                <div style={{
+                  background: 'var(--accent-blue-bg, rgba(59, 130, 246, 0.05))',
+                  border: '1px solid var(--accent-blue-border, rgba(59, 130, 246, 0.2))',
+                  borderRadius: 'var(--border-radius-lg)',
+                  padding: 'var(--spacing-lg)',
+                  marginTop: 'var(--spacing-lg)'
+                }}>
+                  <h4 style={{ margin: '0 0 var(--spacing-md) 0' }}>🎯 Priority Recommendations</h4>
+                  <ul style={{ margin: 0, paddingLeft: 'var(--spacing-lg)' }}>
+                    {opportunities.priorityRecommendations.map((rec: string, index: number) => (
+                      <li key={index} style={{ marginBottom: 'var(--spacing-sm)', color: 'var(--text-primary)' }}>
+                        {rec}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Placeholder for Empty State */}
+          {!opportunities && !isLoading && !error && (
+            <div style={{
+              textAlign: 'center',
+              padding: 'var(--spacing-xl)',
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius-lg)'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-lg)', opacity: 0.5 }}>🤖</div>
+              <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+                Ready to Discover AI Opportunities
+              </h4>
+              <p style={{ 
+                color: 'var(--text-secondary)', 
+                marginBottom: 'var(--spacing-lg)',
+                maxWidth: '600px',
+                margin: '0 auto var(--spacing-lg) auto'
+              }}>
+                Generate a comprehensive AI opportunities analysis based on your strategic initiatives, business problems, and technology systems.
+              </p>
+              <button 
+                className="btn btn-primary"
+                onClick={() => generateOpportunities(false)}
+              >
+                🚀 Generate AI Analysis
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
 }
