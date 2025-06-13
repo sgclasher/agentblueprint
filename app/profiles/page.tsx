@@ -145,26 +145,30 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                 gap: 'var(--spacing-sm)', 
                 flexWrap: 'wrap' 
               }}>
-                <span style={{
-                  padding: '0.4rem 1rem',
-                  borderRadius: 'var(--border-radius-lg)',
-                  fontSize: '0.8rem',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid var(--profile-tag-industry-border)',
-                  background: 'var(--profile-tag-industry-bg)',
-                  color: 'var(--profile-tag-industry-color)'
-                }}>{profile.industry}</span>
-                <span style={{
-                  padding: '0.4rem 1rem',
-                  borderRadius: 'var(--border-radius-lg)',
-                  fontSize: '0.8rem',
-                  fontWeight: 'var(--font-weight-semibold)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid var(--profile-tag-size-border)',
-                  background: 'var(--profile-tag-size-bg)',
-                  color: 'var(--profile-tag-size-color)'
-                }}>{getSizeLabel(profile.size)}</span>
+                {profile.industry && profile.industry.trim() && (
+                  <span style={{
+                    padding: '0.4rem 1rem',
+                    borderRadius: 'var(--border-radius-lg)',
+                    fontSize: '0.8rem',
+                    fontWeight: 'var(--font-weight-semibold)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--profile-tag-industry-border)',
+                    background: 'var(--profile-tag-industry-bg)',
+                    color: 'var(--profile-tag-industry-color)'
+                  }}>{profile.industry}</span>
+                )}
+                {profile.size && profile.size.trim() && (
+                  <span style={{
+                    padding: '0.4rem 1rem',
+                    borderRadius: 'var(--border-radius-lg)',
+                    fontSize: '0.8rem',
+                    fontWeight: 'var(--font-weight-semibold)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--profile-tag-size-border)',
+                    background: 'var(--profile-tag-size-bg)',
+                    color: 'var(--profile-tag-size-color)'
+                  }}>{getSizeLabel(profile.size || '')}</span>
+                )}
                 {profile._supabaseRecord && (
                   <span style={{
                     padding: '0.4rem 1rem',
@@ -205,7 +209,7 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                   fontWeight: 'var(--font-weight-bold)',
                   color: 'var(--text-primary)',
                   fontSize: '1rem'
-                }}>{formatDate(profile.createdAt)}</span>
+                }}>{formatDate(profile.createdAt || '')}</span>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <span style={{
@@ -219,10 +223,10 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                 }}>Status</span>
                 <span style={{
                   fontWeight: 'var(--font-weight-bold)',
-                  color: profile.status === 'draft' ? 'var(--accent-yellow)' : 'var(--accent-green)',
+                  color: (profile.status || 'draft') === 'draft' ? 'var(--accent-yellow)' : 'var(--accent-green)',
                   fontSize: '1rem'
                 }}>
-                  {profile.status.charAt(0).toUpperCase() + profile.status.slice(1)}
+                  {(profile.status || 'draft').charAt(0).toUpperCase() + (profile.status || 'draft').slice(1)}
                 </span>
               </div>
             </div>
@@ -243,7 +247,10 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                   flexWrap: 'wrap',
                   gap: 'var(--spacing-xs)'
                 }}>
-                  {profile.valueSellingFramework.businessIssues.slice(0, 2).map((issue: string, index: number) => (
+                  {profile.valueSellingFramework.businessIssues
+                    .filter((issue: string) => issue && issue.trim())
+                    .slice(0, 2)
+                    .map((issue: string, index: number) => (
                     <span key={index} style={{
                       padding: '0.3rem 0.75rem',
                       background: 'var(--profile-tag-issue-bg)',
@@ -255,7 +262,7 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                       backdropFilter: 'blur(10px)'
                     }}>{issue}</span>
                   ))}
-                  {profile.valueSellingFramework.businessIssues.length > 2 && (
+                  {profile.valueSellingFramework.businessIssues.filter((issue: string) => issue && issue.trim()).length > 2 && (
                     <span style={{
                       padding: '0.3rem 0.75rem',
                       background: 'var(--profile-tag-more-bg)',
@@ -265,7 +272,7 @@ const ProfileCard: FC<ProfileCardProps> = ({ profile, onView, onGenerateTimeline
                       fontWeight: 'var(--font-weight-semibold)',
                       border: '1px solid var(--profile-tag-more-border)',
                       backdropFilter: 'blur(10px)'
-                    }}>+{profile.valueSellingFramework.businessIssues.length - 2} more</span>
+                    }}>+{profile.valueSellingFramework.businessIssues.filter((issue: string) => issue && issue.trim()).length - 2} more</span>
                   )}
                 </div>
               </div>
@@ -369,7 +376,7 @@ export default function ProfilesPage() {
         <ProfileWizard
           onComplete={handleWizardComplete}
           onCancel={handleWizardCancel}
-          initialData={{}}
+          initialData={null}
         />
       </div>
     );

@@ -20,7 +20,17 @@ export class ProfileExtractionService {
    * @returns {Promise<Object>} Extraction result with confidence scores
    */
   async extractProfileFromMarkdown(markdown, userId, preferredProvider) {
+    const startTime = Date.now();
+    
     try {
+      console.log(`🔍 [ProfileExtraction] Starting extraction with provider: ${preferredProvider || 'default'}`);
+      console.log(`📝 [ProfileExtraction] Markdown length: ${markdown.length} characters`);
+      
+      // Pre-extraction validation
+      if (!markdown || markdown.trim().length < 50) {
+        throw new Error('Markdown content is too short for meaningful extraction');
+      }
+
       // Call AI service to extract profile data
       const extractedData = await aiService.generateJson(
         PROFILE_EXTRACTION_SYSTEM_PROMPT,
@@ -30,8 +40,18 @@ export class ProfileExtractionService {
         preferredProvider
       );
 
+      const extractionTime = Date.now() - startTime;
+      console.log(`✅ [ProfileExtraction] Extraction completed in ${extractionTime}ms`);
+
       // Analyze confidence scores and validate structure
       const analysis = this.analyzeExtraction(extractedData);
+
+      // Add provider-specific recommendations
+      const recommendations = this.generateProviderRecommendations(
+        preferredProvider, 
+        analysis, 
+        extractionTime
+      );
 
       return {
         success: true,
@@ -39,14 +59,27 @@ export class ProfileExtractionService {
         hasLowConfidenceFields: analysis.hasLowConfidenceFields,
         lowConfidenceFields: analysis.lowConfidenceFields,
         validationWarnings: analysis.validationWarnings,
-        averageConfidence: analysis.averageConfidence
+        averageConfidence: analysis.averageConfidence,
+        extractionTime,
+        provider: preferredProvider,
+        recommendations
       };
     } catch (error) {
-      console.error('Profile extraction error:', error);
+      const extractionTime = Date.now() - startTime;
+      
+      console.error(`❌ [ProfileExtraction] Error after ${extractionTime}ms:`, error);
+      
+      // Enhanced error handling with provider-specific debugging
+      const enhancedError = this.enhanceErrorForProvider(error, preferredProvider, markdown);
+      
       return {
         success: false,
-        error: error.message || 'Failed to extract profile data',
-        data: null
+        error: enhancedError.message,
+        errorType: enhancedError.type,
+        provider: preferredProvider,
+        extractionTime,
+        data: null,
+        troubleshooting: enhancedError.troubleshooting
       };
     }
   }
@@ -344,5 +377,186 @@ export class ProfileExtractionService {
 
     summary.extractedSections = Array.from(summary.extractedSections);
     return summary;
+  }
+
+  /**
+   * Enhance error messages with provider-specific debugging information
+   * @param {Error} error - The original error
+   * @param {string} provider - The AI provider used
+   * @param {string} markdown - The markdown content
+   * @returns {Object} Enhanced error information
+   */
+  enhanceErrorForProvider(error, provider, markdown) {
+    const errorMessage = error.message || 'Unknown error';
+    const isGemini = provider && provider.toLowerCase().includes('gemini');
+    
+    // Gemini-specific error handling
+    if (isGemini) {
+      console.log(`🔧 [ProfileExtraction] Analyzing Gemini-specific error...`);
+      
+      if (errorMessage.includes('Model ') && errorMessage.includes('not found')) {
+        return {
+          type: 'MODEL_NOT_FOUND',
+          message: `Gemini model issue: ${errorMessage}`,
+          troubleshooting: [
+            'Try using "gemini-1.5-flash" instead of the current model',
+            'Check if your region supports the selected Gemini model',
+            'Verify your Google AI API key has access to the model',
+            'Consider switching to OpenAI GPT-4o which works reliably for profile extraction'
+          ]
+        };
+      }
+
+      if (errorMessage.includes('API key') || errorMessage.includes('403')) {
+        return {
+          type: 'API_ACCESS_ERROR',
+          message: `Gemini API access issue: ${errorMessage}`,
+          troubleshooting: [
+            'Verify your Google AI API key is valid and active',
+            'Check if your API key has the necessary permissions',
+            'Ensure you\'re not hitting quota limits',
+            'Try regenerating your API key in Google AI Studio'
+          ]
+        };
+      }
+
+      if (errorMessage.includes('safety filters') || errorMessage.includes('SAFETY')) {
+        return {
+          type: 'CONTENT_BLOCKED',
+          message: `Gemini blocked the content due to safety filters: ${errorMessage}`,
+          troubleshooting: [
+            'The markdown content may contain terms flagged by Gemini safety filters',
+            'Try removing any potentially sensitive business information temporarily',
+            'Consider using OpenAI GPT-4o which has more lenient content policies',
+            'Simplify the markdown to focus on basic company information'
+          ]
+        };
+      }
+
+      if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+        return {
+          type: 'RATE_LIMITED',
+          message: `Gemini API rate limit exceeded: ${errorMessage}`,
+          troubleshooting: [
+            'Wait a few minutes before trying again',
+            'Consider upgrading your Google AI API plan for higher rate limits',
+            'Switch to OpenAI GPT-4o temporarily while rate limits reset',
+            'Try using "gemini-1.5-flash-8b" which may have different rate limits'
+          ]
+        };
+      }
+
+      if (errorMessage.includes('JSON') || errorMessage.includes('parse')) {
+        return {
+          type: 'RESPONSE_FORMAT_ERROR',
+          message: `Gemini returned invalid JSON format: ${errorMessage}`,
+          troubleshooting: [
+            'Gemini sometimes wraps responses in unexpected formatting',
+            'This is a known issue with Gemini\'s response formatting',
+            'OpenAI GPT-4o provides more consistent JSON formatting',
+            'Try simplifying the markdown content for better extraction'
+          ]
+        };
+      }
+
+      if (errorMessage.includes('network') || errorMessage.includes('ENOTFOUND')) {
+        return {
+          type: 'NETWORK_ERROR',
+          message: `Network connectivity issue with Gemini API: ${errorMessage}`,
+          troubleshooting: [
+            'Check your internet connection',
+            'Verify that Google AI API endpoints are accessible from your network',
+            'Try again in a few moments',
+            'Consider using OpenAI GPT-4o as a fallback'
+          ]
+        };
+      }
+
+      // Generic Gemini error
+      return {
+        type: 'GEMINI_GENERAL_ERROR',
+        message: `Gemini extraction failed: ${errorMessage}`,
+        troubleshooting: [
+          'Gemini API integration is being debugged - try OpenAI GPT-4o instead',
+          'OpenAI GPT-4o currently has the most reliable profile extraction',
+          'If you must use Gemini, try "gemini-1.5-flash" model',
+          'Check the admin settings to ensure Gemini is configured correctly'
+        ]
+      };
+    }
+
+    // OpenAI-specific error handling
+    if (provider && provider.toLowerCase().includes('openai')) {
+      if (errorMessage.includes('API key') || errorMessage.includes('401')) {
+        return {
+          type: 'API_ACCESS_ERROR',
+          message: `OpenAI API access issue: ${errorMessage}`,
+          troubleshooting: [
+            'Verify your OpenAI API key is valid and active',
+            'Check if your API key has sufficient credits',
+            'Ensure your API key has access to GPT-4o model'
+          ]
+        };
+      }
+    }
+
+    // Generic error handling
+    return {
+      type: 'GENERAL_ERROR',
+      message: errorMessage,
+      troubleshooting: [
+        'Try using OpenAI GPT-4o which has the most reliable extraction',
+        'Check your AI provider configuration in admin settings',
+        'Ensure your markdown content is well-formatted',
+        'Contact support if the issue persists'
+      ]
+    };
+  }
+
+  /**
+   * Generate provider-specific recommendations based on extraction results
+   * @param {string} provider - The AI provider used
+   * @param {Object} analysis - Extraction analysis results
+   * @param {number} extractionTime - Time taken for extraction
+   * @returns {Object} Provider recommendations
+   */
+  generateProviderRecommendations(provider, analysis, extractionTime) {
+    const recommendations = {
+      performance: '',
+      alternatives: [],
+      optimizations: []
+    };
+
+    const isGemini = provider && provider.toLowerCase().includes('gemini');
+    const isOpenAI = provider && provider.toLowerCase().includes('openai');
+
+    if (isGemini) {
+      if (analysis.averageConfidence > 0.8 && extractionTime < 10000) {
+        recommendations.performance = 'Excellent Gemini extraction performance';
+      } else if (analysis.averageConfidence < 0.6) {
+        recommendations.performance = 'Low confidence with Gemini - consider switching to OpenAI GPT-4o';
+        recommendations.alternatives = [
+          'OpenAI GPT-4o provides more reliable profile extraction',
+          'Try "gemini-1.5-flash" for better consistency'
+        ];
+      } else if (extractionTime > 15000) {
+        recommendations.performance = 'Slow Gemini response time';
+        recommendations.optimizations = [
+          'Try "gemini-1.5-flash-8b" for faster responses',
+          'Consider OpenAI GPT-4o for more predictable performance'
+        ];
+      }
+
+      recommendations.alternatives.push('For timeline generation, Gemini excels over other providers');
+    }
+
+    if (isOpenAI) {
+      if (analysis.averageConfidence > 0.8) {
+        recommendations.performance = 'Excellent OpenAI extraction performance (recommended for profiles)';
+      }
+      recommendations.alternatives.push('For timeline generation, consider switching to Gemini which performs better');
+    }
+
+    return recommendations;
   }
 } 

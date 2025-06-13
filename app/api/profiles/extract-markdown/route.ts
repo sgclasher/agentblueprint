@@ -127,42 +127,118 @@ export async function POST(request: NextRequest): Promise<NextResponse<Extractio
       userId: user.id 
     });
 
+    // Provider-specific logging and recommendations
+    const isGemini = preferredProvider && preferredProvider.toLowerCase().includes('gemini');
+    const isOpenAI = preferredProvider && preferredProvider.toLowerCase().includes('openai');
+    
+    console.log(`🤖 [ProfileExtractionAPI] Provider analysis:`, {
+      requestedProvider: preferredProvider || 'default',
+      isGemini,
+      isOpenAI,
+      recommendation: isGemini 
+        ? 'Gemini being debugged - OpenAI GPT-4o recommended for profiles' 
+        : isOpenAI 
+          ? 'OpenAI GPT-4o - excellent choice for profile extraction'
+          : 'Using default provider'
+    });
+
     // Create extraction service instance
     const extractionService = new ProfileExtractionService();
 
-    // Extract profile data from markdown
-    console.log(`📝 Starting profile extraction for user ${user.id} with provider: ${preferredProvider || 'default'}`);
-    console.log(`📊 Markdown input analysis:`, {
+    // Enhanced markdown analysis for debugging
+    const markdownAnalysis = {
       characterCount: markdown.length,
       lineCount: markdown.split('\n').length,
-      containsHeaders: /^#{1,6}\s/m.test(markdown!),
-      containsLists: /^[-*]\s/m.test(markdown!),
-      containsProblems: /problem|challenge|issue|pain point/i.test(markdown!),
-      containsAI: /ai|artificial intelligence|automation|machine learning|ml/i.test(markdown!),
-      containsInitiatives: /initiative|project|strategic|goal/i.test(markdown!)
-    });
+      wordCount: markdown.split(/\s+/).length,
+      containsHeaders: /^#{1,6}\s/m.test(markdown),
+      containsLists: /^[-*]\s/m.test(markdown),
+      containsProblems: /problem|challenge|issue|pain point/i.test(markdown),
+      containsAI: /ai|artificial intelligence|automation|machine learning|ml/i.test(markdown),
+      containsInitiatives: /initiative|project|strategic|goal/i.test(markdown),
+      containsContact: /email|phone|linkedin|contact/i.test(markdown),
+      containsCompanyInfo: /company|corporation|business|organization/i.test(markdown),
+      hasStructuredContent: markdown.includes('**') || markdown.includes('##'),
+      estimatedComplexity: markdown.length > 2000 ? 'high' : markdown.length > 1000 ? 'medium' : 'low'
+    };
+
+    console.log(`📊 [ProfileExtractionAPI] Markdown analysis:`, markdownAnalysis);
+
+    // Gemini-specific pre-extraction warnings
+    if (isGemini) {
+      console.log(`🔧 [ProfileExtractionAPI] Gemini-specific analysis:`);
+      
+      if (markdownAnalysis.estimatedComplexity === 'high') {
+        console.warn('⚠️ Complex markdown with Gemini - may have formatting issues');
+      }
+      
+      if (!markdownAnalysis.hasStructuredContent) {
+        console.warn('⚠️ Unstructured markdown - Gemini may struggle with extraction');
+      }
+
+      console.log('💡 Gemini debugging tips: Watch for JSON formatting issues, safety filter blocks, model compatibility');
+    }
+
+    // Extract profile data from markdown
+          console.log(`📝 Starting profile extraction for user ${user.id} with provider: ${preferredProvider || 'default provider'}`);
     
-    const extractionResult = await extractionService.extractProfileFromMarkdown(
+    const extractionResult = await (extractionService as any).extractProfileFromMarkdown(
       markdown,
       user.id,
-      preferredProvider || null
-    ) as ExtractionResult;
+      preferredProvider || undefined
+    ) as ExtractionResult & {
+      extractionTime?: number;
+      provider?: string;
+      recommendations?: any;
+      errorType?: string;
+      troubleshooting?: string[];
+    };
 
     if (!extractionResult.success) {
-      console.error('❌ Profile extraction failed:', extractionResult.error);
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: extractionResult.error || 'Extraction failed',
-          details: extractionResult 
-        },
-        { status: 500 }
-      );
+      console.error(`❌ [ProfileExtractionAPI] Extraction failed:`, extractionResult.error);
+      
+      // Enhanced error response with provider-specific guidance
+      const errorResponse: any = { 
+        success: false, 
+        error: extractionResult.error || 'Extraction failed',
+        provider: extractionResult.provider || preferredProvider,
+        extractionTime: extractionResult.extractionTime
+      };
+
+      // Add troubleshooting information
+      if (extractionResult.troubleshooting) {
+        errorResponse.troubleshooting = extractionResult.troubleshooting;
+        errorResponse.errorType = extractionResult.errorType;
+      }
+
+      // Provider-specific error suggestions
+      if (isGemini) {
+        errorResponse.suggestion = 'Gemini integration is being debugged. Try OpenAI GPT-4o for more reliable profile extraction.';
+        errorResponse.alternativeProvider = 'openai';
+      }
+
+      return NextResponse.json(errorResponse, { status: 500 });
     }
 
     // Enhanced debugging for complex field extraction
     const complexFieldsAnalysis = analyzeComplexFieldExtraction(extractionResult.data!);
-    console.log(`🔍 Complex fields extraction analysis:`, complexFieldsAnalysis);
+    console.log(`🔍 [ProfileExtractionAPI] Complex fields extraction analysis:`, complexFieldsAnalysis);
+
+    // Provider performance analysis
+    if (extractionResult.extractionTime) {
+      const performanceAnalysis = {
+        extractionTime: extractionResult.extractionTime,
+        performance: extractionResult.extractionTime < 5000 ? 'fast' : extractionResult.extractionTime < 15000 ? 'moderate' : 'slow',
+        provider: extractionResult.provider || preferredProvider,
+        averageConfidence: extractionResult.averageConfidence
+      };
+
+      console.log(`⚡ [ProfileExtractionAPI] Performance analysis:`, performanceAnalysis);
+
+      // Gemini-specific performance warnings
+      if (isGemini && extractionResult.extractionTime > 20000) {
+        console.warn('⚠️ Slow Gemini response time - consider OpenAI GPT-4o for better performance');
+      }
+    }
 
     // Map extracted data to profile schema
     const mappedProfile = extractionService.mapToProfileSchema(extractionResult.data!);
@@ -180,16 +256,28 @@ export async function POST(request: NextRequest): Promise<NextResponse<Extractio
       mediumConfidence: summary.mediumConfidenceFields,
       lowConfidence: summary.lowConfidenceFields,
       averageConfidence: extractionResult.averageConfidence,
-      provider: preferredProvider || 'default',
+      provider: extractionResult.provider || preferredProvider || 'default',
       extractedSections: summary.extractedSections,
       complexFieldsFound: complexFieldsAnalysis.fieldsFound,
       complexFieldsMissing: complexFieldsAnalysis.fieldsMissing,
       validationWarnings: extractionResult.validationWarnings?.length || 0,
       hasLowConfidenceFields: extractionResult.hasLowConfidenceFields,
-      lowConfidenceFieldsList: extractionResult.lowConfidenceFields
+      lowConfidenceFieldsList: extractionResult.lowConfidenceFields,
+      extractionTime: extractionResult.extractionTime,
+      markdownComplexity: markdownAnalysis.estimatedComplexity,
+      extractionRate: complexFieldsAnalysis.extractionRate
     };
     
-    console.log(`✅ Profile extraction completed for user ${user.id}:`, detailedMetrics);
+    console.log(`✅ [ProfileExtractionAPI] Extraction completed for user ${user.id}:`, detailedMetrics);
+    
+    // Provider-specific success analysis
+    if (isGemini) {
+      if (extractionResult.averageConfidence > 0.8) {
+        console.log('🎉 Excellent Gemini extraction performance!');
+      } else if (extractionResult.averageConfidence < 0.6) {
+        console.warn('⚠️ Low confidence Gemini extraction - recommend trying OpenAI GPT-4o');
+      }
+    }
     
     // Log warnings for missing critical fields
     if (complexFieldsAnalysis.fieldsMissing.length > 0) {

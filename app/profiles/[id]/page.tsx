@@ -31,36 +31,65 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
                   <span>{profile.industry}</span>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>Size</label>
-                  <span>{profile.size}</span>
+                  <label>Employee Count</label>
+                  <span>{profile.employeeCount || 'Not specified'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <label>Annual Revenue</label>
                   <span>{profile.annualRevenue ? `$${profile.annualRevenue}` : 'Not specified'}</span>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>Employee Count</label>
-                  <span>{profile.employeeCount || 'Not specified'}</span>
+                  <label>Primary Location</label>
+                  <span>{profile.primaryLocation || 'Not specified'}</span>
                 </div>
                 <div className={styles.infoItem}>
-                  <label>Location</label>
-                  <span>{profile.primaryLocation || 'Not specified'}</span>
+                  <label>Website</label>
+                  <span>
+                    {profile.websiteUrl ? (
+                      <a href={profile.websiteUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)' }}>
+                        {profile.websiteUrl}
+                      </a>
+                    ) : 'Not specified'}
+                  </span>
                 </div>
               </div>
             </div>
     
-            {profile.expectedOutcome?.strategicInitiatives?.length > 0 && (
+            {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 && (
               <div className={styles.infoCard}>
-                <h3>Strategic Initiatives</h3>
+                <h3>Strategic Initiatives ({profile.strategicInitiatives.length})</h3>
                 <div className={styles.initiativesList}>
-                  {profile.expectedOutcome.strategicInitiatives.map((initiative: any, index: number) => (
+                  {profile.strategicInitiatives.map((initiative: any, index: number) => (
                     <div key={index} className={styles.initiativeItem}>
-                      <div className={styles.initiativeDescription}>{initiative.initiative}</div>
+                      <div className={styles.initiativeDescription}>{initiative.initiative || `Initiative ${index + 1}`}</div>
                       {initiative.contact && (
                         <div className={styles.initiativeContact}>
-                          <strong>{initiative.contact.name}</strong> ({initiative.contact.title})
-                          <br />
-                          <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a>
+                          <strong>{initiative.contact.name}</strong>
+                          {initiative.contact.title && ` (${initiative.contact.title})`}
+                          {initiative.contact.email && (
+                            <>
+                              <br />
+                              <a href={`mailto:${initiative.contact.email}`} style={{ color: 'var(--accent-blue)' }}>
+                                {initiative.contact.email}
+                              </a>
+                            </>
+                          )}
+                          {initiative.contact.phone && (
+                            <>
+                              <br />
+                              <a href={`tel:${initiative.contact.phone}`} style={{ color: 'var(--accent-blue)' }}>
+                                {initiative.contact.phone}
+                              </a>
+                            </>
+                          )}
+                          {initiative.contact.linkedin && (
+                            <>
+                              <br />
+                              <a href={initiative.contact.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)' }}>
+                                LinkedIn Profile
+                              </a>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
@@ -68,85 +97,17 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile }) => {
                 </div>
               </div>
             )}
-    
-            {(profile.problems?.businessProblems?.length > 0 || profile.problems?.agenticOpportunities?.length > 0) && (
+
+            {(!profile.strategicInitiatives || profile.strategicInitiatives.length === 0) && (
               <div className={styles.infoCard}>
-                <h3>Problems & Agentic AI Opportunities</h3>
-                {profile.problems.businessProblems?.length > 0 && (
-                  <div className={styles.problemsSection}>
-                    <h4>Current Problems:</h4>
-                    <ul>
-                      {profile.problems.businessProblems.map((problem: string, index: number) => (
-                        <li key={index}>{problem}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {profile.problems.agenticOpportunities?.length > 0 && (
-                  <div className={styles.opportunitiesSection}>
-                    <h4>Agentic Opportunities:</h4>
-                    <ul>
-                      {profile.problems.agenticOpportunities.map((opportunity: string, index: number) => (
-                        <li key={index}>{opportunity}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-    
-            {profile.value?.businessValue && (
-              <div className={styles.infoCard}>
-                <h3>Business Value</h3>
-                <div className={styles.valueContent}>
-                  {profile.value.businessValue.totalAnnualImpact && (
-                    <div className={`${styles.metricItem} ${styles.highlight}`}>
-                      <label>Total Annual Impact</label>
-                      <span className={styles.metricValue}>{profile.value.businessValue.totalAnnualImpact}</span>
-                    </div>
-                  )}
-                  {profile.value.businessValue.revenueImpact && (
-                    <div className={styles.valueItem}>
-                      <strong>Revenue Impact:</strong> {profile.value.businessValue.revenueImpact}
-                    </div>
-                  )}
-                  {profile.value.businessValue.costReduction && (
-                    <div className={styles.valueItem}>
-                      <strong>Cost Reduction:</strong> {profile.value.businessValue.costReduction}
-                    </div>
-                  )}
-                  {profile.value.businessValue.operationalEfficiency && (
-                    <div className={styles.valueItem}>
-                      <strong>Operational Efficiency:</strong> {profile.value.businessValue.operationalEfficiency}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-    
-            {profile.aiOpportunityAssessment && (
-              <div className={styles.infoCard}>
-                <h3>AI Readiness</h3>
-                <div className={styles.aiReadinessDisplay}>
-                  <div className={styles.readinessScore}>
-                    <span className={styles.scoreValue}>{profile.aiOpportunityAssessment.aiReadinessScore || profile.aiReadinessScore || 'N/A'}</span>
-                    <span className={styles.scoreLabel}>/ 10</span>
-                  </div>
-                  {profile.aiOpportunityAssessment.currentTechnology && (
-                    <div className={styles.techStack}>
-                      <label>Current Technology</label>
-                      <div className={styles.techItems}>
-                        {Object.entries(profile.aiOpportunityAssessment.currentTechnology).map(([key, value]) => (
-                          value && (
-                            <div key={key} className={styles.techItem}>
-                              <span className={styles.techLabel}>{key}:</span>
-                              <span className={styles.techValue}>{value as string}</span>
-                            </div>
-                          )
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <h3>Strategic Initiatives</h3>
+                <div style={{
+                  padding: 'var(--spacing-lg)',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)',
+                  fontStyle: 'italic'
+                }}>
+                  No strategic initiatives have been added yet. You can add them by editing this profile.
                 </div>
               </div>
             )}
@@ -159,23 +120,25 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
     return (
         <div className={styles.tabContent}>
           <div className={styles.analysisSections}>
-            {profile.expectedOutcome?.strategicInitiatives?.length > 0 && (
+            {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 && (
               <div className={styles.analysisCard}>
-                <h3>Key Executive Contacts</h3>
+                <h3>Strategic Initiative Contacts</h3>
                 <div className={styles.contactsGrid}>
-                  {profile.expectedOutcome.strategicInitiatives.map((initiative: any, index: number) => (
+                  {profile.strategicInitiatives.map((initiative: any, index: number) => (
                     initiative.contact && (
                       <div key={index} className={styles.contactCard}>
-                        <h4>{initiative.contact.name}</h4>
-                        <p className={styles.contactTitle}>{initiative.contact.title}</p>
-                        <p className={styles.contactInitiative}><strong>Initiative:</strong> {initiative.initiative}</p>
+                        <h4>{initiative.contact.name || 'Contact Name Not Available'}</h4>
+                        <p className={styles.contactTitle}>{initiative.contact.title || 'Title Not Specified'}</p>
+                        <p className={styles.contactInitiative}><strong>Initiative:</strong> {initiative.initiative || `Initiative ${index + 1}`}</p>
                         <div className={styles.contactDetails}>
-                          <p><strong>Email:</strong> <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a></p>
+                          {initiative.contact.email && (
+                            <p><strong>Email:</strong> <a href={`mailto:${initiative.contact.email}`}>{initiative.contact.email}</a></p>
+                          )}
                           {initiative.contact.phone && (
-                            <p><strong>Phone:</strong> <a href={`tel:${initiative.contact.phone}`}>{initiative.contact.phone}</a></p>
+                            <p><strong>Phone:</strong> <a href={`tel:${initiative.contact.phone!}`}>{initiative.contact.phone}</a></p>
                           )}
                           {initiative.contact.linkedin && (
-                            <p><strong>LinkedIn:</strong> <a href={`https://${initiative.contact.linkedin}`} target="_blank" rel="noopener noreferrer">{initiative.contact.linkedin}</a></p>
+                            <p><strong>LinkedIn:</strong> <a href={initiative.contact.linkedin!} target="_blank" rel="noopener noreferrer">{initiative.contact.linkedin}</a></p>
                           )}
                         </div>
                       </div>
@@ -184,131 +147,139 @@ const ProfileAnalysisTab: FC<ProfileTabProps> = ({ profile }) => {
                 </div>
               </div>
             )}
-    
-            {(profile.solutions?.capabilities?.length > 0 || profile.solutions?.differentiators?.length > 0) && (
+
+            {(!profile.strategicInitiatives || profile.strategicInitiatives.length === 0 || !profile.strategicInitiatives.some((init: any) => init.contact)) && (
               <div className={styles.analysisCard}>
-                <h3>Solutions & Capabilities</h3>
-                {profile.solutions.capabilities?.length > 0 && (
-                  <div className={styles.capabilitiesSection}>
-                    <h4>Required Capabilities:</h4>
-                    <div className={styles.capabilitiesList}>
-                      {profile.solutions.capabilities.map((capability: string, index: number) => (
-                        <div key={index} className={styles.capabilityItem}>
-                          <span className={styles.capabilityIcon}>✓</span>
-                          <span>{capability}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {profile.solutions.differentiators?.length > 0 && (
-                  <div className={styles.differentiatorsSection}>
-                    <h4>Key Differentiators:</h4>
-                    <div className={styles.differentiatorsList}>
-                      {profile.solutions.differentiators.map((differentiator: string, index: number) => (
-                        <div key={index} className={styles.differentiatorItem}>
-                          <span className={styles.differentiatorIcon}>⭐</span>
-                          <span>{differentiator}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-    
-            {profile.valueSellingFramework?.roiExpectations && (
-              <div className={styles.analysisCard}>
-                <h3>ROI Expectations</h3>
-                <div className={styles.roiGrid}>
-                  {Object.entries(profile.valueSellingFramework.roiExpectations).map(([key, value]) => (
-                    value && (
-                      <div key={key} className={styles.roiItem}>
-                        <label>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
-                        <span>{value as string}</span>
-                      </div>
-                    )
-                  ))}
+                <h3>Strategic Initiative Contacts</h3>
+                <div style={{
+                  padding: 'var(--spacing-xl)',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary)',
+                  fontStyle: 'italic'
+                }}>
+                  <p>No contact information available for strategic initiatives.</p>
+                  <p style={{ marginTop: 'var(--spacing-md)', fontSize: '0.9rem' }}>
+                    Add strategic initiatives with contact details by editing this profile to see key stakeholder information here.
+                  </p>
                 </div>
               </div>
             )}
+
+            <div className={styles.analysisCard}>
+              <h3>Profile Summary</h3>
+              <div style={{ padding: 'var(--spacing-md)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)' }}>Company</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>{profile.companyName}</p>
+                  </div>
+                  <div>
+                    <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)' }}>Industry</label>
+                    <p style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>{profile.industry}</p>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)' }}>Total Strategic Initiatives</label>
+                  <p style={{ margin: '0.25rem 0', fontSize: '1.1rem' }}>
+                    {profile.strategicInitiatives?.length || 0} initiative{(profile.strategicInitiatives?.length || 0) === 1 ? '' : 's'} identified
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       );
 }
 
 const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
-    const businessProblems = profile.problems?.businessProblems || [];
-    const agenticOpportunities = profile.problems?.agenticOpportunities || [];
-    const currentArchitecture = profile.currentArchitecture || {};
-  
     return (
       <div className={styles.tabContent}>
-        {(businessProblems.length > 0 || agenticOpportunities.length > 0) && (
-          <div className={styles.problemsOpportunitiesSection}>
-            <div className={styles.problemsOpportunitiesGrid}>
-              {businessProblems.length > 0 && (
-                <div className={styles.problemsSection}>
-                  <h3>Current Business Problems</h3>
-                  <div className={styles.problemsList}>
-                    {businessProblems.map((problem: string, index: number) => (
-                      <div key={index} className={styles.problemCard}>
-                        <div className={styles.problemText}>{problem}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-  
-              {agenticOpportunities.length > 0 && (
-                <div className={styles.opportunitiesSection}>
-                  <h3>Agentic AI Opportunities</h3>
-                  <div className={styles.opportunitiesList}>
-                    {agenticOpportunities.map((opportunity: string, index: number) => (
-                      <div key={index} className={styles.opportunityCard}>
-                        <div className={styles.opportunityText}>{opportunity}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+        <div className={styles.opportunitiesPlaceholder}>
+          <h3>AI Opportunity Analysis</h3>
+          <div style={{
+            padding: 'var(--spacing-xl)',
+            textAlign: 'center',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 'var(--border-radius-lg)',
+            margin: 'var(--spacing-lg) 0'
+          }}>
+            <div style={{ 
+              fontSize: '3rem', 
+              marginBottom: 'var(--spacing-lg)',
+              opacity: 0.5 
+            }}>🤖</div>
+            <h4 style={{ 
+              color: 'var(--text-primary)', 
+              marginBottom: 'var(--spacing-md)',
+              fontSize: '1.5rem'
+            }}>AI Opportunities Coming Soon</h4>
+            <p style={{ 
+              color: 'var(--text-secondary)', 
+              lineHeight: '1.6',
+              maxWidth: '600px',
+              margin: '0 auto var(--spacing-lg) auto'
+            }}>
+              This section will analyze your company's strategic initiatives and profile information to identify specific AI transformation opportunities tailored to your business context.
+            </p>
+            <div style={{
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: 'var(--border-radius)',
+              padding: 'var(--spacing-md)',
+              margin: 'var(--spacing-lg) auto',
+              maxWidth: '500px'
+            }}>
+              <h5 style={{ 
+                color: 'var(--text-primary)', 
+                marginBottom: 'var(--spacing-sm)',
+                fontSize: '1.1rem'
+              }}>What we'll analyze:</h5>
+              <ul style={{ 
+                textAlign: 'left', 
+                color: 'var(--text-secondary)',
+                paddingLeft: 'var(--spacing-lg)'
+              }}>
+                <li>Strategic initiatives and business priorities</li>
+                <li>Industry-specific AI use cases</li>
+                <li>Company size and resource considerations</li>
+                <li>Potential ROI and implementation roadmap</li>
+              </ul>
             </div>
           </div>
-        )}
-  
-        {(currentArchitecture.coreSystems?.length > 0 || currentArchitecture.aiReadiness) && (
-          <div className={styles.architectureSection}>
-            <h3>Current Architecture & AI Readiness</h3>
-            <div className={styles.architectureContent}>
-              {currentArchitecture.coreSystems?.length > 0 && (
-                <div className={styles.systemsList}>
-                  <h4>Core Systems:</h4>
-                  <ul>
-                    {currentArchitecture.coreSystems.map((system: string, index: number) => (
-                      <li key={index}>{system}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {currentArchitecture.aiReadiness && (
-                <div className={styles.readinessAssessment}>
-                  <h4>AI Readiness:</h4>
-                  <p>{currentArchitecture.aiReadiness}</p>
-                </div>
-              )}
-              {currentArchitecture.technicalDebt && (
-                <div className={styles.technicalDebt}>
-                  <h4>Technical Debt:</h4>
-                  <p>{currentArchitecture.technicalDebt}</p>
-                </div>
-              )}
+        </div>
+
+        {profile.strategicInitiatives && profile.strategicInitiatives.length > 0 && (
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-primary)',
+            borderRadius: 'var(--border-radius-lg)',
+            padding: 'var(--spacing-lg)',
+            marginTop: 'var(--spacing-lg)'
+          }}>
+            <h4 style={{ color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
+              Current Strategic Context
+            </h4>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--spacing-md)' }}>
+              Based on your {profile.strategicInitiatives.length} strategic initiative{profile.strategicInitiatives.length === 1 ? '' : 's'}, we'll identify AI opportunities that align with your business priorities.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
+              {profile.strategicInitiatives.map((initiative: any, index: number) => (
+                <span 
+                  key={index}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'var(--glass-bg)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: 'var(--border-radius)',
+                    fontSize: '0.9rem',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  {initiative.initiative || `Initiative ${index + 1}`}
+                </span>
+              ))}
             </div>
-          </div>
-        )}
-  
-        {businessProblems.length === 0 && agenticOpportunities.length === 0 && (
-          <div className={styles.emptyOpportunities}>
-            <p>No problems or agentic AI opportunities identified yet. Complete the Problems & Opportunities section to see the analysis.</p>
           </div>
         )}
       </div>
@@ -497,7 +468,7 @@ export default function ProfileDetailPage() {
       </div>
 
       <div className={styles.tabBar}>
-        <div className={styles.tabContent}>
+        <div className={styles.tabNavigation}>
           <button 
             className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`}
             onClick={() => setActiveTab('overview')}
@@ -545,9 +516,9 @@ export default function ProfileDetailPage() {
 
       <div className={styles.footer}>
         <div className={styles.footerContent}>
-          <span>Created: {formatDate(profile.createdAt)}</span>
+          <span>Created: {formatDate(profile.createdAt || '')}</span>
           <span>•</span>
-          <span>Updated: {formatDate(profile.updatedAt)}</span>
+          <span>Updated: {formatDate(profile.updatedAt || '')}</span>
           <span>•</span>
           <span>ID: {profile.id}</span>
         </div>

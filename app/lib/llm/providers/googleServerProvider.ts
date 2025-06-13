@@ -9,13 +9,50 @@ export class GoogleServerProvider {
   private model: string;
   private baseUrl: string;
 
+  // Valid model mappings for API compatibility
+  private static readonly MODEL_MAPPINGS: { [key: string]: string } = {
+    'gemini-1.5-flash': 'gemini-1.5-flash',
+    'gemini-1.5-pro': 'gemini-1.5-pro',
+    'gemini-2.0-flash': 'gemini-2.0-flash',
+    'gemini-1.5-flash-8b': 'gemini-1.5-flash-8b',
+    // 2.5 models are still in preview - use correct preview names from API docs
+    'gemini-2.5-pro': 'gemini-2.5-pro-preview-06-05',  // Map to actual preview model
+    'gemini-2.5-pro-preview-06-05': 'gemini-2.5-pro-preview-06-05',  // Direct mapping
+    'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',  // Map to actual preview model
+    'gemini-2.5-flash-preview-05-20': 'gemini-2.5-flash-preview-05-20',  // Direct mapping
+    // Common fallbacks - use stable models for reliability
+    'gemini-pro': 'gemini-1.5-pro',  // Use stable 1.5 Pro
+    'gemini-flash': 'gemini-1.5-flash'  // Use stable 1.5 Flash
+  };
+
   constructor({ apiKey, model = 'gemini-1.5-flash', baseUrl = 'https://generativelanguage.googleapis.com/v1beta' }: { apiKey: string, model?: string, baseUrl?: string }) {
     if (!apiKey) {
       throw new Error('Google Gemini API key must be provided.');
     }
     this.apiKey = apiKey;
-    this.model = model;
+    
+    // Map model name to API-compatible version
+    this.model = GoogleServerProvider.MODEL_MAPPINGS[model] || model;
+    console.log(`[GoogleServerProvider] Model mapping: ${model} -> ${this.model}`);
+    
     this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Validates if a model name is supported
+   * @param {string} modelName - The model name to validate
+   * @returns {boolean} True if model is supported
+   */
+  private isValidModel(modelName: string): boolean {
+    const validModels = [
+      // Stable models
+      'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash-8b',
+      // Preview models (correct names from API docs)
+      'gemini-2.5-pro-preview-06-05', 'gemini-2.5-flash-preview-05-20',
+      // Common aliases
+      'gemini-pro', 'gemini-flash'
+    ];
+    return validModels.includes(modelName);
   }
 
   /**
@@ -29,8 +66,46 @@ export class GoogleServerProvider {
     if (!this.apiKey) {
       throw new Error('Google Gemini API key not configured.');
     }
+
+    // Validate model
+    if (!this.isValidModel(this.model)) {
+      console.warn(`[GoogleServerProvider] Model ${this.model} may not be supported. Attempting anyway...`);
+    }
     
     const finalPrompt = `${systemPrompt}\n\n${userPrompt}\n\nPlease provide the output in a single, valid JSON object, starting with { and ending with }. Do not include any other text or explanation.`;
+
+    const requestBody = {
+      contents: [{
+        parts: [{ text: finalPrompt }]
+      }],
+      generationConfig: {
+        temperature: options.temperature || 0.7,
+        maxOutputTokens: options.max_tokens || 4000,
+        candidateCount: 1,
+        stopSequences: [],
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH", 
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        }
+      ]
+    };
+
+    console.log(`[GoogleServerProvider] Making request to model: ${this.model}`);
+    console.log(`[GoogleServerProvider] Request URL: ${this.baseUrl}/models/${this.model}:generateContent`);
 
     try {
       const response = await fetch(`${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`, {
@@ -38,53 +113,101 @@ export class GoogleServerProvider {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: finalPrompt }]
-          }],
-          generationConfig: {
-            temperature: options.temperature || 0.7,
-            maxOutputTokens: options.max_tokens || 4000,
-          }
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log(`[GoogleServerProvider] Response status: ${response.status}`);
+
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-        throw new Error(`Google Gemini API error: ${response.status} - ${error.error?.message || 'Unknown error'}`);
+        const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+        console.error('[GoogleServerProvider] API Error Response:', errorData);
+        
+        // Handle specific Gemini error cases
+        if (response.status === 404) {
+          const fallbackModel = 'gemini-1.5-flash';
+          console.warn(`[GoogleServerProvider] Model ${this.model} not found. Suggesting fallback to ${fallbackModel}`);
+          throw new Error(`Model '${this.model}' not found. Try using '${fallbackModel}' instead. Original error: ${errorData.error?.message || 'Model not available'}`);
+        } else if (response.status === 400) {
+          throw new Error(`Invalid request to Gemini API. Check model name '${this.model}' and request format. Error: ${errorData.error?.message || 'Bad request'}`);
+        } else if (response.status === 403) {
+          throw new Error(`Gemini API access denied. Check your API key permissions. Error: ${errorData.error?.message || 'Forbidden'}`);
+        } else if (response.status === 429) {
+          throw new Error(`Gemini API rate limit exceeded. Please try again later. Error: ${errorData.error?.message || 'Rate limited'}`);
+        }
+        
+        throw new Error(`Google Gemini API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
-      console.log('[GoogleServerProvider] Full API response:', JSON.stringify(data, null, 2));
+      console.log('[GoogleServerProvider] Response received, candidates:', data.candidates?.length || 0);
       
+      // Enhanced error checking for blocked content
+      if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+        console.warn('[GoogleServerProvider] Content was blocked by safety filters');
+        throw new Error('Content was blocked by Gemini safety filters. Try rephrasing your request.');
+      }
+      
+      if (data.candidates?.[0]?.finishReason === 'RECITATION') {
+        console.warn('[GoogleServerProvider] Content blocked due to recitation concerns');
+        throw new Error('Content blocked due to potential copyright concerns. Try using more original content.');
+      }
+
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      console.log('[GoogleServerProvider] Extracted content:', content);
+      console.log('[GoogleServerProvider] Extracted content length:', content?.length || 0);
       
       if (!content) {
         console.error('[GoogleServerProvider] No content in response. Full response structure:', {
           hasCandidates: !!data.candidates,
           candidatesLength: data.candidates?.length || 0,
           candidate0: data.candidates?.[0],
+          finishReason: data.candidates?.[0]?.finishReason,
           contentPath: data.candidates?.[0]?.content,
           partsPath: data.candidates?.[0]?.content?.parts
         });
-        throw new Error('No content received from Google Gemini API');
+        throw new Error('No content received from Google Gemini API. Check model availability and safety settings.');
       }
 
-      // Google Gemini might wrap JSON in markdown code blocks, so we need to strip them
+      // Enhanced content cleaning for JSON extraction
       let cleanedContent = content.trim();
       
-      // Remove markdown code block markers if present
+      // Remove various markdown code block formats
       if (cleanedContent.startsWith('```json')) {
         cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
       } else if (cleanedContent.startsWith('```')) {
         cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
       }
 
-      return JSON.parse(cleanedContent);
+      // Remove any leading/trailing explanatory text
+      const jsonStart = cleanedContent.indexOf('{');
+      const jsonEnd = cleanedContent.lastIndexOf('}');
+      
+      if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+        cleanedContent = cleanedContent.substring(jsonStart, jsonEnd + 1);
+      }
+
+      console.log('[GoogleServerProvider] Cleaned content for JSON parsing:', cleanedContent.substring(0, 200) + '...');
+
+      try {
+        return JSON.parse(cleanedContent);
+      } catch (parseError) {
+        console.error('[GoogleServerProvider] JSON parsing failed:', parseError);
+        console.error('[GoogleServerProvider] Content that failed to parse:', cleanedContent);
+        throw new Error(`Failed to parse JSON response from Gemini: ${parseError}. Raw content: ${cleanedContent.substring(0, 200)}...`);
+      }
       
     } catch (error: any) {
-      console.error('Google Server Provider Error:', error);
+      console.error('[GoogleServerProvider] Generation error:', error);
+      
+      // Re-throw our custom errors
+      if (error.message.includes('Model ') || error.message.includes('Gemini API')) {
+        throw error;
+      }
+      
+      // Handle network errors
+      if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+        throw new Error(`Network error connecting to Gemini API: ${error.message}`);
+      }
+      
       throw new Error(`Failed to generate JSON from Google Gemini: ${error.message}`);
     }
   }
@@ -107,43 +230,42 @@ export class GoogleServerProvider {
    */
   static async fetchAvailableModels() {
     try {
-      // Google Gemini API requires API key to list models, so we return a curated list
-      // This list is based on the official Google AI Studio documentation
+      // Updated model list with correct names from official API documentation
       const geminiModels = [
         {
           id: 'gemini-1.5-flash',
-          name: 'Gemini 1.5 Flash (Recommended)',
-          description: 'Fast and versatile model for most use cases',
+          name: 'Gemini 1.5 Flash (Recommended & Stable)',
+          description: 'Fast and versatile model for most use cases with proven reliability',
           created: null,
         },
         {
           id: 'gemini-1.5-pro',
-          name: 'Gemini 1.5 Pro (Advanced)',
-          description: 'Advanced reasoning and complex task handling',
+          name: 'Gemini 1.5 Pro (Stable)',
+          description: 'Advanced reasoning and complex task handling, reliable for production use',
           created: null,
         },
         {
           id: 'gemini-2.0-flash',
-          name: 'Gemini 2.0 Flash (Latest Stable)',
-          description: 'Latest stable Gemini 2.0 model with improved performance',
-          created: null,
-        },
-        {
-          id: 'gemini-1.5-flash-8b',
-          name: 'Gemini 1.5 Flash 8B (Fast & Efficient)',
-          description: 'Optimized for speed and efficiency',
+          name: 'Gemini 2.0 Flash (Stable)',
+          description: 'Next generation features, speed, and enhanced performance',
           created: null,
         },
         {
           id: 'gemini-2.5-pro-preview-06-05',
-          name: 'Gemini 2.5 Pro Preview (Most Advanced)',
-          description: 'Cutting-edge preview model with latest capabilities',
+          name: 'Gemini 2.5 Pro Preview (Latest)',
+          description: 'Our most intelligent model with enhanced reasoning - Preview version',
           created: null,
         },
         {
           id: 'gemini-2.5-flash-preview-05-20',
-          name: 'Gemini 2.5 Flash Preview (Experimental)',
-          description: 'Experimental preview of Gemini 2.5 Flash',
+          name: 'Gemini 2.5 Flash Preview (Latest)',
+          description: 'Fast and intelligent model with 2.5 generation improvements - Preview version',
+          created: null,
+        },
+        {
+          id: 'gemini-1.5-flash-8b',
+          name: 'Gemini 1.5 Flash 8B (Efficient)',
+          description: 'Optimized for speed and efficiency with lower costs',
           created: null,
         },
       ];

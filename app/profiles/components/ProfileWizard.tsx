@@ -28,9 +28,10 @@ interface ProfileWizardProps {
     onCancel: () => void;
     initialData?: Profile | null;
     isEditMode?: boolean;
+    onSave?: (profile: Profile) => void;
 }
 
-const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialData, isEditMode = false }) => {
+const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialData, isEditMode = false, onSave }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [profileData, setProfileData] = useState<Profile>(initialData || {
     id: '',
@@ -113,6 +114,18 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
       onComplete(profile);
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} profile:`, error);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!onSave || !isEditMode || !initialData?.id) return;
+    
+    try {
+      const profile = await ProfileService.updateProfile(initialData.id, profileData);
+      onSave(profile);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please try again.');
     }
   };
 
@@ -371,12 +384,49 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
             border: '1px solid var(--border-primary)'
           }}>
             <div>
-              <h3 style={{
-                margin: '0 0 var(--spacing-md) 0',
-                fontSize: '1.25rem',
-                fontWeight: 'var(--font-weight-semibold)',
-                color: 'var(--text-primary)'
-              }}>Markdown Preview</h3>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--spacing-md)'
+              }}>
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '1.25rem',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  color: 'var(--text-primary)'
+                }}>Markdown Preview</h3>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(markdownPreview);
+                      // Show brief success feedback
+                      const button = document.activeElement as HTMLButtonElement;
+                      const originalText = button.textContent;
+                      button.textContent = 'Copied!';
+                      button.style.background = 'var(--accent-green)';
+                      setTimeout(() => {
+                        button.textContent = originalText;
+                        button.style.background = '';
+                      }, 2000);
+                    } catch (error) {
+                      console.error('Failed to copy to clipboard:', error);
+                      alert('Failed to copy to clipboard');
+                    }
+                  }}
+                  className="btn btn-secondary"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: 'var(--spacing-xs) var(--spacing-sm)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-xs)'
+                  }}
+                >
+                  📋 Copy
+                </button>
+              </div>
               <pre style={{
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-primary)',
@@ -456,6 +506,19 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
             >
               {currentStep === 0 ? 'Cancel' : 'Back'}
             </button>
+
+            {isEditMode && onSave && (
+              <button 
+                type="button" 
+                onClick={handleSave}
+                className="btn btn-neutral"
+                style={{
+                  fontSize: '0.875rem'
+                }}
+              >
+                Save
+              </button>
+            )}
 
             {currentStep < WIZARD_STEPS.length - 1 ? (
               <button 

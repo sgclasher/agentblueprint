@@ -113,6 +113,8 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
         </div>
       </div>
 
+
+
       {/* Action Buttons */}
       <div style={{ 
         background: 'var(--bg-secondary)', 

@@ -49,6 +49,16 @@ export default function EditProfilePage() {
     router.push(`/profiles/${profileId}`);
   };
 
+  const handleSave = (savedProfile: Profile) => {
+    setProfile(savedProfile);
+    // Show a brief success message or feedback
+    const message = document.createElement('div');
+    message.textContent = 'Profile saved successfully!';
+    message.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--accent-green); color: white; padding: 12px 20px; border-radius: 8px; z-index: 9999; font-weight: 500;';
+    document.body.appendChild(message);
+    setTimeout(() => document.body.removeChild(message), 3000);
+  };
+
   if (isLoading) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -143,6 +153,7 @@ export default function EditProfilePage() {
         onCancel={handleCancel}
         initialData={profile}
         isEditMode={true}
+        onSave={handleSave}
       />
     </div>
   );

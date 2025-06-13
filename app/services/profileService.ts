@@ -163,16 +163,71 @@ export class ProfileService {
 
   static async _generateTimelineFromProfile(profile: Profile, scenarioType: ScenarioType = 'balanced'): Promise<Timeline> {
     try {
-      const profileMarkdown = markdownService.generateMarkdown(profile);
+      console.log(`🔄 [ProfileService] Generating timeline via API for scenario: ${scenarioType}`);
       
-      const businessProfile = this.extractBusinessProfile(profile);
+      // Get current user session for authorization
+      const { supabase } = await import('../lib/supabase');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      const { TimelineService } = await import('./timelineService');
-      const timeline = await TimelineService.generateTimelineFromMarkdown(profileMarkdown, scenarioType, businessProfile);
+      if (sessionError || !session) {
+        console.error('❌ [ProfileService] Authentication failed for timeline generation:', sessionError?.message);
+        throw new Error('Authentication required for timeline generation. Please sign in.');
+      }
+
+      // Prepare request headers with authorization
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
       
-      return this.enhanceTimelineWithProfile(timeline, profile);
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      // Call the timeline generation API route (server-side)
+      console.log(`🌐 [ProfileService] Making API call to generate timeline...`);
+      
+      const response = await fetch('/api/timeline/generate-from-profile', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          profile: profile,
+          scenarioType: scenarioType,
+          forceRegenerate: true // Always generate fresh for direct calls
+        }),
+        credentials: 'same-origin'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ [ProfileService] Timeline API error:', errorData);
+        throw new Error(errorData.error || `Timeline generation failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Timeline generation failed');
+      }
+
+      console.log(`✅ [ProfileService] Timeline generated successfully via API`);
+      
+      // Return the timeline from API response
+      return result.timeline;
+      
     } catch (error) {
-      console.error('Error generating timeline from profile:', error);
+      console.error('❌ [ProfileService] Error generating timeline from profile:', error);
+      
+      // Enhanced error messages for common issues
+      if (error instanceof Error) {
+        if (error.message.includes('Authentication')) {
+          throw new Error('Please sign in to generate timelines.');
+        } else if (error.message.includes('AI provider not configured')) {
+          throw new Error('No AI provider configured. Please configure an AI provider in admin settings.');
+        } else if (error.message.includes('rate limit')) {
+          throw new Error('Rate limit exceeded. Please try again in a few minutes.');
+        }
+      }
+      
       throw error;
     }
   }
@@ -181,7 +236,7 @@ export class ProfileService {
     return {
       companyName: profile.companyName,
       industry: profile.industry,
-      companySize: this.mapCompanySize(profile.size),
+      companySize: this.mapCompanySize(profile.size || 'medium'),
       aiMaturityLevel: this.calculateAIMaturity(profile),
       primaryGoals: this.extractPrimaryGoals(profile),
       currentTechStack: profile.currentTechnology || [],
@@ -269,8 +324,8 @@ export class ProfileService {
     }
     
     return opportunities.sort((a, b) => {
-      const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
+      const priorityOrder: { [key: string]: number } = { 'High': 3, 'Medium': 2, 'Low': 1 };
+      return (priorityOrder[b.priority] || 1) - (priorityOrder[a.priority] || 1);
     });
   }
 
