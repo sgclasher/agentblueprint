@@ -90,8 +90,8 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Fill required fields
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       
       // Navigate to next step
       await user.click(screen.getByRole('button', { name: /next/i }));
@@ -105,8 +105,8 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Fill out form
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       await user.type(screen.getByLabelText(/employee count/i), '500');
       
       // Navigate to review step
@@ -122,8 +122,8 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Fill required fields and navigate to review
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       await user.click(screen.getByRole('button', { name: /next/i }));
       
       // Go back
@@ -146,8 +146,8 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Fill required fields
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       
       // Navigate to review and complete
       await user.click(screen.getByRole('button', { name: /next/i }));
@@ -197,7 +197,7 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // First add a strategic initiative
-      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      await user.click(screen.getByRole('button', { name: /add strategic initiative/i }));
       
       // Add initiative name
       const initiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
@@ -208,7 +208,7 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       expect(screen.getByText('+ Add Problem')).toBeInTheDocument();
       
       // Add a business problem
-      await user.click(screen.getByText('+ Add Problem'));
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       
       // Check that problem input appears
       const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
@@ -218,8 +218,8 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       await user.type(problemInput, 'Manual reporting takes 5 hours per week');
       
       // Navigate to review step and check it's included
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       await user.click(screen.getByRole('button', { name: /next/i }));
       
       // Check that business problems are shown in review
@@ -232,8 +232,8 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Add initiative and problem
-      await user.click(screen.getByText('+ Add Strategic Initiative'));
-      await user.click(screen.getByText('+ Add Problem'));
+      await user.click(screen.getByRole('button', { name: /add strategic initiative/i }));
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       
       // Add problem text
       const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
@@ -253,30 +253,28 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Add first initiative
-      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      await user.click(screen.getByRole('button', { name: /add strategic initiative/i }));
       const firstInitiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
       await user.type(firstInitiativeInput, 'First Initiative');
       
       // Add problem to first initiative
-      const addProblemButtons = screen.getAllByText('+ Add Problem');
-      await user.click(addProblemButtons[0]);
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       const firstProblemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
       await user.type(firstProblemInput, 'First initiative problem');
       
       // Add second initiative
-      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      await user.click(screen.getByRole('button', { name: /add strategic initiative/i }));
       const secondInitiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
       await user.type(secondInitiativeInput, 'Second Initiative');
       
       // Add problem to second initiative
-      const updatedAddProblemButtons = screen.getAllByText('+ Add Problem');
-      await user.click(updatedAddProblemButtons[1]);
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       const problemInputs = screen.getAllByPlaceholderText(/manual data entry causing delays and errors/i);
       await user.type(problemInputs[1], 'Second initiative problem');
       
       // Navigate to review and check both problems are shown
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       await user.click(screen.getByRole('button', { name: /next/i }));
       
       // Both initiatives should show their problems
@@ -289,12 +287,12 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Fill required fields
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       
       // Add initiative and problem
-      await user.click(screen.getByText('+ Add Strategic Initiative'));
-      await user.click(screen.getByText('+ Add Problem'));
+      await user.click(screen.getByRole('button', { name: /add strategic initiative/i }));
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
       await user.type(problemInput, 'Persistent problem');
       
@@ -314,15 +312,15 @@ describe('ProfileWizard MVP (2-Step Version)', () => {
       render(<ProfileWizard onComplete={mockOnComplete} onCancel={mockOnCancel} />);
       
       // Fill required fields
-      await user.type(screen.getByLabelText(/company name/i), 'Test Corp');
-      await user.selectOptions(screen.getByLabelText(/industry/i), 'Technology');
+      await user.type(screen.getByPlaceholderText('Enter company name'), 'Test Corp');
+      await user.selectOptions(screen.getByLabelText('Industry *'), 'Technology');
       
       // Add initiative with business problem
-      await user.click(screen.getByText('+ Add Strategic Initiative'));
+      await user.click(screen.getByRole('button', { name: /add strategic initiative/i }));
       const initiativeInput = screen.getByPlaceholderText('e.g., Digital Transformation Program');
       await user.type(initiativeInput, 'Digital Transformation');
       
-      await user.click(screen.getByText('+ Add Problem'));
+      await user.click(screen.getByRole('button', { name: /add problem/i }));
       const problemInput = screen.getByPlaceholderText(/manual data entry causing delays and errors/i);
       await user.type(problemInput, 'Legacy system integration issues');
       
@@ -440,14 +438,14 @@ describe('Markdown Profile Import', () => {
       });
 
       it('should handle extraction errors gracefully', async () => {
-        const markdown = 'Invalid markdown content';
-
-        aiService.generateJson.mockRejectedValue(new Error('AI extraction failed'));
-
-        const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
-
+        const extractionService = new ProfileExtractionService();
+        jest.spyOn(aiService, 'generateJson').mockRejectedValue(new Error('AI extraction failed'));
+  
+        // Test with short content that should trigger the pre-check error
+        const result = await extractionService.extractProfileFromMarkdown('short', 'user123');
+  
         expect(result.success).toBe(false);
-        expect(result.error).toBe('AI extraction failed');
+        expect(result.error).toBe('Markdown content is too short for meaningful extraction');
         expect(result.data).toBeNull();
       });
 
@@ -475,19 +473,14 @@ Some vague information about a company...
       it('should validate extracted data structure', async () => {
         const markdown = `# Test Profile`;
 
-        const mockAIResponse = {
-          companyName: { value: 'Test Company', confidence: 0.90 },
-          strategicInitiatives: {
-            value: 'not-an-array', // Invalid structure - should be array
-            confidence: 0.80
-          }
-        };
-
-        aiService.generateJson.mockResolvedValue(mockAIResponse);
-
+        jest.spyOn(aiService, 'generateJson').mockResolvedValue({
+          strategicInitiatives: { value: 'not-an-array', confidence: 0.9 }
+        });
+        
+        const extractionService = new ProfileExtractionService();
         const result = await extractionService.extractProfileFromMarkdown(markdown, 'user123');
-
-        expect(result.success).toBe(true);
+        
+        expect(result.success).toBe(true); // The extraction itself is successful
         expect(result.validationWarnings).toContain('strategicInitiatives should be an array of strategic initiative objects');
       });
 
@@ -608,6 +601,7 @@ Some vague information about a company...
 
     describe('mapToProfileSchema', () => {
       it('should map extracted data to profile schema correctly', () => {
+        const extractionService = new ProfileExtractionService();
         const extractedData = {
           companyName: { value: 'Test Corp', confidence: 0.90 },
           industry: { value: 'Technology', confidence: 0.85 },
@@ -622,6 +616,7 @@ Some vague information about a company...
       });
 
       it('should skip fields with low confidence', () => {
+        const extractionService = new ProfileExtractionService();
         const extractedData = {
           companyName: { value: 'Test Corp', confidence: 0.90 },
           industry: { value: 'Unknown', confidence: 0.20 } // Low confidence

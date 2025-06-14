@@ -6,8 +6,44 @@ import {
   PROFILE_FIELD_DEFINITIONS,
   validateExtractedField
 } from '../lib/llm/prompts/profileExtraction';
+import { Profile } from './types';
+
+interface ExtractedField {
+  value: any;
+  confidence: number;
+}
+
+interface ExtractionResult {
+  success: boolean;
+  data: Record<string, ExtractedField> | null;
+  hasLowConfidenceFields: boolean;
+  lowConfidenceFields: string[];
+  validationWarnings: string[];
+  averageConfidence: number;
+  extractionTime: number;
+  provider?: string;
+  recommendations?: any;
+  error?: string;
+  errorType?: string;
+  troubleshooting?: string[];
+}
+
+interface ExtractionAnalysis {
+  hasLowConfidenceFields: boolean;
+  lowConfidenceFields: string[];
+  validationWarnings: string[];
+  averageConfidence: number;
+}
+
+interface EnhancedError {
+  type: string;
+  message: string;
+  troubleshooting: string[];
+}
 
 export class ProfileExtractionService {
+  public confidenceThreshold: number;
+
   constructor() {
     this.confidenceThreshold = 0.3; // Minimum confidence to include a field
   }
@@ -19,7 +55,7 @@ export class ProfileExtractionService {
    * @param {string} preferredProvider - Optional preferred AI provider
    * @returns {Promise<Object>} Extraction result with confidence scores
    */
-  async extractProfileFromMarkdown(markdown, userId, preferredProvider) {
+  async extractProfileFromMarkdown(markdown: string, userId: string, preferredProvider?: string): Promise<ExtractionResult> {
     const startTime = Date.now();
     
     try {
@@ -64,7 +100,7 @@ export class ProfileExtractionService {
         provider: preferredProvider,
         recommendations
       };
-    } catch (error) {
+    } catch (error: any) {
       const extractionTime = Date.now() - startTime;
       
       console.error(`❌ [ProfileExtraction] Error after ${extractionTime}ms:`, error);
@@ -79,6 +115,10 @@ export class ProfileExtractionService {
         provider: preferredProvider,
         extractionTime,
         data: null,
+        hasLowConfidenceFields: false,
+        lowConfidenceFields: [],
+        validationWarnings: [],
+        averageConfidence: 0,
         troubleshooting: enhancedError.troubleshooting
       };
     }
@@ -89,9 +129,9 @@ export class ProfileExtractionService {
    * @param {Object} extractedData - The extracted data with confidence scores
    * @returns {Object} Analysis results
    */
-  analyzeExtraction(extractedData) {
-    const lowConfidenceFields = [];
-    const validationWarnings = [];
+  analyzeExtraction(extractedData: Record<string, ExtractedField>): ExtractionAnalysis {
+    const lowConfidenceFields: string[] = [];
+    const validationWarnings: string[] = [];
     let totalConfidence = 0;
     let fieldCount = 0;
 
@@ -111,7 +151,7 @@ export class ProfileExtractionService {
         validationWarnings.push(...warnings);
 
         // Validate field structure if definition exists
-        const fieldDef = PROFILE_FIELD_DEFINITIONS[fieldName];
+        const fieldDef = (PROFILE_FIELD_DEFINITIONS as any)[fieldName];
         if (fieldDef && field.value !== undefined) {
           const basicWarnings = validateExtractedField(fieldName, field.value, fieldDef);
           validationWarnings.push(...basicWarnings);
@@ -133,8 +173,8 @@ export class ProfileExtractionService {
    * @param {any} value - The extracted value
    * @returns {string[]} Array of validation warnings
    */
-  validateComplexField(fieldName, value) {
-    const warnings = [];
+  validateComplexField(fieldName: string, value: any): string[] {
+    const warnings: string[] = [];
 
     // Validate strategic initiatives structure
     if (fieldName === 'strategicInitiatives') {
@@ -175,7 +215,7 @@ export class ProfileExtractionService {
               warnings.push(`${fieldName}[${index}].businessProblems should be an array of problem strings`);
             } else {
               // Validate each business problem
-              initiative.businessProblems.forEach((problem, problemIndex) => {
+              initiative.businessProblems.forEach((problem: any, problemIndex: number) => {
                 if (typeof problem !== 'string' || problem.trim().length === 0) {
                   warnings.push(`${fieldName}[${index}].businessProblems[${problemIndex}] should be a non-empty string`);
                 }
@@ -210,8 +250,8 @@ export class ProfileExtractionService {
    * @param {number} minConfidence - Minimum confidence threshold
    * @returns {Object} Profile object
    */
-  mapToProfileSchema(extractedData, minConfidence = 0.3) {
-    const profile = {};
+  mapToProfileSchema(extractedData: Record<string, ExtractedField>, minConfidence: number = 0.3): Partial<Profile> {
+    const profile: Partial<Profile> = {};
 
     if (!extractedData || typeof extractedData !== 'object') {
       console.warn('⚠️ mapToProfileSchema: Invalid extractedData provided');
@@ -249,7 +289,7 @@ export class ProfileExtractionService {
         
         // Handle nested field paths (e.g., "expectedOutcome.strategicInitiatives")
         const parts = fieldPath.split('.');
-        let current = profile;
+        let current: any = profile;
         
         for (let i = 0; i < parts.length - 1; i++) {
           if (!current[parts[i]]) {
@@ -274,7 +314,7 @@ export class ProfileExtractionService {
    * @param {any} value - The extracted value
    * @returns {any|null} Cleaned value or null if invalid
    */
-  cleanAndValidateValue(fieldPath, value) {
+  cleanAndValidateValue(fieldPath: string, value: any): any | null {
     try {
       // Handle strategic initiatives array
       if (fieldPath.includes('strategicInitiatives')) {
@@ -304,8 +344,8 @@ export class ProfileExtractionService {
             if (Array.isArray(item.businessProblems)) {
               // Clean business problems - remove empty strings and trim
               item.businessProblems = item.businessProblems
-                .filter(problem => typeof problem === 'string' && problem.trim().length > 0)
-                .map(problem => problem.trim());
+                .filter((problem: any) => typeof problem === 'string' && problem.trim().length > 0)
+                .map((problem: string) => problem.trim());
             } else {
               // If businessProblems is not an array, initialize as empty array
               item.businessProblems = [];
@@ -354,11 +394,11 @@ export class ProfileExtractionService {
    * @param {boolean} overwriteExisting - Whether to overwrite existing values
    * @returns {Object} Merged profile
    */
-  mergeWithExistingProfile(existingProfile, extractedData, overwriteExisting = false) {
+  mergeWithExistingProfile(existingProfile: Partial<Profile>, extractedData: Record<string, ExtractedField>, overwriteExisting: boolean = false): Partial<Profile> {
     const merged = { ...existingProfile };
     const mappedData = this.mapToProfileSchema(extractedData);
 
-    const mergeRecursive = (target, source) => {
+    const mergeRecursive = (target: any, source: any) => {
       Object.keys(source).forEach(key => {
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           if (!target[key]) target[key] = {};
@@ -378,13 +418,13 @@ export class ProfileExtractionService {
    * @param {Object} extractedData - Extracted data with confidence scores
    * @returns {Object} Summary statistics
    */
-  generateExtractionSummary(extractedData) {
+  generateExtractionSummary(extractedData: Record<string, ExtractedField>): any {
     const summary = {
       totalFields: 0,
       highConfidenceFields: 0,
       mediumConfidenceFields: 0,
       lowConfidenceFields: 0,
-      extractedSections: new Set()
+      extractedSections: new Set<string>()
     };
 
     Object.entries(extractedData).forEach(([fieldName, field]) => {
@@ -405,8 +445,10 @@ export class ProfileExtractionService {
       }
     });
 
-    summary.extractedSections = Array.from(summary.extractedSections);
-    return summary;
+    return {
+        ...summary,
+        extractedSections: Array.from(summary.extractedSections)
+    };
   }
 
   /**
@@ -416,7 +458,7 @@ export class ProfileExtractionService {
    * @param {string} markdown - The markdown content
    * @returns {Object} Enhanced error information
    */
-  enhanceErrorForProvider(error, provider, markdown) {
+  enhanceErrorForProvider(error: Error, provider: string | undefined, markdown: string): EnhancedError {
     const errorMessage = error.message || 'Unknown error';
     const isGemini = provider && provider.toLowerCase().includes('gemini');
     
@@ -550,11 +592,11 @@ export class ProfileExtractionService {
    * @param {number} extractionTime - Time taken for extraction
    * @returns {Object} Provider recommendations
    */
-  generateProviderRecommendations(provider, analysis, extractionTime) {
+  generateProviderRecommendations(provider: string | undefined, analysis: ExtractionAnalysis, extractionTime: number): any {
     const recommendations = {
       performance: '',
-      alternatives: [],
-      optimizations: []
+      alternatives: [] as string[],
+      optimizations: [] as string[]
     };
 
     const isGemini = provider && provider.toLowerCase().includes('gemini');

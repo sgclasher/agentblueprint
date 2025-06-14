@@ -1,10 +1,12 @@
+import { Profile } from '../services/types';
+
 /**
  * Profile Field Mapper
  * Maps extracted AI data to the ProfileWizard schema structure
  */
 
 // Field mapping configuration
-export const FIELD_MAPPINGS = {
+export const FIELD_MAPPINGS: { direct: string[]; nested: { [key: string]: string[] }; aliases: { [key: string]: string } } = {
   // Direct mappings (field name matches exactly)
   direct: [
     'companyName',
@@ -52,8 +54,14 @@ export const FIELD_MAPPINGS = {
   }
 };
 
+type CompanySize = 'Startup' | 'Small' | 'Mid-Market' | 'Enterprise';
+
 // Company size mapping
-export const COMPANY_SIZE_MAPPINGS = {
+export const COMPANY_SIZE_MAPPINGS: {
+    patterns: { regex: RegExp; size: CompanySize }[];
+    fromEmployeeCount: (count: string) => CompanySize | null;
+    fromRevenue: (revenue: string) => CompanySize | null;
+} = {
   patterns: [
     { regex: /startup|start-up|<\s*50|1\s*-\s*49/i, size: 'Startup' },
     { regex: /small|50\s*-\s*249|SMB/i, size: 'Small' },
@@ -96,7 +104,7 @@ export const COMPANY_SIZE_MAPPINGS = {
  * @param {string} fieldName - The field name for context
  * @returns {any} Normalized value
  */
-export function normalizeFieldValue(value, fieldName) {
+export function normalizeFieldValue(value: any, fieldName: string): any {
   // Handle confidence wrapper objects
   if (value && typeof value === 'object' && 'value' in value && 'confidence' in value) {
     value = value.value;
@@ -139,10 +147,10 @@ export function normalizeFieldValue(value, fieldName) {
  * @param {any} value - The field value
  * @param {Object} profile - The profile object to update
  */
-export function mapFieldToProfile(fieldName, value, profile) {
+export function mapFieldToProfile(fieldName: string, value: any, profile: Partial<Profile>): void {
   // Check for direct mapping
   if (FIELD_MAPPINGS.direct.includes(fieldName)) {
-    profile[fieldName] = normalizeFieldValue(value, fieldName);
+    (profile as any)[fieldName] = normalizeFieldValue(value, fieldName);
     return;
   }
 
@@ -154,7 +162,7 @@ export function mapFieldToProfile(fieldName, value, profile) {
       const path = actualFieldName.split('.');
       setNestedValue(profile, path, normalizeFieldValue(value, path[path.length - 1]));
     } else {
-      profile[actualFieldName] = normalizeFieldValue(value, actualFieldName);
+      (profile as any)[actualFieldName] = normalizeFieldValue(value, actualFieldName);
     }
     return;
   }
@@ -172,7 +180,7 @@ export function mapFieldToProfile(fieldName, value, profile) {
     setNestedValue(profile, path, normalizeFieldValue(value, path[path.length - 1]));
   } else {
     // Place unmapped fields at root level
-    profile[fieldName] = normalizeFieldValue(value, fieldName);
+    (profile as any)[fieldName] = normalizeFieldValue(value, fieldName);
   }
 }
 
@@ -182,7 +190,7 @@ export function mapFieldToProfile(fieldName, value, profile) {
  * @param {Array<string>} path - The path to the value
  * @param {any} value - The value to set
  */
-function setNestedValue(obj, path, value) {
+function setNestedValue(obj: any, path: string[], value: any): void {
   let current = obj;
   
   for (let i = 0; i < path.length - 1; i++) {
@@ -200,7 +208,7 @@ function setNestedValue(obj, path, value) {
  * @param {Object} profile - The mapped profile
  * @returns {Object} Post-processed profile
  */
-export function postProcessProfile(profile) {
+export function postProcessProfile(profile: Partial<Profile>): Partial<Profile> {
   // Ensure required nested structures exist
   if (!profile.expectedOutcome) profile.expectedOutcome = {};
   if (!profile.problems) profile.problems = {};

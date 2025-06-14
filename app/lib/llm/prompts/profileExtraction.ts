@@ -1,3 +1,5 @@
+import { Profile, StrategicInitiative, SystemApplication } from "../../../services/types";
+
 export const PROFILE_EXTRACTION_SYSTEM_PROMPT = `You are an expert business analyst specialized in extracting structured client profile data from unstructured markdown documents. Your expertise includes pattern recognition, content analysis, and intelligent interpretation of business documents with special focus on identifying relationships between strategic initiatives and their associated business problems.
 
 CRITICAL MISSION: Extract ALL relevant business information, particularly:
@@ -61,7 +63,7 @@ Return the response as a JSON object where each field follows this structure:
 
 If a field cannot be found or extracted, omit it from the response.`;
 
-export const PROFILE_EXTRACTION_USER_PROMPT = (markdown) => `Extract client profile information from the following markdown document:
+export const PROFILE_EXTRACTION_USER_PROMPT = (markdown: string): string => `Extract client profile information from the following markdown document:
 
 ---
 ${markdown}
@@ -306,7 +308,18 @@ Confidence Guidelines:
 
 Remember to provide confidence scores for each extracted field based on how clearly it was stated in the document.`;
 
-export const PROFILE_FIELD_DEFINITIONS = {
+type FieldDefinition = {
+    type: 'string' | 'number' | 'array' | 'object';
+    description: string;
+    examples?: string[];
+    itemStructure?: { [key: string]: string | any };
+    recognitionPatterns?: string[];
+    enum?: string[];
+    min?: number;
+    max?: number;
+};
+
+export const PROFILE_FIELD_DEFINITIONS: { [key in keyof Omit<Profile, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'markdown'>]: FieldDefinition } = {
   // MVP Core Fields
   companyName: {
     type: 'string',
@@ -383,8 +396,8 @@ export const PROFILE_FIELD_DEFINITIONS = {
   }
 };
 
-export const validateExtractedField = (fieldName, extractedValue, fieldDefinition) => {
-  const warnings = [];
+export const validateExtractedField = (fieldName: string, extractedValue: any, fieldDefinition: FieldDefinition): string[] => {
+  const warnings: string[] = [];
 
   if (fieldDefinition.type === 'array' && !Array.isArray(extractedValue)) {
     warnings.push(`${fieldName} should be an array`);
@@ -407,4 +420,4 @@ export const validateExtractedField = (fieldName, extractedValue, fieldDefinitio
   }
 
   return warnings;
-}; 
+};

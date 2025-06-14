@@ -1,3 +1,5 @@
+import { Profile } from "../../../services/types";
+
 export const AI_OPPORTUNITIES_SYSTEM_PROMPT = `You are a senior AI transformation consultant with deep expertise in agentic AI technologies, business process optimization, and strategic implementation. Your specialized knowledge includes the latest developments in autonomous AI agents, intelligent automation, and enterprise AI applications across all industries.
 
 EXPERTISE AREAS:
@@ -85,7 +87,7 @@ TONE & APPROACH:
 - Balanced view of opportunities and challenges
 - Industry-aware and context-sensitive`;
 
-export const AI_OPPORTUNITIES_USER_PROMPT = (profile) => `Analyze the following client profile and generate a comprehensive AI opportunities assessment. Focus on identifying specific agentic AI solutions that align with their strategic initiatives, address their business problems, and leverage their existing systems infrastructure.
+export const AI_OPPORTUNITIES_USER_PROMPT = (profile: Profile): string => `Analyze the following client profile and generate a comprehensive AI opportunities assessment. Focus on identifying specific agentic AI solutions that align with their strategic initiatives, address their business problems, and leverage their existing systems infrastructure.
 
 CLIENT PROFILE:
 ---
@@ -105,8 +107,8 @@ ${index + 1}. ${initiative.initiative}
    - Timeline: ${initiative.targetTimeline || 'Not specified'}
    - Budget: ${initiative.estimatedBudget || 'Not specified'}
    - Business Problems: ${(initiative.businessProblems || []).length > 0 ? initiative.businessProblems.join('; ') : 'None specified'}
-   - Expected Outcomes: ${(initiative.expectedOutcomes || []).length > 0 ? initiative.expectedOutcomes.join('; ') : 'None specified'}
-   - Success Metrics: ${(initiative.successMetrics || []).length > 0 ? initiative.successMetrics.join('; ') : 'None specified'}
+   - Expected Outcomes: ${(initiative.expectedOutcomes && initiative.expectedOutcomes.length > 0) ? initiative.expectedOutcomes.join('; ') : 'None specified'}
+   - Success Metrics: ${(initiative.successMetrics && initiative.successMetrics.length > 0) ? initiative.successMetrics.join('; ') : 'None specified'}
 `).join('')}
 
 SYSTEMS & APPLICATIONS:
@@ -212,8 +214,37 @@ CRITICAL: You must return ONLY a valid JSON object with this exact structure:
 
 Do not include any text before or after the JSON. Return only valid JSON.`;
 
-export const validateAIOpportunitiesResponse = (response) => {
-  const warnings = [];
+interface AIOpportunity {
+    title: string;
+    description: string;
+    category: string;
+    businessImpact: {
+        primaryMetrics: string[];
+        estimatedROI: string;
+        timeToValue: string;
+        confidenceLevel: string;
+    };
+    implementation: {
+        complexity: string;
+        timeframe: string;
+        prerequisites: string[];
+        riskFactors: string[];
+    };
+    relevantInitiatives: string[];
+    aiTechnologies: string[];
+}
+
+interface AIOpportunitiesResponse {
+    executiveSummary: string;
+    opportunities: AIOpportunity[];
+    priorityRecommendations: string[];
+    industryContext: string;
+    overallReadinessScore: number;
+    nextSteps: string[];
+}
+
+export const validateAIOpportunitiesResponse = (response: AIOpportunitiesResponse): string[] => {
+  const warnings: string[] = [];
   
   if (!response.executiveSummary || response.executiveSummary.length < 200) {
     warnings.push('Executive summary should be comprehensive (200+ characters)');

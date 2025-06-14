@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { EnvDebugger } from './env-check';
+import { EnvDebugger } from './EnvDebugger';
 
-export default function DynamicEnvDebugger() {
+export default function DynamicEnvDebugger(): JSX.Element | null {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

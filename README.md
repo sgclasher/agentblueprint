@@ -22,12 +22,11 @@
 **✅ ProfileWizard MVP Optimization:** Simplified from 8 complex steps to 2 clean MVP steps (Company Overview + Review & Complete) with 7 essential fields: `companyName`, `industry`, `employeeCount`, `annualRevenue`, `primaryLocation`, `websiteUrl`, `strategicInitiatives`. Database JSONB storage handles both old complex and new simplified schemas seamlessly.
 
 **🚀 Next Steps:** 
-1. **Complete Systems/Applications Feature (In Progress)**: Finish Tasks 5-7 (Summary Step display, testing, sample data) for the new client systems tab functionality
-2. **Agentic Workflow Visualizer (Next Priority)**: ServiceNow integration, basic workflow visualization with ReactFlow, profile-to-workflow linking
-3. **Enhanced ServiceNow Capabilities**: Advanced workflow visualization, real-time data updates, export capabilities (PDF, Excel), and performance analytics
-4. **AI Opportunities Intelligence**: Analyze business problems from profiles, generate workflow recommendations, smart opportunity scoring
-5. **Expand Enterprise AI Provider Support**: Add Mistral, Cohere, Perplexity, implement provider performance analytics and cost optimization
-6. **Expand Enterprise Connectors**: Salesforce, Microsoft Dynamics, SAP integration for broader business intelligence capabilities
+1. **Agentic Workflow Visualizer (Next Priority)**: ServiceNow integration, basic workflow visualization with ReactFlow, profile-to-workflow linking
+2. **Enhanced ServiceNow Capabilities**: Advanced workflow visualization, real-time data updates, export capabilities (PDF, Excel), and performance analytics
+3. **AI Opportunities Intelligence**: Analyze business problems from profiles, generate workflow recommendations, smart opportunity scoring
+4. **Expand Enterprise AI Provider Support**: Add Mistral, Cohere, Perplexity, implement provider performance analytics and cost optimization
+5. **Expand Enterprise Connectors**: Salesforce, Microsoft Dynamics, SAP integration for broader business intelligence capabilities
 
 ## Project Overview
 
@@ -70,6 +69,9 @@ The platform positions itself as a sophisticated enterprise tool for AI transfor
 - **Cross-Device Persistence**: Timelines persist across devices and sessions through Supabase database
 - **PDF Export**: Professional timeline reports with executive-ready formatting
 - **Mobile-Responsive Design**: Optimized for all device types
+
+#### **Architecture & State Management**
+The timeline feature uses a dedicated Zustand store (`useBusinessProfileStore`) that manages the complete state of the user's interaction, including business profile data, timeline settings (like the selected scenario), the generated AI timeline, and UI states for loading and export progress. The component structure is broken down into modular pieces for headers, sidebars, forms, and the core visualization, ensuring maintainability. PDF exports are handled by a dedicated React component (`TimelinePDFTemplate.tsx`) and a secure server-side API route.
 
 ### 👥 **Client Profile Management** ✨ **(Enhanced with Business Intelligence & Systems Architecture)**
 - **ProfileWizard**: ✨ **SIMPLIFIED** - 2-step guided form with MVP business intelligence methodology
@@ -707,194 +709,4 @@ Retrieves cached AI opportunities analysis for a profile.
 
 **Authentication:** Required - JWT Bearer token
 
-**Response:** Same structure as POST endpoint with `cached: true`
-
-## Development Workflow
-
-### Branching Strategy
-```
-main (production)
-├── develop (staging)
-    ├── feature/phase-N-new-feature
-    └── fix/bug-fix-branch
-```
-
-### Code Review Process
-1. Create feature or fix branch from `develop`.
-2. Implement changes with corresponding tests.
-3. Submit a Pull Request to `develop` with a clear description.
-4. Ensure all CI checks (linting, testing) pass.
-5. Merge to `develop` after review and approval.
-6. Periodically merge `develop` into `main` for releases.
-
-## Testing
-
-The project uses a pragmatic MVP testing approach:
-
-```bash
-npm run test:smoke    # Quick 3-second verification
-npm test             # Full test suite
-npm run test:watch   # Development mode
-```
-
-**Current Status**: 6/8 tests passing with 2 pre-existing encryption client-side usage issues. All core functionality works correctly in manual testing.
-
-## Contributing
-
-1. Run `npm run test:smoke` before committing
-2. Follow existing code patterns
-3. Update documentation for new features
-4. Test manually using the checklist in `app/__tests__/features/manual-test-checklist.md`
-
-## Development Guidelines
-
-- Functional components with hooks
-- 200-line component limit
-- Comprehensive error handling
-- Clear separation of concerns between visualization, advisory, and profile features
-
-## Troubleshooting
-
-### Google Gemini Model Name Errors
-
-If you encounter a 404 error when using Google Gemini (e.g., `models/gemini-2.5-pro is not found for API version v1beta`), this means the model name is incorrect. 
-
-**Current Correct Model Names:**
-- ✅ `gemini-2.5-pro-preview-06-05` (NOT `gemini-2.5-pro`)
-- ✅ `gemini-2.5-flash-preview-05-20` (NOT `gemini-2.5-flash`)
-- ✅ `gemini-1.5-flash` (stable)
-- ✅ `gemini-1.5-pro` (stable)
-
-**Solution:**
-- Edit your Gemini provider in the admin UI and use the correct preview model names
-- The 2.5 models are still in preview status and require the full preview names
-- Always check the [official Gemini API model list](https://ai.google.dev/gemini-api/docs/models) for latest valid names
-- Save and test the connection before using
-
-### AI Opportunities Not Loading on Page Refresh
-
-**Symptoms:**
-- AI Opportunities display correctly during session
-- Disappear when page is refreshed
-- "Generate Analysis" button works but data doesn't persist
-
-**Root Cause:**
-Database access inconsistency between GET and POST handlers using different Supabase clients.
-
-**Debugging Process:**
-1. **Check Browser Console**: Look for `[AI Opportunities]` log messages
-2. **Check Server Logs**: Compare GET vs POST database query results
-3. **Verify Authentication**: Ensure JWT token is valid and user ID matches
-
-**Solution Applied:**
-- Standardized both GET and POST endpoints to use service role Supabase client
-- Added explicit user authorization (`eq('user_id', user.id)`) to all queries
-- Enhanced logging for better debugging visibility
-
-**Prevention:**
-- All new API endpoints should use consistent database access patterns
-- Follow the service role pattern documented in Security Architecture section
-
-### Database Access Pattern Issues
-
-**Common Issue**: Inconsistent behavior between client-side and server-side database access
-
-**Debugging Steps:**
-1. **Check Supabase Client Type**:
-   - Client-side: `import { supabase } from '../lib/supabase'` (uses RLS)
-   - Server-side: Service role client (bypasses RLS with explicit auth)
-
-2. **Verify User Context**:
-   ```javascript
-   console.log('[Debug] User ID:', user.id);
-   console.log('[Debug] Profile ID:', profileId);
-   ```
-
-3. **Check Database Query Results**:
-   ```javascript
-   console.log('[Debug] Query result:', { hasData: !!data, error: error?.code });
-   ```
-
-4. **Validate Authorization**:
-   - Ensure all queries include `.eq('user_id', user.id)`
-   - Check JWT token validity and expiration
-
-**Best Practices:**
-- Use service role pattern for all API routes
-- Include comprehensive logging for debugging
-- Test both authenticated and unauthenticated scenarios
-- Verify user ownership on all database operations
-
-### **Admin UI and Provider Selection**
-- The admin dashboard supports robust credential management for all AI providers
-- Provider selection is fully dynamic and works with correct model names
-- If you encounter errors, check your provider configuration and use the correct model names above
-
-### **Performance and Caching Issues**
-
-**AI Opportunities Slow Loading:**
-- Check if caching is working: Look for "cached: true" in responses
-- Verify database `opportunities_data` column has data
-- Monitor AI provider response times in logs
-
-**Timeline Generation Delays:**
-- Ensure AI provider credentials are configured correctly
-- Check for rate limiting in AI provider responses
-- Verify caching is enabled and working properly
-
----
-
-## 🎯 **Development Planning Session - December 2024**
-
-### **Current State Assessment**
-The platform has reached a significant milestone with the ProfileWizard component being production-ready and delivering real client value. During today's planning session, we evaluated the current state and determined the optimal path forward.
-
-**✅ ProfileWizard Achievement Summary:**
-- **Production-Ready Status**: 7 essential MVP fields, Phase 1 Business Intelligence, AI-powered markdown import
-- **Real Client Value**: 2-step process, comprehensive strategic initiative tracking, professional output
-- **Technical Excellence**: Backward compatibility, reliable AI integration, excellent user experience
-
-### **Next Development Priority: Agentic Workflow Visualizer**
-
-**Strategic Decision**: Move from ProfileWizard to Agentic Workflow Visualizer to expand platform capabilities and provide immediate visualization value to users.
-
-**Recommended Approach**: Start with ServiceNow integration and basic visualization before adding advanced AI intelligence.
-
-#### **Phase 1: ServiceNow Integration & Basic Visualization**
-1. **ServiceNow Connection Testing**
-   - Leverage existing admin credential system
-   - Test ServiceNow API connectivity
-   - Fetch real workflow data
-
-2. **Basic Workflow Visualization**
-   - ReactFlow diagram rendering
-   - Node/edge data from ServiceNow
-   - Interactive zoom/pan/expand functionality
-
-3. **Profile Integration Bridge**
-   - Link client profiles to relevant workflows
-   - "View Related Workflows" button in profiles
-   - Cross-reference business problems with workflow opportunities
-
-#### **Phase 2: AI Opportunities Intelligence (Future)**
-1. **AI-Powered Analysis**
-   - Analyze business problems from profiles
-   - Generate workflow recommendations
-   - Smart opportunity scoring and ROI projections
-
-2. **Intelligent Workflow Mapping**
-   - Auto-map business problems to workflow solutions
-   - AI-powered workflow optimization suggestions
-   - Advanced analytics and reporting
-
-**Technical Readiness Assessment:**
-- **✅ Admin Interface**: Ready for ServiceNow credentials management
-- **✅ AI Infrastructure**: Prepared for future AI opportunities analysis
-- **✅ Profile Data**: Rich business intelligence available for workflow mapping
-- **✅ UI Framework**: ReactFlow and visualization components ready for implementation
-
-**Development Status**: ProfileWizard complete and production-ready. Ready for next phase development.
-
----
-
-**📞 Ready for Enterprise Deployment**: The platform successfully combines technical demonstration, strategic planning tools, comprehensive business intelligence collection, secure user authentication, centralized Supabase database, consistent professional theming, and intelligent AI provider recommendations. With the completion of **all four critical ProfileWizard issues**, the platform now features a **production-ready system** with simplified MVP workflows, reliable AI integration across all providers, error-free timeline generation, and enhanced user experience with smart provider guidance. The combination of **real AI-powered generation**, **intelligent database caching**, **secure credential management**, and **comprehensive business intelligence collection** creates a complete enterprise solution for AI transformation planning and strategic decision-making. **Next phase focuses on Agentic Workflow Visualizer with ServiceNow integration to expand platform capabilities.**
+**Response:** Same structure as POST endpoint with `
