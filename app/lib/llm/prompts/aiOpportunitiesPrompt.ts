@@ -172,7 +172,9 @@ Focus on opportunities that:
 - Are realistic given the company size and industry context
 - Incorporate latest agentic AI capabilities and proven success patterns
 
-CRITICAL: You must return ONLY a valid JSON object with this exact structure:
+**OUTPUT FORMAT FOR GEMINI:** You MUST respond with ONLY a valid JSON object. No markdown formatting, no explanations, no additional text. Just pure JSON that starts with { and ends with }.
+
+**REQUIRED JSON STRUCTURE - ALL FIELDS ARE MANDATORY:**
 
 {
   "executiveSummary": "3-4 sentence summary of AI transformation potential...",
@@ -212,7 +214,14 @@ CRITICAL: You must return ONLY a valid JSON object with this exact structure:
   ]
 }
 
-Do not include any text before or after the JSON. Return only valid JSON.`;
+**CRITICAL REQUIREMENTS FOR GEMINI:**
+- MUST include ALL SIX main sections: executiveSummary, opportunities, priorityRecommendations, industryContext, overallReadinessScore, nextSteps
+- NO markdown code blocks (no \`\`\`json or \`\`\`)
+- NO explanatory text before or after the JSON
+- Start response immediately with { and end with }
+- Validate your JSON structure before responding
+
+**REMINDER:** Your response should be pure JSON only, starting with { and ending with }. No other text.`;
 
 interface AIOpportunity {
     title: string;
