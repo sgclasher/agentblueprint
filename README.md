@@ -348,7 +348,150 @@ npm test
 - GitHub Actions for CI/CD
 - CSS Modules for component-level styling
 
-## Architecture Overview
+## Architecture Overview & Developer Guide
+
+### **🏗️ Modular Architecture Philosophy**
+
+This platform is built with **high modularity** to enable safe, independent development of features. Each major feature (Timeline Generation, AI Opportunities, Profile Management) is designed to be **independent** with **shared stable infrastructure**.
+
+#### **🔗 Feature Independence Matrix**
+- **Timeline ↔️ AI Opportunities**: Zero dependencies - can be modified independently
+- **Profile Management**: Shared JSONB schema provides flexibility without breaking changes
+- **AI Service**: Centralized provider-agnostic service used by all features
+- **Database**: JSONB storage prevents schema breaking changes
+
+#### **⚡ Shared Stable Infrastructure** 
+These components are **shared and stable** - changes should be carefully reviewed:
+- `aiService.ts` - Centralized AI provider abstraction
+- `credentialsRepository.ts` - Secure credential management
+- `profileRepository.ts` - Database operations with JSONB flexibility
+- Authentication & authorization patterns
+
+### **📋 Quick Development Reference for LLM Assistants**
+
+#### **🚀 Adding New AI Features (5-Step Pattern)**
+```
+1. Create service in `app/services/[featureName]Service.ts`
+2. Create prompts in `app/lib/llm/prompts/[featureName]Prompt.ts`
+3. Create API route in `app/api/[feature]/route.ts`
+4. Add UI component in `app/[feature]/` directory
+5. Add caching methods to profileRepository.ts
+```
+
+#### **✅ Database Changes - Safe Patterns**
+```javascript
+// ✅ SAFE: Adding new JSONB fields (backward compatible)
+const profile = {
+  ...existingData,
+  newFeature: newData  // Old profiles ignore this field
+};
+
+// ✅ SAFE: Adding new database columns
+ALTER TABLE client_profiles ADD COLUMN new_feature_cache JSONB;
+
+// ⚠️ REQUIRES REVIEW: Modifying existing columns or indexes
+```
+
+#### **🔧 AI Provider Integration Pattern**
+```typescript
+// ✅ STANDARD PATTERN: Always use aiService with user credentials
+const result = await aiService.generateJson(
+  systemPrompt,
+  userPrompt,
+  userId,
+  CredentialsRepository,
+  preferredProvider  // Optional
+);
+```
+
+#### **🛡️ Security Pattern - Service Role with Explicit Authorization**
+```typescript
+// ✅ SECURE PATTERN: All API routes should use this pattern
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const { data } = await supabase
+  .from('client_profiles')
+  .select('*')
+  .eq('id', profileId)
+  .eq('user_id', user.id);  // ← Always include user authorization
+```
+
+#### **📚 Key Documentation Files**
+- `AI_FEATURES_GUIDE.md` - Complete guide for adding AI features  
+- `CONTRIBUTING.md` - Development patterns, checklists, and common pitfalls
+- `DATABASE_SCHEMA.md` - Database structure, JSONB patterns, and safe change guidelines
+- `instructions.md` - Development history and completed tasks
+- `README.md` - This file with architecture overview
+
+### **🤖 Special Instructions for LLM Coding Assistants**
+
+When working on this codebase, please follow these **critical guidelines**:
+
+#### **🚫 What NOT to Modify (Stable Infrastructure)**
+These files are **shared infrastructure** - coordinate changes carefully:
+- `app/services/aiService.ts` - Used by all AI features
+- `app/repositories/credentialsRepository.ts` - Credential management
+- `app/repositories/profileRepository.ts` - Database operations (add methods only)
+- Authentication patterns in API routes
+
+#### **✅ Safe Independent Development Areas**
+These can be modified independently without coordination:
+- Timeline generation: `app/services/timelineService.ts`, `app/lib/timeline/`
+- AI Opportunities: `app/services/aiOpportunitiesService.ts`, `app/lib/llm/prompts/aiOpportunitiesPrompt.ts`
+- New AI features: Follow 5-step pattern in `AI_FEATURES_GUIDE.md`
+
+#### **🔐 Security Requirements (Always Required)**
+```typescript
+// ✅ ALWAYS use this pattern in API routes
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const { data } = await supabase
+  .from('table_name')
+  .select('*')
+  .eq('user_id', user.id);  // ← NEVER forget user authorization
+```
+
+#### **📋 Before Making Changes Checklist**
+1. **Check feature independence**: Will this affect other features?
+2. **Database safety**: Am I only adding new columns/fields?
+3. **Security pattern**: Am I using service role + explicit authorization?
+4. **AI integration**: Am I using `aiService` instead of direct provider calls?
+5. **Documentation**: Should I update README.md or CONTRIBUTING.md?
+
+#### **🆘 When to Ask for Guidance**
+- Modifying shared infrastructure (`aiService`, repositories, auth patterns)
+- Database schema changes beyond adding columns
+- Cross-feature dependencies or integration
+- Security-related modifications
+- Performance or caching strategy changes
+
+#### **⚡ Quick Development Patterns**
+```typescript
+// New AI Feature API Route Template
+export async function POST(request: NextRequest) {
+  const supabase = createClient(/*...*/);
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  
+  // Your feature logic here using aiService
+  const result = await aiService.generateJson(systemPrompt, userPrompt, session.user.id, CredentialsRepository);
+  return NextResponse.json({ success: true, data: result });
+}
+
+// Database Operations Template  
+const { data } = await supabase
+  .from('client_profiles')
+  .select('*')
+  .eq('id', profileId)
+  .eq('user_id', user.id)  // Security requirement
+  .single();
+```
 
 ### **AI Opportunities Analysis Service Integration**
 

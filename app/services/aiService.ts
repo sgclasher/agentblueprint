@@ -4,11 +4,41 @@ import { GoogleServerProvider } from '../lib/llm/providers/googleServerProvider'
 import { decryptCredential } from '../utils/encryption';
 
 /**
- * Central AI Service
+ * Central AI Service - Provider-Agnostic LLM Interface
  *
- * This service is the single entry point for all LLM interactions in the application.
- * It abstracts the specific provider implementation and provides generic methods
- * for interacting with LLMs, dynamically selecting the provider based on user configuration.
+ * This service is the single entry point for ALL LLM interactions in the application.
+ * It abstracts provider implementations and provides generic methods for interacting
+ * with multiple AI providers (OpenAI, Google Gemini, Anthropic Claude).
+ * 
+ * 🏗️ ARCHITECTURE CRITICAL: This is SHARED INFRASTRUCTURE used by:
+ * - Timeline Generation (timelineService.ts)
+ * - AI Opportunities Analysis (aiOpportunitiesService.ts) 
+ * - All future AI features
+ * 
+ * ⚠️ MODIFICATION WARNING: Changes to this service affect ALL AI features.
+ * Coordinate carefully and maintain backward compatibility. Test with all providers.
+ * 
+ * 🔧 USAGE PATTERN: Always use this service instead of calling providers directly:
+ * ```typescript
+ * import { aiService } from './aiService';
+ * import { CredentialsRepository } from '../repositories/credentialsRepository';
+ * 
+ * const result = await aiService.generateJson(
+ *   systemPrompt,
+ *   userPrompt,
+ *   userId,
+ *   CredentialsRepository,
+ *   'gemini-2.5-pro-preview-06-05'  // Optional specific provider
+ * );
+ * ```
+ * 
+ * 🔐 SECURITY: Handles encrypted credential retrieval and provider instantiation.
+ * All API keys are encrypted in database and decrypted server-side only.
+ * 
+ * 📊 PROVIDER SUPPORT:
+ * - OpenAI: GPT-4o, GPT-4.1, o1 series
+ * - Google Gemini: 2.5 Pro Preview, 1.5 Pro/Flash  
+ * - Anthropic Claude: Sonnet 4, Opus 4, Haiku 3.5
  */
 class AIService {
   /**
