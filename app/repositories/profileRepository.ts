@@ -91,19 +91,6 @@ export class ProfileRepository {
       throw new Error('User authentication is required to fetch a profile.');
     }
 
-    console.log('[ProfileRepository] getProfile called with:', { profileId, userId });
-
-    // Debug: Check what profiles exist for this user
-    try {
-      const { data: allProfiles } = await supabase
-        .from('client_profiles')
-        .select('id, user_id, name')
-        .eq('user_id', userId);
-      console.log('[ProfileRepository] All profiles for user:', allProfiles?.map(p => ({ id: p.id, name: p.name })));
-    } catch (debugError) {
-      console.log('[ProfileRepository] Debug query failed:', debugError);
-    }
-
     try {
       const { data, error } = await supabase
         .from('client_profiles')
@@ -112,24 +99,15 @@ export class ProfileRepository {
         .eq('user_id', userId)
         .single();
 
-      console.log('[ProfileRepository] Supabase query result:', { 
-        hasData: !!data, 
-        error: error?.code || 'none',
-        errorMessage: error?.message 
-      });
-
       if (error) {
         // 'PGRST116' is the code for "Not Found", which is not a throw-worthy error.
         if (error.code !== 'PGRST116') {
           console.error('❌ Supabase getProfile error:', error);
           throw error;
-        } else {
-          console.log('[ProfileRepository] Profile not found (PGRST116) - no matching record');
         }
         return null;
       }
 
-      console.log('[ProfileRepository] Profile found, transforming data');
       return data ? this.transformFromDatabase(data) : null;
     } catch (error) {
       console.error('❌ Exception in getProfile:', error);

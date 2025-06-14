@@ -759,11 +759,6 @@ const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
     const [error, setError] = useState<string | null>(null);
     const [isCached, setIsCached] = useState(false);
     
-    useEffect(() => {
-      // Load cached opportunities on component mount
-      loadCachedOpportunities();
-    }, [profile.id]);
-
     const loadCachedOpportunities = async () => {
       try {
         // Get current session for authorization
@@ -771,7 +766,6 @@ const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError || !session) {
-          console.warn('No valid session for loading cached opportunities');
           return;
         }
 
@@ -784,15 +778,20 @@ const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
 
         if (response.ok) {
           const data = await response.json();
-          if (data.success && data.opportunities) {
+          if (data.success && data.hasOpportunities && data.opportunities) {
             setOpportunities(data.opportunities);
             setIsCached(data.cached);
           }
         }
       } catch (error) {
-        console.warn('Failed to load cached opportunities:', error);
+        // Silently fail - cached opportunities are optional
       }
     };
+
+    useEffect(() => {
+      // Load cached opportunities on component mount
+      loadCachedOpportunities();
+    }, [profile.id]);
 
     const generateOpportunities = async (forceRegenerate = false) => {
       try {

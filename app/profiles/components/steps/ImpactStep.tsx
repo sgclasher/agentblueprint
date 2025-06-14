@@ -1,7 +1,7 @@
 'use client';
 
 import React, { FC, ChangeEvent } from 'react';
-import { Profile, ValueSellingFramework } from '../../../services/types';
+import { Profile } from '../../../services/types';
 import styles from './ImpactStep.module.css';
 
 interface StepProps {
@@ -80,7 +80,7 @@ const ImpactStep: FC<StepProps> = ({ data, updateData }) => {
               <div key={key} className={styles.formGroup}>
                 <label>{label}</label>
                 <select
-                  value={data.valueSellingFramework?.impact?.[key as keyof ValueSellingFramework['impact']] || ''}
+                  value={data.valueSellingFramework?.impact?.[key] || ''}
                   onChange={(e: ChangeEvent<HTMLSelectElement>) => updateData(`valueSellingFramework.impact.${key}`, e.target.value)}
                   className={styles.formSelect}
                 >

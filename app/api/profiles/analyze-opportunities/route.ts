@@ -5,7 +5,12 @@ import { CredentialsRepository } from '../../../repositories/credentialsReposito
 import { aiService } from '../../../services/aiService';
 import { AI_OPPORTUNITIES_SYSTEM_PROMPT, AI_OPPORTUNITIES_USER_PROMPT } from '../../../lib/llm/prompts/aiOpportunitiesPrompt';
 
-// Initialize Supabase client for auth verification
+// Initialize Supabase client with service role for server-side operations
+// SECURITY: This is secure because:
+// 1. Service role key is never exposed to client (server-side only)
+// 2. All requests are authenticated via JWT token verification
+// 3. User ownership is explicitly verified with .eq('user_id', user.id)
+// 4. This pattern is recommended by Supabase for API routes
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -13,14 +18,10 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('[AI Opportunities POST] Request received');
-    
     // Parse request body
     const { profileId, preferredProvider, forceRegenerate = false } = await request.json();
-    console.log('[AI Opportunities POST] Request body:', { profileId, preferredProvider, forceRegenerate });
 
     if (!profileId) {
-      console.log('[AI Opportunities POST] Missing profileId');
       return NextResponse.json(
         { success: false, error: 'Profile ID is required' },
         { status: 400 }
@@ -29,11 +30,8 @@ export async function POST(request: NextRequest) {
 
     // Verify authentication
     const authHeader = request.headers.get('Authorization');
-    console.log('[AI Opportunities POST] Auth header present:', !!authHeader);
-    console.log('[AI Opportunities POST] Auth header starts with Bearer:', authHeader?.startsWith('Bearer '));
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('[AI Opportunities POST] Authentication failed - no valid auth header');
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -41,24 +39,16 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    console.log('[AI Opportunities POST] Token extracted, length:', token.length);
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    console.log('[AI Opportunities POST] Auth result - user:', !!user, 'error:', !!authError);
 
     if (authError || !user) {
-      console.log('[AI Opportunities POST] Auth failed:', authError?.message);
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' },
         { status: 401 }
       );
     }
 
-    console.log('[AI Opportunities POST] User authenticated:', user.id);
-
     // Get the profile and verify user access using the service role client
-    console.log('[AI Opportunities POST] Fetching profile:', profileId, 'for user:', user.id);
-    
     // Query the profile directly using the service role client to avoid client/server mismatch
     const { data: profileData, error: profileError } = await supabase
       .from('client_profiles')
@@ -67,13 +57,7 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single();
     
-    console.log('[AI Opportunities POST] Direct profile query result:', { 
-      hasData: !!profileData, 
-      error: profileError?.code || 'none' 
-    });
-    
     if (profileError || !profileData) {
-      console.log('[AI Opportunities POST] Profile not found or access denied');
       return NextResponse.json(
         { success: false, error: 'Profile not found or access denied' },
         { status: 404 }
@@ -82,10 +66,8 @@ export async function POST(request: NextRequest) {
     
     // Transform the profile data using ProfileRepository's transform method
     const profile = ProfileRepository.transformFromDatabase(profileData);
-    console.log('[AI Opportunities POST] Profile found and transformed:', !!profile);
     
     if (!profile) {
-      console.log('[AI Opportunities POST] Profile not found or access denied');
       return NextResponse.json(
         { success: false, error: 'Profile not found or access denied' },
         { status: 404 }
@@ -95,7 +77,7 @@ export async function POST(request: NextRequest) {
     // Check for cached opportunities (unless forcing regeneration)
     if (!forceRegenerate) {
       // Query cached opportunities directly using service role client
-      const { data: cacheData } = await supabase
+      const { data: cacheData, error: cacheError } = await supabase
         .from('client_profiles')
         .select('opportunities_data, last_opportunities_generated_at')
         .eq('id', profileId)
@@ -103,7 +85,6 @@ export async function POST(request: NextRequest) {
         .single();
         
       if (cacheData?.opportunities_data) {
-        console.log('[AI Opportunities POST] Found cached opportunities');
         return NextResponse.json({
           success: true,
           opportunities: cacheData.opportunities_data,
@@ -131,9 +112,6 @@ export async function POST(request: NextRequest) {
     const systemPrompt = AI_OPPORTUNITIES_SYSTEM_PROMPT;
     const userPrompt = AI_OPPORTUNITIES_USER_PROMPT(profile);
 
-    console.log('[AI Opportunities] Generating analysis for profile:', profileId);
-    console.log('[AI Opportunities] Using provider:', preferredProvider || 'default');
-
     const aiResponse = await aiService.generateJson(
       systemPrompt,
       userPrompt,
@@ -141,9 +119,6 @@ export async function POST(request: NextRequest) {
       CredentialsRepository,
       preferredProvider
     );
-
-    console.log('[AI Opportunities] Raw AI response type:', typeof aiResponse);
-    console.log('[AI Opportunities] AI response keys:', aiResponse ? Object.keys(aiResponse) : 'null');
 
     // Validate the AI response structure
     if (!aiResponse || typeof aiResponse !== 'object') {
@@ -182,22 +157,21 @@ export async function POST(request: NextRequest) {
 
     // Cache the opportunities analysis using service role client
     try {
-      const { error: saveError } = await supabase
+      const { data: saveData, error: saveError } = await supabase
         .from('client_profiles')
         .update({
           opportunities_data: opportunitiesAnalysis,
           last_opportunities_generated_at: new Date().toISOString()
         })
         .eq('id', profileId)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select('id, opportunities_data, last_opportunities_generated_at');
         
       if (saveError) {
-        console.warn('[AI Opportunities] Failed to cache opportunities:', saveError);
-      } else {
-        console.log('[AI Opportunities] Cached opportunities analysis for profile:', profileId);
+        console.error('[AI Opportunities] Failed to cache opportunities:', saveError);
       }
     } catch (cacheError) {
-      console.warn('[AI Opportunities] Failed to cache opportunities, but continuing:', cacheError);
+      console.error('[AI Opportunities] Exception during cache save:', cacheError);
     }
 
     return NextResponse.json({
@@ -272,24 +246,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get cached opportunities
-    const cachedOpportunities = await ProfileRepository.getCachedOpportunities(profileId, user.id);
+    // Get cached opportunities using service role client (same as POST handler)
+    const { data: cacheData, error: cacheError } = await supabase
+      .from('client_profiles')
+      .select('opportunities_data, last_opportunities_generated_at')
+      .eq('id', profileId)
+      .eq('user_id', user.id)
+      .single();
 
-    if (!cachedOpportunities) {
+    if (!cacheData?.opportunities_data) {
       return NextResponse.json({
         success: true,
-        opportunities: null,
+        hasOpportunities: false,
         cached: false,
         message: 'No cached opportunities found'
       });
     }
-
     return NextResponse.json({
       success: true,
-      opportunities: cachedOpportunities.opportunities,
+      hasOpportunities: true,
+      opportunities: cacheData.opportunities_data,
       cached: true,
-      generatedAt: cachedOpportunities.generatedAt,
-      provider: cachedOpportunities.provider
+      generatedAt: cacheData.last_opportunities_generated_at,
+      provider: cacheData.opportunities_data.analysisMetadata?.provider || 'cached'
     });
 
   } catch (error: any) {

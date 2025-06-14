@@ -46,6 +46,10 @@ export class ProfileService {
   static async getProfiles(): Promise<Profile[]> {
     try {
       const userId = await this.getCurrentUserId();
+      if (!userId) {
+        console.warn('No authenticated user found for getProfiles');
+        return [];
+      }
       const profiles = await ProfileRepository.getProfiles(userId);
       return profiles as Profile[];
     } catch (error) {
@@ -368,7 +372,7 @@ export class ProfileService {
   }
 
   static calculateHRImpact(profile: Profile): number {
-    const employeeCount = parseInt(profile.employeeCount) || 100;
+    const employeeCount = parseInt(profile.employeeCount || '100') || 100;
     return Math.round(employeeCount * 1000);
   }
 
