@@ -4,8 +4,33 @@ import { Profile } from '../../../services/types';
 type ScenarioType = 'conservative' | 'balanced' | 'aggressive';
 
 const extractKeyDataFromObject = (profileData: Partial<Profile>): string => {
+  console.log('🔍 [extractKeyDataFromObject] Input profile data:', {
+    companyName: profileData.companyName,
+    industry: profileData.industry,
+    hasStrategicInitiatives: !!profileData.strategicInitiatives,
+    strategicInitiativesCount: profileData.strategicInitiatives?.length || 0,
+    hasSystemsAndApplications: !!profileData.systemsAndApplications,
+    systemsCount: profileData.systemsAndApplications?.length || 0
+  });
+
   const keyData: string[] = [];
   const { expectedOutcome, problems, solutions, value, currentArchitecture } = profileData;
+
+  console.log('🔍 Checking old structure fields:', {
+    hasExpectedOutcome: !!expectedOutcome,
+    hasProblems: !!problems,
+    hasSolutions: !!solutions,
+    hasValue: !!value,
+    hasCurrentArchitecture: !!currentArchitecture
+  });
+
+  // 🚨 DEBUGGING: These are the OLD field names that don't exist in the current Profile structure!
+  console.log('⚠️ OLD STRUCTURE CHECK - these fields should be null/undefined:');
+  console.log('expectedOutcome:', expectedOutcome);
+  console.log('problems:', problems);
+  console.log('solutions:', solutions);
+  console.log('value:', value);
+  console.log('currentArchitecture:', currentArchitecture);
 
   if (expectedOutcome?.businessObjectives) {
     keyData.push(`**Core Business Objective:** ${expectedOutcome.businessObjectives}`);
@@ -41,20 +66,70 @@ const extractKeyDataFromObject = (profileData: Partial<Profile>): string => {
     }
   }
 
+  console.log('📊 Extracted key data (OLD STRUCTURE):', keyData);
+  
+  // 🔧 NEW STRUCTURE: Let's extract data from the current Profile structure
+  console.log('🔧 ATTEMPTING NEW STRUCTURE EXTRACTION...');
+  
+  if (profileData.companyName) {
+    keyData.push(`**Company:** ${profileData.companyName}`);
+  }
+  
+  if (profileData.industry) {
+    keyData.push(`**Industry:** ${profileData.industry}`);
+  }
+  
+  if (profileData.strategicInitiatives && profileData.strategicInitiatives.length > 0) {
+    const initiatives = profileData.strategicInitiatives.map(init => `- ${init.initiative}`).join('\\n');
+    keyData.push(`**Strategic Initiatives:**\\n${initiatives}`);
+    
+    // Extract business problems from initiatives
+    const allProblems = profileData.strategicInitiatives
+      .flatMap(init => init.businessProblems || [])
+      .filter(problem => problem && problem.trim().length > 0);
+    
+    if (allProblems.length > 0) {
+      const problemList = allProblems.map(p => `- ${p}`).join('\\n');
+      keyData.push(`**Business Problems to Solve:**\\n${problemList}`);
+    }
+  }
+  
+  if (profileData.systemsAndApplications && profileData.systemsAndApplications.length > 0) {
+    const systems = profileData.systemsAndApplications.map(sys => `- ${sys.name} (${sys.category})`).join('\\n');
+    keyData.push(`**Current Systems:**\\n${systems}`);
+  }
+
+  console.log('📊 Final extracted key data (COMBINED):', keyData);
+  console.log('📊 Key data length:', keyData.length);
+  
   return keyData.join('\\n\\n');
 };
 
 export const buildTimelineUserPrompt = (profileData: Partial<Profile>, scenarioType: ScenarioType): string => {
+  console.log('🔍 [buildTimelineUserPrompt] Starting prompt building...');
+  console.log('📊 Profile data preview:', {
+    companyName: profileData.companyName,
+    industry: profileData.industry,
+    strategicInitiativesCount: profileData.strategicInitiatives?.length || 0
+  });
+
   const scenarioInstructions: { [key in ScenarioType]: string } = {
     conservative: 'Focus on proven technologies, lower risk, extended timelines, and gradual adoption. Prioritize stability and incremental improvements.',
     balanced: 'Balance innovation with practicality. Use a mix of proven and emerging technologies with moderate timelines and measured risk.',
     aggressive: 'Emphasize cutting-edge technologies, rapid implementation, and transformational change. Accept higher risk for greater potential returns.'
   };
 
+  console.log('🔄 Generating markdown from profile...');
   const profileMarkdown = markdownService.generateMarkdown(profileData);
-  const keyDataSummary = extractKeyDataFromObject(profileData);
+  console.log('📝 Generated markdown length:', profileMarkdown.length);
+  console.log('📝 Markdown preview (first 500 chars):', profileMarkdown.substring(0, 500));
 
-  return `Generate a comprehensive AI transformation timeline based on the provided business profile.
+  console.log('🔄 Extracting key data...');
+  const keyDataSummary = extractKeyDataFromObject(profileData);
+  console.log('📊 Key data summary length:', keyDataSummary.length);
+  console.log('📊 Key data summary:', keyDataSummary);
+
+  const finalPrompt = `Generate a comprehensive AI transformation timeline based on the provided business profile.
 
 **Business Profile:**
 ${profileMarkdown}
@@ -148,6 +223,12 @@ ${keyDataSummary}
 }
 \`\`\`
 `;
+
+  console.log('✅ Timeline prompt built successfully');
+  console.log('📊 Final prompt length:', finalPrompt.length);
+  console.log('🔍 Contains company name?', finalPrompt.includes(profileData.companyName || ''));
+
+  return finalPrompt;
 };
 
 export const getTimelineSystemPrompt = (): string => {

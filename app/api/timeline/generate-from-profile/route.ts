@@ -18,15 +18,20 @@ interface GenerateFromProfileBody {
 }
 
 export async function POST(request: NextRequest) {
+  console.log('🔍 [generate-from-profile] API call started');
+  
   try {
     const user = await getUser(request);
     const userId = user?.id;
+
+    console.log('👤 User authentication:', { hasUser: !!user, userId });
 
     if (!user || !userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     const aiStatus = await aiService.getStatus(userId, CredentialsRepository);
+    console.log('🤖 AI Status check:', aiStatus);
     if (!aiStatus.configured) {
       return NextResponse.json(
         { 
@@ -41,7 +46,16 @@ export async function POST(request: NextRequest) {
     let body: GenerateFromProfileBody & { provider?: string };
     try {
       body = await request.json();
+      console.log('📨 Request body received:', {
+        hasProfileId: !!body.profileId,
+        hasProfile: !!body.profile,
+        profileName: body.profile?.companyName || 'N/A',
+        forceRegenerate: body.forceRegenerate,
+        scenarioType: body.scenarioType,
+        provider: body.provider
+      });
     } catch (error) {
+      console.error('❌ Invalid JSON in request body:', error);
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }
@@ -50,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     const { profileId, profile, forceRegenerate = false, scenarioType, provider } = body;
     
-    console.log(`📝 Request: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}, provider=${provider}`);
+    console.log(`📝 Request details: profileId=${profileId}, userId=${userId}, forceRegenerate=${forceRegenerate}, scenarioType=${scenarioType}, provider=${provider}`);
 
     const authHeader = request.headers.get('authorization');
     if (!authHeader) {
@@ -112,7 +126,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('📊 Target profile structure:', {
+      companyName: targetProfile.companyName,
+      industry: targetProfile.industry,
+      employeeCount: targetProfile.employeeCount,
+      strategicInitiativesCount: targetProfile.strategicInitiatives?.length || 0,
+      systemsCount: targetProfile.systemsAndApplications?.length || 0,
+      hasId: !!targetProfile.id
+    });
+
     if (!targetProfile.companyName) {
+      console.error('❌ Profile validation failed: missing company name');
       return NextResponse.json(
         { 
           error: 'Invalid profile data', 
