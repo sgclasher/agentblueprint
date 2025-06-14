@@ -287,9 +287,10 @@ ${keyDataSummary}
    - Account for their current systems architecture in integration planning
    - Ensure ROI projections are realistic for a company of their size (${profile.employeeCount || 'size not specified'})
 
-5. **Output Format:** Respond *only* with a single, valid JSON object that strictly follows the structure below. Do not include any commentary, explanations, or introductory text.
+5. **Output Format:** You MUST respond with ONLY a valid JSON object. No markdown formatting, no explanations, no additional text. Just pure JSON that starts with { and ends with }.
 
-\`\`\`json
+**REQUIRED JSON STRUCTURE - ALL FIELDS ARE MANDATORY:**
+
 {
   "currentState": {
     "description": "Current AI maturity and capabilities specific to ${profile.companyName || 'the company'}, referencing their actual systems and initiatives.",
@@ -364,9 +365,17 @@ ${keyDataSummary}
     "riskLevel": "Medium"
   }
 }
-\`\`\`
 
-**CRITICAL REMINDER:** Every element of this timeline must be specific to ${profile.companyName || 'the company'} and directly address their documented strategic initiatives and business problems. Generic AI advice will not be acceptable.`;
+**CRITICAL REQUIREMENTS FOR GEMINI:**
+- MUST include ALL four main sections: currentState, phases, futureState, summary
+- NO markdown code blocks (no \`\`\`json or \`\`\`)
+- NO explanatory text before or after the JSON
+- Start response immediately with { and end with }
+- Every element must be specific to ${profile.companyName || 'the company'}
+- Directly address their strategic initiatives and business problems
+- Validate your JSON structure before responding
+
+**REMINDER:** Your response should be pure JSON only, starting with { and ending with }. No other text.`;
 
   console.log('✅ Modular prompt built successfully');
   console.log('📊 Final prompt stats:', {

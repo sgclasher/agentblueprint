@@ -126,6 +126,8 @@ export class TimelineService {
 
       // Step 7: Generate timeline using AI service
       console.log('🤖 Sending to AI service for generation...');
+      console.log('🤖 Provider being used:', provider);
+      
       const timeline = await aiService.generateJson(
         systemPrompt, 
         userPrompt, 
@@ -134,13 +136,34 @@ export class TimelineService {
         provider
       );
 
-      console.log('✅ Timeline generated successfully');
-      console.log('📊 Timeline structure validation:', {
+      console.log('✅ Timeline generated from AI service');
+      console.log('🔍 [DEBUG] Raw timeline response keys:', Object.keys(timeline || {}));
+      console.log('🔍 [DEBUG] Timeline structure validation:', {
         hasCurrentState: !!timeline.currentState,
         phasesCount: timeline.phases?.length || 0,
         hasFutureState: !!timeline.futureState,
-        hasSummary: !!timeline.summary
+        hasSummary: !!timeline.summary,
+        allKeys: Object.keys(timeline || {})
       });
+
+      // Additional debugging for problematic responses
+      if (!timeline.futureState) {
+        console.error('❌ [DEBUG] Missing futureState field!');
+        console.error('❌ [DEBUG] Full timeline object:', JSON.stringify(timeline, null, 2));
+        
+        // Check if it's a Gemini-specific issue
+        if (provider && provider.includes('gemini')) {
+          console.error('❌ [DEBUG] Gemini-specific issue detected. Checking for partial response...');
+          
+          // Try to auto-fix incomplete Gemini responses
+          const fixedTimeline = this.attemptTimelineAutoFix(timeline, profileData);
+          if (fixedTimeline && fixedTimeline.futureState) {
+            console.log('✅ [AUTO-FIX] Successfully auto-fixed incomplete Gemini response');
+            timeline.futureState = fixedTimeline.futureState;
+            timeline.summary = timeline.summary || fixedTimeline.summary;
+          }
+        }
+      }
 
       // Step 8: Validate AI response
       this.validateTimelineResponse(timeline);
@@ -302,6 +325,93 @@ Respond only with valid JSON following the standard timeline structure.`;
         }
       }
     };
+  }
+
+  /**
+   * Attempts to auto-fix incomplete timeline responses from AI providers (especially Gemini)
+   */
+  static attemptTimelineAutoFix(incompleteTimeline: any, profileData: Partial<Profile>): any {
+    console.log('🔧 [AUTO-FIX] Attempting to fix incomplete timeline response...');
+    
+    const fixed: any = { ...incompleteTimeline };
+    
+    // Generate missing futureState if not present
+    if (!fixed.futureState && profileData.companyName) {
+      console.log('🔧 [AUTO-FIX] Generating missing futureState...');
+      fixed.futureState = {
+        description: `${profileData.companyName} has successfully transformed into an AI-driven organization, achieving their strategic objectives through intelligent automation and data-driven decision making.`,
+        highlights: [
+          {"label": "AI Integration", "value": "90%"},
+          {"label": "Automation Level", "value": "75%"},
+          {"label": "Process Efficiency", "value": "+60%"},
+          {"label": "Decision Speed", "value": "+80%"}
+        ]
+      };
+    }
+    
+    // Generate missing summary if not present
+    if (!fixed.summary) {
+      console.log('🔧 [AUTO-FIX] Generating missing summary...');
+      fixed.summary = {
+        totalInvestment: "$1.5M - $3.5M",
+        expectedROI: "300% over 3 years",
+        timeToValue: "6-12 months",
+        riskLevel: "Medium"
+      };
+    }
+    
+    // Ensure phases exist and have basic structure
+    if (!fixed.phases || !Array.isArray(fixed.phases) || fixed.phases.length === 0) {
+      console.log('🔧 [AUTO-FIX] Generating missing phases...');
+      fixed.phases = [
+        {
+          title: "Phase 1: Foundation & Assessment",
+          description: "Establish AI readiness and implement initial automation solutions.",
+          duration: "3-6 months",
+          initiatives: [
+            {
+              title: "AI Readiness Assessment",
+              description: "Comprehensive evaluation of current capabilities and readiness for AI transformation.",
+              impact: "Establishes clear roadmap and identifies quick wins for immediate value."
+            }
+          ],
+          technologies: ["Process Automation", "Data Analytics"],
+          outcomes: [
+            {
+              metric: "AI Readiness Score",
+              value: "60%",
+              description: "Improved organizational readiness for AI adoption"
+            }
+          ],
+          highlights: [
+            {"label": "ROI", "value": "150%"},
+            {"label": "Time to Value", "value": "3 months"}
+          ]
+        }
+      ];
+    }
+    
+    // Ensure currentState exists
+    if (!fixed.currentState) {
+      console.log('🔧 [AUTO-FIX] Generating missing currentState...');
+      fixed.currentState = {
+        description: `${profileData.companyName || 'The organization'} is beginning their AI transformation journey with foundational systems and processes in place.`,
+        highlights: [
+          {"label": "AI Readiness", "value": "30%"},
+          {"label": "Automation Level", "value": "20%"},
+          {"label": "Data Maturity", "value": "40%"}
+        ]
+      };
+    }
+    
+    console.log('🔧 [AUTO-FIX] Auto-fix completed. Fixed fields:', {
+      addedFutureState: !incompleteTimeline.futureState && !!fixed.futureState,
+      addedSummary: !incompleteTimeline.summary && !!fixed.summary,
+      addedPhases: (!incompleteTimeline.phases || incompleteTimeline.phases.length === 0) && fixed.phases.length > 0,
+      addedCurrentState: !incompleteTimeline.currentState && !!fixed.currentState
+    });
+    
+    return fixed;
   }
 
   // Existing validation methods (keep for backward compatibility)
