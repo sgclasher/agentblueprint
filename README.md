@@ -10,7 +10,14 @@
 3. **✅ Timeline Encryption Error Resolved** - Fixed client-side service architecture, proper server-side operations
 4. **✅ AI Provider Recommendations Implemented** - Smart guidance: Gemini excels at timelines, GPT-4o at profiles
 
-**🔧 Latest Development (January 2025):** **AI Opportunities Page Refresh Issue Resolved**
+**🔧 Latest Development (January 2025):** **Timeline Page Profile Dropdown Sync Issue Resolved**
+- **Problem**: When clicking "AI Timeline" menu item, timeline content from previous session appeared but no profile was selected in dropdown
+- **Root Cause**: Timeline data persisted in localStorage but profile selection wasn't synced when navigating without profileId parameter
+- **Solution**: Clear timeline data when no profile is selected via URL parameter to ensure consistent state
+- **Files Modified**: `app/hooks/useTimeline.ts`
+- **Result**: Timeline page now shows correct state (no content) when no profile is selected
+
+**🔧 Previous Fix (January 2025):** **AI Opportunities Page Refresh Issue Resolved**
 - **Problem**: AI Opportunities displayed correctly during session but disappeared on page refresh
 - **Root Cause**: Database access inconsistency between GET (client-side Supabase + RLS) and POST (service role Supabase) handlers
 - **Solution**: Standardized both endpoints to use service role with explicit authorization (`eq('user_id', user.id)`)
@@ -20,6 +27,8 @@
 **✅ Complete Admin Interface**: Users can securely add, test, and manage credentials for multiple services through a professional admin dashboard at `/admin`. **✅ Dynamic Model Refresh**: One-click refresh button in admin UI fetches latest available models from all AI providers with intelligent caching and rate limiting. **✅ Production Security**: Application-level authentication with JWT verification, user-scoped data access, AES-256-GCM credential encryption, and service role database operations. **✅ Timeline Intelligence**: AI-generated timelines are highly specific and relevant, with database-backed caching providing 80-90% cost reduction. **✅ ALL THREE AI PROVIDERS FULLY OPERATIONAL**: Complete support for **OpenAI GPT-4o & o1 series**, **Google Gemini 2.5 Pro Preview** (with correct model names), and **Anthropic Claude Sonnet 4** with seamless provider switching and robust generation across all providers.
 
 **✅ ProfileWizard MVP Optimization:** Simplified from 8 complex steps to 2 clean MVP steps (Company Overview + Review & Complete) with 7 essential fields: `companyName`, `industry`, `employeeCount`, `annualRevenue`, `primaryLocation`, `websiteUrl`, `strategicInitiatives`. Database JSONB storage handles both old complex and new simplified schemas seamlessly.
+
+**✅ Timeline Profile Selection:** Complete profile selector dropdown integration on timeline page with intelligent caching, seamless profile switching, and proper state management. Users can now easily switch between client profiles and generate timelines with cached optimization.
 
 **🚀 Next Steps:** 
 1. **Agentic Workflow Visualizer (Next Priority)**: ServiceNow integration, basic workflow visualization with ReactFlow, profile-to-workflow linking

@@ -1,10 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { useTimeline } from '../hooks/useTimeline';
 import GlobalHeader from '../components/GlobalHeader';
-import TimelineHeader from './components/TimelineHeader';
 import TimelineSidebar from './components/TimelineSidebar';
 import TimelineContent from './components/TimelineContent';
 import MetricsWidget from './components/MetricsWidget';
@@ -13,7 +11,6 @@ import './timeline.css';
 import { TimelinePlaceholder, WelcomeMessage } from './components/TimelinePlaceholder';
 
 export default function TimelinePage() {
-  const router = useRouter();
   const {
     timelineData,
     businessProfile,
@@ -31,12 +28,13 @@ export default function TimelinePage() {
     isProfileTimeline,
     timelineCached,
     timelineGeneratedAt,
-    timelineScenarioType
+    timelineScenarioType,
+    // Profile selection functionality
+    availableProfiles,
+    isLoadingProfiles,
+    selectedProfileId,
+    handleProfileSelect
   } = useTimeline();
-
-  const handleBackClick = () => {
-    router.push('/');
-  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -61,14 +59,8 @@ export default function TimelinePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ height: '100vh', overflow: 'hidden' }}>
       <GlobalHeader />
-      
-      <TimelineHeader 
-        onBackClick={handleBackClick}
-        timelineData={timelineData}
-        businessProfile={businessProfile}
-      />
       
       <div className={styles.timelineContainer} data-timeline-theme={theme}>
         <TimelineSidebar 
@@ -85,6 +77,10 @@ export default function TimelinePage() {
           currentProfile={currentProfile}
           timelineData={timelineData}
           businessProfile={businessProfile}
+          availableProfiles={availableProfiles}
+          isLoadingProfiles={isLoadingProfiles}
+          selectedProfileId={selectedProfileId}
+          onProfileSelect={handleProfileSelect}
         />
         
         <div className={styles.timelineMain} ref={contentRef}>

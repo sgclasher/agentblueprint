@@ -3,6 +3,7 @@
 import React, { useLayoutEffect, useRef, useState, FC } from 'react';
 import styles from './TimelineSidebar.module.css';
 import ProviderSelector from './ProviderSelector';
+import ProfileSelector from './ProfileSelector';
 import useBusinessProfileStore, { ScenarioType } from '../../store/useBusinessProfileStore';
 import { Profile, Timeline } from '../../services/types';
 import { supabase } from '../../lib/supabase';
@@ -28,6 +29,11 @@ interface TimelineSidebarProps {
     currentProfile: Profile | null;
     timelineData?: Timeline | null;
     businessProfile?: Partial<Profile>;
+    // Profile selection props
+    availableProfiles?: Profile[];
+    isLoadingProfiles?: boolean;
+    selectedProfileId?: string | null;
+    onProfileSelect?: (profile: Profile | null) => void;
 }
 
 const TimelineSidebar: FC<TimelineSidebarProps> = ({ 
@@ -41,7 +47,12 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   isGenerating = false,
   currentProfile = null,
   timelineData,
-  businessProfile
+  businessProfile,
+  // Profile selection props
+  availableProfiles = [],
+  isLoadingProfiles = false,
+  selectedProfileId = null,
+  onProfileSelect
 }) => {
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
@@ -207,6 +218,15 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
         <div className={styles.headerContainer}>
           <h3>Your AI Journey</h3>
         </div>
+        
+        {/* Profile Selector */}
+        {onProfileSelect && (
+          <ProfileSelector
+            selectedProfileId={selectedProfileId}
+            onProfileSelect={onProfileSelect}
+            disabled={isGenerating}
+          />
+        )}
       </div>
       
       <nav className={styles.timelineNav} ref={navRef}>

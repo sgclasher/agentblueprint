@@ -1,0 +1,90 @@
+.profileSelector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--timeline-spacing-sm);
+  margin-bottom: var(--timeline-spacing-lg);
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--timeline-text-primary);
+  margin-bottom: var(--timeline-spacing-xs);
+}
+
+.select {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
+  border: 1px solid var(--timeline-border-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--timeline-spacing-sm) var(--timeline-spacing-md);
+  color: var(--timeline-text-primary);
+  font-size: 0.9rem;
+  width: 100%;
+  transition: border-color var(--timeline-transition-duration) ease;
+}
+
+.select:hover {
+  border-color: var(--timeline-accent-blue);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--timeline-accent-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.select option {
+  background: var(--timeline-sidebar-bg);
+  color: var(--timeline-text-primary);
+  padding: var(--timeline-spacing-sm);
+}
+
+.loading {
+  font-size: 0.85rem;
+  color: var(--timeline-text-muted);
+  padding: var(--timeline-spacing-sm);
+  text-align: center;
+  font-style: italic;
+}
+
+.error {
+  font-size: 0.85rem;
+  color: #ef4444;
+  padding: var(--timeline-spacing-sm);
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.noProfiles {
+  font-size: 0.85rem;
+  color: var(--timeline-text-muted);
+  padding: var(--timeline-spacing-sm);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.noProfiles a {
+  color: var(--timeline-accent-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.noProfiles a:hover {
+  text-decoration: underline;
+}
+
+.selectedInfo {
+  font-size: 0.8rem;
+  color: var(--timeline-text-secondary);
+  padding: var(--timeline-spacing-xs) var(--timeline-spacing-sm);
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+} 
