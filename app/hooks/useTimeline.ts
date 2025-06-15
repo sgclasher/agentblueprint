@@ -168,7 +168,7 @@ export function useTimeline() {
         contentElement.removeEventListener('scroll', handleScroll);
       };
     }
-  }, [timelineData]);
+  }, [timelineData, timelineSections]);
 
   const handleSectionClick = useCallback((sectionId: string) => {
     const element = sectionRefs.current[sectionId];

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, ChangeEvent } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import useAgenticStore from '../store/useAgenticStore';
 import { useTheme } from './theme/ThemeProvider';
@@ -137,7 +138,7 @@ export default function AgenticWorkflowConnector() {
             alignItems: 'center', 
             marginBottom: 'var(--spacing-md)'
           }}>
-            <img 
+            <Image 
               src={theme === 'dark' ? "/images/Full Logo Dark.png" : "/images/Full Logo Light.png"}
               alt="Agent Blueprint Logo" 
               width={120} 

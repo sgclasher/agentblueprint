@@ -1,6 +1,6 @@
 import { Profile, StrategicInitiative, SystemApplication } from '../../services/types';
 
-export interface TimelineValidationResult {
+interface TimelineValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
@@ -79,7 +79,7 @@ export function validateProfileForTimeline(profile: Partial<Profile>): TimelineV
 /**
  * Validates strategic initiatives for timeline generation
  */
-export function validateStrategicInitiatives(initiatives: StrategicInitiative[]): TimelineValidationResult {
+function validateStrategicInitiatives(initiatives: StrategicInitiative[]): TimelineValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const recommendations: string[] = [];
@@ -238,24 +238,4 @@ export function extractProfileDataSummary(profile: Partial<Profile>): ProfileDat
 export function isProfileReadyForTimeline(profile: Partial<Profile>): boolean {
   const validation = validateProfileForTimeline(profile);
   return validation.isValid && validation.completenessScore >= 60;
-}
-
-/**
- * Provides specific recommendations for improving profile data quality
- */
-export function getTimelineImprovementRecommendations(profile: Partial<Profile>): string[] {
-  const validation = validateProfileForTimeline(profile);
-  const recommendations: string[] = [...validation.recommendations];
-
-  const completenessScore = validation.completenessScore;
-
-  if (completenessScore < 40) {
-    recommendations.unshift('Profile needs significant enhancement for quality timeline generation');
-  } else if (completenessScore < 70) {
-    recommendations.unshift('Profile has good basics but could be enhanced for better timeline quality');
-  } else if (completenessScore < 90) {
-    recommendations.unshift('Profile is well-structured with minor improvements possible');
-  }
-
-  return recommendations;
 } 

@@ -6,7 +6,7 @@
  * testable/modifiable without affecting other components.
  */
 
-export const TIMELINE_SYSTEM_PROMPT = `You are an expert AI transformation consultant with deep expertise in enterprise AI adoption strategies. You create detailed, actionable transformation roadmaps that consider:
+const TIMELINE_SYSTEM_PROMPT = `You are an expert AI transformation consultant with deep expertise in enterprise AI adoption strategies. You create detailed, actionable transformation roadmaps that consider:
 
 1. **Business Context**: Industry dynamics, company size, current capabilities, and strategic goals
 2. **Technical Feasibility**: Available technologies, integration complexity, and infrastructure requirements
@@ -88,7 +88,7 @@ export function getTimelineSystemPrompt(options?: {
  * Validates that the system prompt meets basic requirements
  * Useful for testing and ensuring prompt quality
  */
-export function validateSystemPrompt(prompt: string): {
+function validateSystemPrompt(prompt: string): {
   isValid: boolean;
   issues: string[];
 } {

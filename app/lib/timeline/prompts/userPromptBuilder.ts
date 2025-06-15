@@ -8,7 +8,7 @@ import { ScenarioType, getScenarioInstructions, getScenarioTimelineGuidance } fr
  * Profile structure and building comprehensive, company-specific prompts.
  */
 
-export interface ProfileDataExtraction {
+interface ProfileDataExtraction {
   companyBasics: string;
   strategicContext: string;
   businessProblems: string;
@@ -19,7 +19,7 @@ export interface ProfileDataExtraction {
 /**
  * Extracts and formats company basic information
  */
-export function extractCompanyBasics(profile: Partial<Profile>): string {
+function extractCompanyBasics(profile: Partial<Profile>): string {
   const sections: string[] = [];
   
   if (profile.companyName) {
@@ -52,7 +52,7 @@ export function extractCompanyBasics(profile: Partial<Profile>): string {
 /**
  * Extracts and formats strategic initiatives context
  */
-export function extractStrategicContext(profile: Partial<Profile>): string {
+function extractStrategicContext(profile: Partial<Profile>): string {
   if (!profile.strategicInitiatives || profile.strategicInitiatives.length === 0) {
     return '**Strategic Initiatives:** None specified';
   }
@@ -106,7 +106,7 @@ export function extractStrategicContext(profile: Partial<Profile>): string {
 /**
  * Extracts and formats business problems from all initiatives
  */
-export function extractBusinessProblems(profile: Partial<Profile>): string {
+function extractBusinessProblems(profile: Partial<Profile>): string {
   if (!profile.strategicInitiatives || profile.strategicInitiatives.length === 0) {
     return '**Business Problems:** None specified';
   }
@@ -133,7 +133,7 @@ export function extractBusinessProblems(profile: Partial<Profile>): string {
 /**
  * Extracts and formats systems and applications context
  */
-export function extractSystemsContext(profile: Partial<Profile>): string {
+function extractSystemsContext(profile: Partial<Profile>): string {
   if (!profile.systemsAndApplications || profile.systemsAndApplications.length === 0) {
     return '**Current Systems:** None specified';
   }
@@ -168,7 +168,7 @@ export function extractSystemsContext(profile: Partial<Profile>): string {
 /**
  * Creates a focused key data summary for timeline generation
  */
-export function createKeyDataSummary(profile: Partial<Profile>): string {
+function createKeyDataSummary(profile: Partial<Profile>): string {
   const keyPoints: string[] = [];
   
   // Company context

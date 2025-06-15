@@ -164,7 +164,7 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
           </svg>
         </div>
         <h3 className={styles.endCardTitle}>End of Journey</h3>
-        <p className={styles.endCardText}>You've reached the end of the AI transformation roadmap.</p>
+        <p className={styles.endCardText}>You&apos;ve reached the end of the AI transformation roadmap.</p>
       </div>
     </div>
   );

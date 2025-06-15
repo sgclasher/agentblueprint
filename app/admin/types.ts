@@ -39,7 +39,7 @@ export interface ServiceTypeInfo {
     description: string;
 }
 
-export interface ServiceField {
+interface ServiceField {
     name: string;
     label: string;
     type: string;
@@ -53,7 +53,7 @@ export interface ServiceField {
     key?: string;
 }
 
-export interface ServiceConfig {
+interface ServiceConfig {
     name: string;
     description?: string;
     fields: ServiceField[];

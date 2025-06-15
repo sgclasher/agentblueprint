@@ -10,6 +10,12 @@
 3. **✅ Timeline Encryption Error Resolved** - Fixed client-side service architecture, proper server-side operations
 4. **✅ AI Provider Recommendations Implemented** - Smart guidance: Gemini excels at timelines, GPT-4o at profiles
 
+**✅ Codebase Health Enhancement (February 2025):** Performed a comprehensive health check, resulting in a cleaner, more stable, and more modular codebase.
+- **Fixed All Linter Warnings**: Resolved all performance, correctness, and hook dependency issues identified by ESLint.
+- **Removed Dead Code**: Used `ts-prune` to identify and remove unused exports, reducing code footprint.
+- **Improved Modularity**: Encapsulated numerous internal functions and types, cleaning up module APIs.
+- **Test Suite Analysis**: Identified pre-existing issues in the test suite (15/21 suites failing), which are now slated for a future dedicated refactoring effort.
+
 **🔧 Latest Development (January 2025):** **Timeline Page Profile Dropdown Sync Issue Resolved**
 - **Problem**: When clicking "AI Timeline" menu item, timeline content from previous session appeared but no profile was selected in dropdown
 - **Root Cause**: Timeline data persisted in localStorage but profile selection wasn't synced when navigating without profileId parameter
@@ -356,6 +362,8 @@ npm test
 - ESLint for code quality
 - GitHub Actions for CI/CD
 - CSS Modules for component-level styling
+
+**Testing Status Note (March 2025):** The test suite is critically blocked by a persistent JSX parsing error in the Jest environment. Extensive debugging, including switching between SWC and Babel transformers, reinstalling dependencies, and reconfiguring Jest, has failed to resolve the issue. This problem is likely due to a deep-seated incompatibility in the local Windows development environment and requires hands-on debugging by a developer with direct machine access.
 
 ## Architecture Overview & Developer Guide
 

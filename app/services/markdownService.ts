@@ -30,7 +30,6 @@ export const markdownService = {
    */
   generateCompanyOverview(data: Partial<Profile>): string {
     const overviewParts = [
-      '## Company Overview',
       `**Company Name**: ${data.companyName || ''}`,
       `**Industry**: ${data.industry || ''}`,
       `**Employee Count**: ${data.employeeCount || ''}`,
@@ -38,7 +37,13 @@ export const markdownService = {
       `**Primary Location**: ${data.primaryLocation || ''}`,
       `**Website**: ${data.websiteUrl || ''}`,
     ];
-    return overviewParts.filter(p => p.split(':')[1]?.trim()).join('\n');
+    const filteredParts = overviewParts.filter(p => p.split(':')[1]?.trim());
+
+    if (filteredParts.length === 0) {
+      return '';
+    }
+    
+    return '## Company Overview\n' + filteredParts.join('\n');
   },
 
   /**

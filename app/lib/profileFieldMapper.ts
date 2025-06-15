@@ -6,7 +6,7 @@ import { Profile } from '../services/types';
  */
 
 // Field mapping configuration
-export const FIELD_MAPPINGS: { direct: string[]; nested: { [key: string]: string[] }; aliases: { [key: string]: string } } = {
+const FIELD_MAPPINGS: { direct: string[]; nested: { [key: string]: string[] }; aliases: { [key: string]: string } } = {
   // Direct mappings (field name matches exactly)
   direct: [
     'companyName',
@@ -57,7 +57,7 @@ export const FIELD_MAPPINGS: { direct: string[]; nested: { [key: string]: string
 type CompanySize = 'Startup' | 'Small' | 'Mid-Market' | 'Enterprise';
 
 // Company size mapping
-export const COMPANY_SIZE_MAPPINGS: {
+const COMPANY_SIZE_MAPPINGS: {
     patterns: { regex: RegExp; size: CompanySize }[];
     fromEmployeeCount: (count: string) => CompanySize | null;
     fromRevenue: (revenue: string) => CompanySize | null;
@@ -104,7 +104,7 @@ export const COMPANY_SIZE_MAPPINGS: {
  * @param {string} fieldName - The field name for context
  * @returns {any} Normalized value
  */
-export function normalizeFieldValue(value: any, fieldName: string): any {
+function normalizeFieldValue(value: any, fieldName: string): any {
   // Handle confidence wrapper objects
   if (value && typeof value === 'object' && 'value' in value && 'confidence' in value) {
     value = value.value;
@@ -139,49 +139,6 @@ export function normalizeFieldValue(value: any, fieldName: string): any {
   }
 
   return value;
-}
-
-/**
- * Map a single field to the profile schema
- * @param {string} fieldName - The extracted field name
- * @param {any} value - The field value
- * @param {Object} profile - The profile object to update
- */
-export function mapFieldToProfile(fieldName: string, value: any, profile: Partial<Profile>): void {
-  // Check for direct mapping
-  if (FIELD_MAPPINGS.direct.includes(fieldName)) {
-    (profile as any)[fieldName] = normalizeFieldValue(value, fieldName);
-    return;
-  }
-
-  // Check for alias
-  if (FIELD_MAPPINGS.aliases[fieldName]) {
-    const actualFieldName = FIELD_MAPPINGS.aliases[fieldName];
-    if (actualFieldName.includes('.')) {
-      // Handle nested alias
-      const path = actualFieldName.split('.');
-      setNestedValue(profile, path, normalizeFieldValue(value, path[path.length - 1]));
-    } else {
-      (profile as any)[actualFieldName] = normalizeFieldValue(value, actualFieldName);
-    }
-    return;
-  }
-
-  // Check for nested mapping
-  if (FIELD_MAPPINGS.nested[fieldName]) {
-    const path = FIELD_MAPPINGS.nested[fieldName];
-    setNestedValue(profile, path, normalizeFieldValue(value, path[path.length - 1]));
-    return;
-  }
-
-  // If no mapping found, try to intelligently place it
-  if (fieldName.includes('.')) {
-    const path = fieldName.split('.');
-    setNestedValue(profile, path, normalizeFieldValue(value, path[path.length - 1]));
-  } else {
-    // Place unmapped fields at root level
-    (profile as any)[fieldName] = normalizeFieldValue(value, fieldName);
-  }
 }
 
 /**

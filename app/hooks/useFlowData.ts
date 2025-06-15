@@ -7,7 +7,7 @@ import { applyDagreLayout } from '../utils/layoutGraph';
 import { AgenticData } from '../store/useAgenticStore';
 import { NodeData } from '../components/flow/types';
 
-export type CustomNode = Node<NodeData>;
+type CustomNode = Node<NodeData>;
 
 export function useFlowData(
   agenticData: AgenticData | null,

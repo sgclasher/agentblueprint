@@ -92,32 +92,6 @@ interface EncryptedServiceNowCredentials {
     encrypted_at: string;
 }
 
-export function encryptServiceNowCredentials(credentials: ServiceNowCredentials): EncryptedServiceNowCredentials {
-  const { username, password } = credentials;
-  
-  if (!username || !password) {
-    throw new Error('Username and password are required');
-  }
-
-  try {
-    const encryptedUsername = encryptCredential(username);
-    const encryptedPassword = encryptCredential(password);
-    
-    return {
-      encrypted_username: encryptedUsername.encrypted,
-      encrypted_password: encryptedPassword.encrypted,
-      username_iv: encryptedUsername.iv,
-      password_iv: encryptedPassword.iv,
-      username_auth_tag: encryptedUsername.authTag,
-      password_auth_tag: encryptedPassword.authTag,
-      encryption_algorithm: ALGORITHM,
-      encrypted_at: new Date().toISOString()
-    };
-  } catch (error: any) {
-    throw new Error(`Failed to encrypt ServiceNow credentials: ${error.message}`);
-  }
-}
-
 interface EncryptedServiceNowCredentialsForDecryption {
     encrypted_username: string;
     encrypted_password: string;
@@ -125,39 +99,4 @@ interface EncryptedServiceNowCredentialsForDecryption {
     password_iv: string;
     username_auth_tag: string;
     password_auth_tag: string;
-}
-
-export function decryptServiceNowCredentials(encryptedData: EncryptedServiceNowCredentialsForDecryption): ServiceNowCredentials {
-  const {
-    encrypted_username,
-    encrypted_password,
-    username_iv,
-    password_iv,
-    username_auth_tag,
-    password_auth_tag
-  } = encryptedData;
-
-  try {
-    const username = decryptCredential(encrypted_username, username_iv, username_auth_tag);
-    const password = decryptCredential(encrypted_password, password_iv, password_auth_tag);
-    
-    return { username, password };
-  } catch (error: any) {
-    throw new Error(`Failed to decrypt ServiceNow credentials: ${error.message}`);
-  }
-}
-
-export function validateEncryptionSetup(): boolean {
-  try {
-    getEncryptionKey();
-    
-    const testData = 'test-credential-data';
-    const encrypted = encryptCredential(testData);
-    const decrypted = decryptCredential(encrypted.encrypted, encrypted.iv, encrypted.authTag);
-    
-    return decrypted === testData;
-  } catch (error) {
-    console.error('Encryption setup validation failed:', error);
-    return false;
-  }
 } 

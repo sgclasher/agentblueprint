@@ -475,7 +475,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                     fontStyle: 'italic',
                     margin: '0.5rem 0'
                   }}>
-                    No business problems added yet. Click "Add Problem" to start.
+                    No business problems added yet. Click &quot;Add Problem&quot; to start.
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -549,7 +549,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                     fontStyle: 'italic',
                     margin: '0.5rem 0'
                   }}>
-                    No expected outcomes added yet. Click "Add Outcome" to start.
+                    No expected outcomes added yet. Click &quot;Add Outcome&quot; to start.
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -623,7 +623,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                     fontStyle: 'italic',
                     margin: '0.5rem 0'
                   }}>
-                    No success metrics added yet. Click "Add Metric" to start.
+                    No success metrics added yet. Click &quot;Add Metric&quot; to start.
                   </p>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

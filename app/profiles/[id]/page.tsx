@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, FC } from 'react';
+import React, { useState, useEffect, FC, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ProfileService } from '../../services/profileService';
 import { markdownService } from '../../services/markdownService';
@@ -759,7 +759,7 @@ const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
     const [error, setError] = useState<string | null>(null);
     const [isCached, setIsCached] = useState(false);
     
-    const loadCachedOpportunities = async () => {
+    const loadCachedOpportunities = useCallback(async () => {
       try {
         // Get current session for authorization
         const { supabase } = await import('../../lib/supabase');
@@ -786,12 +786,12 @@ const ProfileOpportunitiesTab: FC<ProfileTabProps> = ({ profile }) => {
       } catch (error) {
         // Silently fail - cached opportunities are optional
       }
-    };
+    }, [profile.id]);
 
     useEffect(() => {
       // Load cached opportunities on component mount
       loadCachedOpportunities();
-    }, [profile.id]);
+    }, [profile.id, loadCachedOpportunities]);
 
     const generateOpportunities = async (forceRegenerate = false) => {
       try {
@@ -1264,11 +1264,7 @@ export default function ProfileDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
 
-  useEffect(() => {
-    loadProfile();
-  }, [profileId]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setIsLoading(true);
       const profileData = await ProfileService.getProfile(profileId);
@@ -1285,7 +1281,11 @@ export default function ProfileDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [profileId]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [profileId, loadProfile]);
 
   const handleGenerateTimeline = () => {
     router.push(`/timeline?profileId=${profileId}`);

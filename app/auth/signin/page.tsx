@@ -183,7 +183,7 @@ export default function SignInPage() {
 
           <div className={styles.footer}>
             <p className={styles.footerText}>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <a 
                 href="/auth/signup" 
                 className={styles.footerLink}

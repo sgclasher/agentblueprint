@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
+import React, { useState, useEffect, FormEvent, ChangeEvent, useMemo } from 'react';
 import { X, Key, TestTube, CheckCircle, XCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import styles from './AddServiceForm.module.css';
 import { CredentialsRepository } from '../../repositories/credentialsRepository';
@@ -41,7 +41,7 @@ export default function AddServiceForm({
   const [dynamicModels, setDynamicModels] = useState<{ [provider: string]: ModelOption[] }>({});
   const [modelRefreshState, setModelRefreshState] = useState<{ [provider: string]: ModelRefreshState }>({});
 
-  const serviceConfigs: ServiceConfigs = {
+  const serviceConfigs: ServiceConfigs = useMemo(() => ({
     ai_provider: {
       openai: {
         name: 'OpenAI',
@@ -135,7 +135,7 @@ export default function AddServiceForm({
         ]
       }
     }
-  };
+  }), []);
 
   // Dynamic model refresh functionality
   const refreshModels = async (provider: string, forceRefresh: boolean = false) => {

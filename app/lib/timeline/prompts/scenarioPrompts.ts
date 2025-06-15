@@ -7,7 +7,7 @@
 
 export type ScenarioType = 'conservative' | 'balanced' | 'aggressive';
 
-export interface ScenarioConfig {
+interface ScenarioConfig {
   type: ScenarioType;
   description: string;
   instructions: string;
@@ -27,7 +27,7 @@ export interface ScenarioConfig {
 /**
  * Scenario configurations with detailed characteristics
  */
-export const SCENARIO_CONFIGS: Record<ScenarioType, ScenarioConfig> = {
+const SCENARIO_CONFIGS: Record<ScenarioType, ScenarioConfig> = {
   conservative: {
     type: 'conservative',
     description: 'Low-risk approach with proven technologies and extended timelines',
@@ -83,7 +83,7 @@ export const SCENARIO_CONFIGS: Record<ScenarioType, ScenarioConfig> = {
 /**
  * Gets the scenario configuration for a given scenario type
  */
-export function getScenarioConfig(scenarioType: ScenarioType): ScenarioConfig {
+function getScenarioConfig(scenarioType: ScenarioType): ScenarioConfig {
   return SCENARIO_CONFIGS[scenarioType];
 }
 

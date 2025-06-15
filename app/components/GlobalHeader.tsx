@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTheme } from './theme/ThemeProvider';
 import useAuthStore from '../store/useAuthStore';
 import { 
@@ -80,11 +81,13 @@ export default function GlobalHeader() {
           <Link href="/" className="brand-link">
             <h1 className="app-title">Agent Blueprint</h1>
             <div className="byline-wrapper" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-              <img 
+              <Image 
                 src="/images/nowgenticLogo.svg"
                 alt="Company Logo"
                 className="company-logo"
-                style={{ height: 28 }}
+                width={120}
+                height={28}
+                style={{ height: 28, width: 'auto' }}
               />
             </div>
           </Link>

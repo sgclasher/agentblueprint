@@ -3,13 +3,13 @@
  * Quick diagnostic tool to check if Supabase is properly configured
  */
 
-export interface EnvVars {
+interface EnvVars {
   NEXT_PUBLIC_SUPABASE_URL: string | undefined;
   NEXT_PUBLIC_SUPABASE_ANON_KEY: string | undefined;
   hasEncryptionKey: boolean;
 }
 
-export interface CheckResult {
+interface CheckResult {
   envVars: EnvVars;
   issues: string[];
   isValid: boolean;

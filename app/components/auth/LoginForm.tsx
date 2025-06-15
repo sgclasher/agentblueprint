@@ -151,7 +151,7 @@ export default function LoginForm({ onToggleMode, onSuccess }: LoginFormProps) {
 
         <div className="mt-6 text-center">
           <p className="text-gray-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
               onClick={onToggleMode}
               className="text-blue-400 hover:text-blue-300 font-medium"

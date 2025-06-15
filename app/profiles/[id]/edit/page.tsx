@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ProfileService } from '../../../services/profileService';
 import ProfileWizard from '../../components/ProfileWizard';
@@ -16,13 +16,7 @@ export default function EditProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (profileId) {
-      loadProfile();
-    }
-  }, [profileId]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       setIsLoading(true);
       const profileData = await ProfileService.getProfile(profileId);
@@ -39,7 +33,13 @@ export default function EditProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [profileId]);
+
+  useEffect(() => {
+    if (profileId) {
+      loadProfile();
+    }
+  }, [profileId, loadProfile]);
 
   const handleComplete = (updatedProfile: Profile) => {
     router.push(`/profiles/${updatedProfile.id}`);

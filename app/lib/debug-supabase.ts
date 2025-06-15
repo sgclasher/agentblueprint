@@ -29,8 +29,7 @@ interface ProfileAccessResult {
     user?: string;
 }
 
-
-export function debugSupabaseConfig(): SupabaseConfig {
+function debugSupabaseConfig(): SupabaseConfig {
   const config = {
     hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -44,7 +43,7 @@ export function debugSupabaseConfig(): SupabaseConfig {
   return config;
 }
 
-export async function debugSupabaseConnection(): Promise<ConnectionResult> {
+async function debugSupabaseConnection(): Promise<ConnectionResult> {
   try {
     console.log('🔍 Testing Supabase connection...');
     
@@ -103,7 +102,7 @@ export async function debugSupabaseConnection(): Promise<ConnectionResult> {
   }
 }
 
-export async function debugProfileAccess(profileId: string): Promise<ProfileAccessResult> {
+async function debugProfileAccess(profileId: string): Promise<ProfileAccessResult> {
   try {
     console.log(`🔍 Testing profile access for ID: ${profileId}`);
     

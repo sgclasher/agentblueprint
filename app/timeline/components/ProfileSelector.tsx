@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, FC } from 'react';
+import Link from 'next/link';
 import styles from './ProfileSelector.module.css';
 import { ProfileService } from '../../services/profileService';
 import { Profile } from '../../services/types';
@@ -81,7 +82,7 @@ const ProfileSelector: FC<ProfileSelectorProps> = ({
       <div className={styles.profileSelector}>
         <label className={styles.label}>Client Profile</label>
         <div className={styles.noProfiles}>
-          No profiles found. <a href="/profiles">Create a profile</a> to get started.
+          No profiles found. <Link href="/profiles" className={styles.createLink}>Create a profile</Link> to get started.
         </div>
       </div>
     );

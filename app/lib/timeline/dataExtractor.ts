@@ -9,7 +9,7 @@ import { extractProfileDataSummary, ProfileDataSummary } from './validation';
  * optimized for AI timeline creation.
  */
 
-export interface TimelineProfileData {
+interface TimelineProfileData {
   companyProfile: CompanyProfile;
   strategicContext: StrategicContext;
   technicalContext: TechnicalContext;
@@ -17,7 +17,7 @@ export interface TimelineProfileData {
   metadata: ProfileMetadata;
 }
 
-export interface CompanyProfile {
+interface CompanyProfile {
   name: string;
   industry: string;
   size: {
@@ -28,7 +28,7 @@ export interface CompanyProfile {
   website?: string;
 }
 
-export interface StrategicContext {
+interface StrategicContext {
   initiatives: ProcessedInitiative[];
   totalInitiatives: number;
   highPriorityCount: number;
@@ -36,7 +36,7 @@ export interface StrategicContext {
   hasBusinessMetrics: boolean;
 }
 
-export interface ProcessedInitiative {
+interface ProcessedInitiative {
   name: string;
   priority?: 'High' | 'Medium' | 'Low';
   status?: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
@@ -52,7 +52,7 @@ export interface ProcessedInitiative {
   businessValue: string; // Calculated summary
 }
 
-export interface TechnicalContext {
+interface TechnicalContext {
   systems: ProcessedSystem[];
   systemsByCategory: { [category: string]: ProcessedSystem[] };
   totalSystems: number;
@@ -60,7 +60,7 @@ export interface TechnicalContext {
   hasModernTech: boolean;
 }
 
-export interface ProcessedSystem {
+interface ProcessedSystem {
   name: string;
   category: string;
   vendor?: string;
@@ -68,7 +68,7 @@ export interface ProcessedSystem {
   description?: string;
 }
 
-export interface BusinessContext {
+interface BusinessContext {
   allBusinessProblems: string[];
   problemsByInitiative: { [initiative: string]: string[] };
   totalProblems: number;
@@ -76,7 +76,7 @@ export interface BusinessContext {
   opportunityAreas: string[];
 }
 
-export interface ProfileMetadata {
+interface ProfileMetadata {
   completenessScore: number;
   dataQuality: 'High' | 'Medium' | 'Low';
   timelineReadiness: boolean;
@@ -116,7 +116,7 @@ export function extractTimelineData(profile: Partial<Profile>): TimelineProfileD
 /**
  * Extracts company profile information
  */
-export function extractCompanyProfile(profile: Partial<Profile>): CompanyProfile {
+function extractCompanyProfile(profile: Partial<Profile>): CompanyProfile {
   return {
     name: profile.companyName || 'Unknown Company',
     industry: profile.industry || 'Unknown Industry',
@@ -132,7 +132,7 @@ export function extractCompanyProfile(profile: Partial<Profile>): CompanyProfile
 /**
  * Extracts and processes strategic initiatives
  */
-export function extractStrategicContext(profile: Partial<Profile>): StrategicContext {
+function extractStrategicContext(profile: Partial<Profile>): StrategicContext {
   const initiatives = profile.strategicInitiatives || [];
   
   const processedInitiatives = initiatives.map(init => processInitiative(init));
@@ -155,7 +155,7 @@ export function extractStrategicContext(profile: Partial<Profile>): StrategicCon
 /**
  * Processes a single strategic initiative
  */
-export function processInitiative(initiative: StrategicInitiative): ProcessedInitiative {
+function processInitiative(initiative: StrategicInitiative): ProcessedInitiative {
   const businessProblems = (initiative.businessProblems || []).filter(p => p && p.trim().length > 0);
   const expectedOutcomes = (initiative.expectedOutcomes || []).filter(o => o && o.trim().length > 0);
   const successMetrics = (initiative.successMetrics || []).filter(m => m && m.trim().length > 0);
@@ -192,7 +192,7 @@ export function processInitiative(initiative: StrategicInitiative): ProcessedIni
 /**
  * Extracts and processes technical systems context
  */
-export function extractTechnicalContext(profile: Partial<Profile>): TechnicalContext {
+function extractTechnicalContext(profile: Partial<Profile>): TechnicalContext {
   const systems = profile.systemsAndApplications || [];
   
   const processedSystems = systems.map(sys => processSystem(sys));
@@ -227,7 +227,7 @@ export function extractTechnicalContext(profile: Partial<Profile>): TechnicalCon
 /**
  * Processes a single system/application
  */
-export function processSystem(system: SystemApplication): ProcessedSystem {
+function processSystem(system: SystemApplication): ProcessedSystem {
   return {
     name: system.name,
     category: system.category || 'Other',
@@ -240,7 +240,7 @@ export function processSystem(system: SystemApplication): ProcessedSystem {
 /**
  * Extracts business context including problems and opportunities
  */
-export function extractBusinessContext(profile: Partial<Profile>): BusinessContext {
+function extractBusinessContext(profile: Partial<Profile>): BusinessContext {
   const initiatives = profile.strategicInitiatives || [];
   
   const allBusinessProblems: string[] = [];
@@ -270,7 +270,7 @@ export function extractBusinessContext(profile: Partial<Profile>): BusinessConte
 /**
  * Identifies key pain points from business problems
  */
-export function identifyKeyPainPoints(problems: string[], initiatives: StrategicInitiative[]): string[] {
+function identifyKeyPainPoints(problems: string[], initiatives: StrategicInitiative[]): string[] {
   const keyPainPoints: string[] = [];
   
   // Get problems from high-priority initiatives
@@ -292,7 +292,7 @@ export function identifyKeyPainPoints(problems: string[], initiatives: Strategic
 /**
  * Analyzes problems to identify common themes
  */
-export function analyzeProblemsForThemes(problems: string[]): string[] {
+function analyzeProblemsForThemes(problems: string[]): string[] {
   const themes: string[] = [];
   const problemsLower = problems.map(p => p.toLowerCase());
   
@@ -321,7 +321,7 @@ export function analyzeProblemsForThemes(problems: string[]): string[] {
 /**
  * Identifies opportunity areas based on problems and systems
  */
-export function identifyOpportunityAreas(problems: string[], systems: SystemApplication[]): string[] {
+function identifyOpportunityAreas(problems: string[], systems: SystemApplication[]): string[] {
   const opportunities: string[] = [];
   const problemsText = problems.join(' ').toLowerCase();
   const systemCategories = systems.map(s => s.category.toLowerCase());
@@ -357,7 +357,7 @@ export function identifyOpportunityAreas(problems: string[], systems: SystemAppl
 /**
  * Extracts profile metadata for timeline generation assessment
  */
-export function extractProfileMetadata(profile: Partial<Profile>): ProfileMetadata {
+function extractProfileMetadata(profile: Partial<Profile>): ProfileMetadata {
   const summary = extractProfileDataSummary(profile);
   
   const missingCriticalData: string[] = [];
@@ -409,7 +409,7 @@ export function extractProfileMetadata(profile: Partial<Profile>): ProfileMetada
 /**
  * Calculates timeline-specific completeness score
  */
-export function calculateTimelineCompletenessScore(summary: ProfileDataSummary): number {
+function calculateTimelineCompletenessScore(summary: ProfileDataSummary): number {
   let score = 0;
   
   // Essential fields (50 points)
@@ -436,7 +436,7 @@ export function calculateTimelineCompletenessScore(summary: ProfileDataSummary):
 /**
  * Converts timeline data back to a format suitable for prompts
  */
-export function formatTimelineDataForPrompt(timelineData: TimelineProfileData): string {
+function formatTimelineDataForPrompt(timelineData: TimelineProfileData): string {
   const { companyProfile, strategicContext, technicalContext, businessContext } = timelineData;
   
   const sections: string[] = [];

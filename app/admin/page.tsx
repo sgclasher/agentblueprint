@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '../store/useAuthStore';
 import GlobalHeader from '../components/GlobalHeader';
@@ -45,7 +45,7 @@ export default function AdminPage() {
     }
   }, [isAuthenticated, router]);
 
-  const loadCredentials = async () => {
+  const loadCredentials = useCallback(async () => {
     try {
       setLoading(true);
       if(!user) throw new Error("User not authenticated");
@@ -56,13 +56,13 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, selectedTab]);
 
   useEffect(() => {
     if (user) {
       loadCredentials();
     }
-  }, [user, selectedTab]);
+  }, [user, loadCredentials]);
 
   const handleTestConnection = async (credentialId: string) => {
     setTestingConnections(prev => new Set([...prev, credentialId]));
