@@ -7,7 +7,7 @@ const createJestConfig = nextJest({
 });
 
 // Add any custom config to be passed to Jest
-const customJestConfig: Config = {
+const config: Config = {
   // Add more setup options before each test is run
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
@@ -20,26 +20,18 @@ const customJestConfig: Config = {
     '^@/lib/(.*)$': '<rootDir>/app/lib/$1',
     // Mock Supabase modules
     '^@supabase/supabase-js$': '<rootDir>/app/__mocks__/@supabase/supabase-js.js',
-    // Handle CSS modules
-    '\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-    // Handle static assets
-    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
   },
   testEnvironment: 'jest-environment-jsdom',
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  collectCoverageFrom: [
-    'app/**/*.{js,jsx,ts,tsx}',
-    '!app/**/*.d.ts',
-    '!app/**/*.stories.{js,jsx,ts,tsx}',
-    '!app/**/__tests__/**',
+  // Override transformers for Windows compatibility
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+  },
+  transformIgnorePatterns: [
+    '/node_modules/',
+    '^.+\\.module\\.(css|sass|scss)$',
   ],
   // Windows-compatible settings
-  watchPathIgnorePatterns: ['node_modules'],
-  // Increase timeout for slower Windows file operations
   testTimeout: 10000,
-  // Use Node.js resolution algorithm
-  resolver: undefined,
   // Clear mocks between tests
   clearMocks: true,
   // Restore mocks between tests
@@ -47,4 +39,4 @@ const customJestConfig: Config = {
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-export default createJestConfig(customJestConfig); 
+export default createJestConfig(config); 

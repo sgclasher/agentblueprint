@@ -3,6 +3,7 @@
 import React, { MutableRefObject } from 'react';
 import styles from './TimelineContent.module.css';
 import { Timeline, Profile } from '../../services/types';
+import ProviderSelector from './ProviderSelector';
 
 interface TimelineSection {
     id: string;
@@ -17,9 +18,12 @@ interface TimelineContentProps {
     timelineData: Timeline;
     sectionRefs: MutableRefObject<{ [key: string]: HTMLElement | null }>;
     businessProfile: Partial<Profile>;
+    selectedProvider?: string | null;
+    onProviderChange?: (provider: string) => void;
+    isGenerating?: boolean;
 }
 
-export default function TimelineContent({ sections, timelineData, sectionRefs, businessProfile }: TimelineContentProps) {
+export default function TimelineContent({ sections, timelineData, sectionRefs, businessProfile, selectedProvider, onProviderChange, isGenerating = false }: TimelineContentProps) {
   const registerRef = (id: string, element: HTMLElement | null) => {
     if (element) {
       sectionRefs.current[id] = element;
@@ -62,6 +66,26 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
   
   return (
     <div className={styles.timelineContent}>
+      {/* Provider Header Section */}
+      {onProviderChange && (
+        <div className={styles.providerHeader}>
+          <div className={styles.providerHeaderContent}>
+            <div className={styles.providerInfo}>
+              <h3>AI Provider Selection</h3>
+              <p>Choose your preferred AI provider for timeline generation</p>
+            </div>
+            <div className={styles.providerControls}>
+              <ProviderSelector
+                selectedProvider={selectedProvider}
+                onProviderChange={onProviderChange}
+                disabled={isGenerating}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Timeline Sections */}
       {sections.map((section) => {
         const { content, highlights } = getSectionContent(section.id);
         

@@ -222,3 +222,53 @@
   color: var(--timeline-text-muted);
   line-height: 1.4;
 }
+
+/* Provider Header Styles */
+.providerHeader {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--timeline-border-primary);
+  border-radius: var(--timeline-border-radius);
+  padding: var(--timeline-spacing-lg);
+  margin-bottom: var(--timeline-spacing-xl);
+  backdrop-filter: blur(10px);
+}
+
+.providerHeaderContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--timeline-spacing-lg);
+}
+
+.providerInfo h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--timeline-text-primary);
+  margin: 0 0 var(--timeline-spacing-xs) 0;
+}
+
+.providerInfo p {
+  font-size: 0.9rem;
+  color: var(--timeline-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.providerControls {
+  flex-shrink: 0;
+  min-width: 200px;
+}
+
+/* Responsive adjustments for provider header */
+@media (max-width: 768px) {
+  .providerHeaderContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--timeline-spacing-md);
+  }
+  
+  .providerControls {
+    width: 100%;
+    min-width: unset;
+  }
+}

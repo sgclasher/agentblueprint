@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTimeline } from '../hooks/useTimeline';
+import useBusinessProfileStore from '../store/useBusinessProfileStore';
 import GlobalHeader from '../components/GlobalHeader';
 import TimelineSidebar from './components/TimelineSidebar';
 import TimelineContent from './components/TimelineContent';
@@ -36,6 +37,9 @@ export default function TimelinePage() {
     handleProfileSelect
   } = useTimeline();
 
+  // Get provider state from store
+  const { selectedProvider, setSelectedProvider } = useBusinessProfileStore();
+
   const renderContent = () => {
     if (isLoading) {
       const message = isProfileTimeline 
@@ -54,6 +58,9 @@ export default function TimelinePage() {
         timelineData={timelineData}
         sectionRefs={sectionRefs}
         businessProfile={businessProfile}
+        selectedProvider={selectedProvider}
+        onProviderChange={setSelectedProvider}
+        isGenerating={isLoading}
       />
     );
   };

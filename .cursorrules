@@ -1,5 +1,4 @@
 # Development Guidelines
-
 - Follow the project’s code style and linting rules.
 - Write clear, self-documenting code with descriptive names.
 - Update or add docstrings and documentation for any new or changed code.
@@ -11,7 +10,8 @@
 - If unsure, ask for clarification or propose alternatives.
 
 # Docs & Decisions
-
+- Put current task's plan in instructions.md and keep it updated with current context.
 - Keep architecture and API decisions up to date in README.md
 - Add new design rationale under the "Architecture Overview" section
 - When app/api/** changes, update the "API Reference" section in README.md
+- At session end: Replace instructions.md with concise handoff summary for next LLM.

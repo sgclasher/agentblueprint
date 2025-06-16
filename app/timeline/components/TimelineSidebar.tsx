@@ -2,7 +2,6 @@
 
 import React, { useLayoutEffect, useRef, useState, FC } from 'react';
 import styles from './TimelineSidebar.module.css';
-import ProviderSelector from './ProviderSelector';
 import ProfileSelector from './ProfileSelector';
 import useBusinessProfileStore, { ScenarioType } from '../../store/useBusinessProfileStore';
 import { Profile, Timeline } from '../../services/types';
@@ -279,12 +278,6 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
                 Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
               </div>
             )}
-
-            <ProviderSelector
-              selectedProvider={selectedProvider}
-              onProviderChange={setSelectedProvider}
-              disabled={isGenerating}
-            />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--timeline-spacing-sm)' }}>
               <button
