@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import useBusinessProfileStore, { ScenarioType } from '../store/useBusinessProfileStore';
 import { ProfileService } from '../services/profileService';
@@ -87,7 +87,7 @@ export function useTimeline() {
   const sectionRefs = useRef<{ [key: string]: HTMLElement }>({});
   const effectRan = useRef(false);
 
-  const timelineSections = getTimelineSections(timelineData);
+  const timelineSections = useMemo(() => getTimelineSections(timelineData), [timelineData]);
 
   useEffect(() => {
     if (effectRan.current === true && process.env.NODE_ENV === 'development') {
@@ -143,7 +143,7 @@ export function useTimeline() {
       
       let newActiveSectionId: string;
       const isScrollable = scrollHeight > clientHeight;
-      const atBottom = isScrollable && (scrollHeight - scrollTop - clientHeight < 1);
+      const atBottom = isScrollable && (scrollHeight - scrollTop - clientHeight < 5);
 
       if (atBottom) {
         newActiveSectionId = timelineSections[timelineSections.length - 1].id;
@@ -177,7 +177,7 @@ export function useTimeline() {
         contentElement.removeEventListener('scroll', handleScroll);
       };
     }
-  }, [timelineData, timelineSections]);
+  }, [timelineSections]);
 
   const handleSectionClick = useCallback((sectionId: string) => {
     const element = sectionRefs.current[sectionId];

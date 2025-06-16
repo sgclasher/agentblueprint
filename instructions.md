@@ -1,5 +1,14 @@
 # Development History & Agent Instructions
 
+## 🎯 Current Task
+
+*   [ ] **1. Create a Test for `useTimeline` Hook**: In a new test file, `app/hooks/useTimeline.test.tsx`, write a test case to verify the scroll-spy functionality. The test will render a component using the `useTimeline` hook, simulate a scroll event, and assert that the `activeSection` state is correctly updated.
+*   [ ] **2. Run Initial Test**: Execute the test suite to confirm that the new test fails with the current implementation, as expected.
+*   [ ] **3. Memoize `timelineSections`**: In `app/hooks/useTimeline.ts`, import `useMemo` from React and wrap the `getTimelineSections(timelineData)` call in `useMemo`. This will stabilize the `timelineSections` variable.
+*   [ ] **4. Update `useLayoutEffect` Dependencies**: Adjust the dependency array of the scroll-handling `useLayoutEffect` in `app/hooks/useTimeline.ts` to depend on the newly memoized `timelineSections`.
+*   [ ] **5. Re-run Tests**: Run the test suite again to confirm that the fix has resolved the issue and the test now passes.
+*   [ ] **6. Manual Verification**: Perform a final manual check of the application to ensure the timeline's sidebar navigation and progress indicator work as expected during scrolling.
+
 This file tracks major development milestones and serves as a quick reference for agents working on the Agentic AI Flow platform.
 
 ## 🎯 Current State (January 2025)
@@ -7,6 +16,7 @@ This file tracks major development milestones and serves as a quick reference fo
 **Production-Ready Platform** with comprehensive AI integration, secure user management, and advanced business intelligence capabilities.
 
 ### Recent Achievements
+- **Timeline Scroll-Spy Fix** ✅ (February 2025) - Repaired the scroll-spy functionality in the AI Transformation Timeline by memoizing the `timelineSections` array in the `useTimeline` hook, stabilizing the scroll event listener.
 - **Timeline Widget Reorganization** ✅ (January 2025) - Consolidated timeline controls into single expandable widget with profile persistence
 - **AI Opportunities Page Refresh Fix** ✅ (January 2025) - Resolved data persistence issues with enhanced security architecture
 - **Timeline Profile Dropdown Sync Fix** ✅ (January 2025) - Fixed profile selection persistence across page refreshes
