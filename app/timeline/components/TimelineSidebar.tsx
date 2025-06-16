@@ -3,9 +3,8 @@
 import React, { useLayoutEffect, useRef, useState, FC } from 'react';
 import styles from './TimelineSidebar.module.css';
 import ProfileSelector from './ProfileSelector';
-import useBusinessProfileStore, { ScenarioType } from '../../store/useBusinessProfileStore';
+import { ScenarioType } from '../../store/useBusinessProfileStore';
 import { Profile, Timeline } from '../../services/types';
-import { supabase } from '../../lib/supabase';
 
 interface TimelineSection {
     id: string;
@@ -20,14 +19,6 @@ interface TimelineSidebarProps {
     onSectionClick: (id: string) => void;
     theme: string;
     onThemeToggle: () => void;
-    timelineCached: boolean;
-    timelineGeneratedAt: string | null;
-    timelineScenarioType: ScenarioType | null;
-    onRegenerateTimeline: (profile: Profile, scenarioType: ScenarioType | null, provider: string | null) => Promise<any>;
-    isGenerating: boolean;
-    currentProfile: Profile | null;
-    timelineData?: Timeline | null;
-    businessProfile?: Partial<Profile>;
     // Profile selection props
     availableProfiles?: Profile[];
     isLoadingProfiles?: boolean;
@@ -38,15 +29,9 @@ interface TimelineSidebarProps {
 const TimelineSidebar: FC<TimelineSidebarProps> = ({ 
   sections, 
   activeSection, 
-  onSectionClick, 
-  timelineCached,
-  timelineGeneratedAt,
-  timelineScenarioType,
-  onRegenerateTimeline,
-  isGenerating = false,
-  currentProfile = null,
-  timelineData,
-  businessProfile,
+  onSectionClick,
+  theme,
+  onThemeToggle,
   // Profile selection props
   availableProfiles = [],
   isLoadingProfiles = false,
@@ -55,8 +40,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
 }) => {
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-  const { selectedProvider, setSelectedProvider } = useBusinessProfileStore();
-  const [isExporting, setIsExporting] = useState(false);
+
   
   const [trackContainerTop, setTrackContainerTop] = useState('0px');
   const [trackContainerHeight, setTrackContainerHeight] = useState('0px');
@@ -66,99 +50,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   const DOT_HALF_HEIGHT_PX = 12;
   const DOT_FULL_HEIGHT_PX = 24;
 
-  const formatGeneratedTime = (timestamp: string | null): string => {
-    if (!timestamp) return '';
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
 
-  const handleRegenerateClick = async () => {
-    if (onRegenerateTimeline && currentProfile) {
-      try {
-        const result = await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
-      } catch (error) {
-        console.error('Error regenerating timeline:', error);
-      }
-    }
-  };
-
-  const handleExportPDF = async () => {
-    if (!timelineData || !businessProfile) {
-      alert('No timeline data available to export');
-      return;
-    }
-
-    setIsExporting(true);
-    
-    try {
-      // Get the current session for authentication
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        throw new Error('Authentication required. Please sign in to export PDF.');
-      }
-
-      const response = await fetch('/api/timeline/export-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          timelineData,
-          businessProfile,
-          options: {
-            format: 'A4',
-            orientation: 'portrait',
-            includeMetrics: true
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Export failed');
-      }
-
-      // Get the PDF blob and trigger download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      
-      // Get filename from response header or generate one
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = 'AI_Timeline.pdf';
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
-      }
-      
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-    } catch (error) {
-      console.error('PDF export failed:', error);
-      alert('Failed to export PDF: ' + (error as Error).message);
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   useLayoutEffect(() => {
     if (navRef.current && sections && sections.length > 0) {
@@ -223,7 +115,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
           <ProfileSelector
             selectedProfileId={selectedProfileId}
             onProfileSelect={onProfileSelect}
-            disabled={isGenerating}
+            disabled={false}
           />
         )}
       </div>
@@ -263,75 +155,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
         ))}
       </nav>
 
-      <div className={styles.sidebarFooter}>
-        {timelineGeneratedAt && (
-          <div className={styles.cacheInfo}>
-            <div className={styles.cacheStatus}>
-              {timelineCached ? '💾' : '✨'} 
-              <span>
-                {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
-              </span>
-            </div>
-            
-            {timelineScenarioType && (
-              <div className={styles.scenarioInfo}>
-                Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
-              </div>
-            )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--timeline-spacing-sm)' }}>
-              <button
-                className="btn btn-secondary"
-                onClick={handleRegenerateClick}
-                disabled={isGenerating}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-xs)'
-                }}
-              >
-                {isGenerating ? (
-                  <>
-                    <span className={styles.spinner}>⟳</span>
-                    Regenerating...
-                  </>
-                ) : (
-                  <>
-                    🔄 Regenerate Timeline
-                  </>
-                )}
-              </button>
-              
-              <button
-                className="btn btn-primary"
-                onClick={handleExportPDF}
-                disabled={isExporting || !timelineData}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-xs)',
-                  fontSize: '0.9rem'
-                }}
-              >
-                {isExporting ? (
-                  <>
-                    <span className={styles.spinner}>⟳</span>
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    📄 Export PDF
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
     </aside>
   );
 }

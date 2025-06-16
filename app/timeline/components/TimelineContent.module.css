@@ -228,8 +228,8 @@
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--timeline-border-primary);
   border-radius: var(--timeline-border-radius);
-  padding: var(--timeline-spacing-lg);
-  margin-bottom: var(--timeline-spacing-xl);
+  padding: var(--timeline-spacing-md);
+  margin-bottom: var(--timeline-spacing-lg);
   backdrop-filter: blur(10px);
 }
 
@@ -238,25 +238,72 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--timeline-spacing-lg);
+  flex-wrap: wrap;
+  min-height: 40px;
 }
 
-.providerInfo h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--timeline-text-primary);
-  margin: 0 0 var(--timeline-spacing-xs) 0;
-}
-
-.providerInfo p {
-  font-size: 0.9rem;
-  color: var(--timeline-text-secondary);
-  margin: 0;
-  line-height: 1.4;
+.providerSection {
+  display: flex;
+  align-items: center;
+  gap: var(--timeline-spacing-md);
 }
 
 .providerControls {
   flex-shrink: 0;
   min-width: 200px;
+}
+
+.timelineControlsSection {
+  display: flex;
+  align-items: center;
+  gap: var(--timeline-spacing-md);
+  min-width: 350px;
+}
+
+.cacheInfo {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.cacheStatus {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--timeline-text-secondary);
+  white-space: nowrap;
+}
+
+.scenarioInfo {
+  font-size: 0.8rem;
+  color: var(--timeline-text-muted);
+  margin-left: 4px;
+}
+
+.timelineActions {
+  display: flex;
+  gap: var(--timeline-spacing-sm);
+}
+
+.timelineActions button {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  white-space: nowrap;
+  height: 32px;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive adjustments for provider header */
@@ -267,8 +314,32 @@
     gap: var(--timeline-spacing-md);
   }
   
+  .providerSection {
+    width: 100%;
+  }
+  
+  .timelineControlsSection {
+    width: 100%;
+    align-items: flex-start;
+    min-width: unset;
+  }
+  
   .providerControls {
     width: 100%;
     min-width: unset;
+  }
+  
+  .cacheInfo {
+    flex-wrap: wrap;
+  }
+  
+  .timelineActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .timelineActions button {
+    flex: 1;
+    min-width: 0;
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useTimeline } from '../hooks/useTimeline';
 import useBusinessProfileStore from '../store/useBusinessProfileStore';
 import GlobalHeader from '../components/GlobalHeader';
@@ -10,6 +10,7 @@ import MetricsWidget from './components/MetricsWidget';
 import styles from './Timeline.module.css';
 import './timeline.css';
 import { TimelinePlaceholder, WelcomeMessage } from './components/TimelinePlaceholder';
+import { supabase } from '../lib/supabase';
 
 export default function TimelinePage() {
   const {
@@ -39,6 +40,77 @@ export default function TimelinePage() {
 
   // Get provider state from store
   const { selectedProvider, setSelectedProvider } = useBusinessProfileStore();
+  
+  // Export PDF state
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPDF = async () => {
+    if (!timelineData || !businessProfile) {
+      alert('No timeline data available to export');
+      return;
+    }
+
+    setIsExporting(true);
+    
+    try {
+      // Get the current session for authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error('Authentication required. Please sign in to export PDF.');
+      }
+
+      const response = await fetch('/api/timeline/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          timelineData,
+          businessProfile,
+          options: {
+            format: 'A4',
+            orientation: 'portrait',
+            includeMetrics: true
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Export failed');
+      }
+
+      // Get the PDF blob and trigger download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from response header or generate one
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = 'AI_Timeline.pdf';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      alert('Failed to export PDF: ' + (error as Error).message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -61,6 +133,14 @@ export default function TimelinePage() {
         selectedProvider={selectedProvider}
         onProviderChange={setSelectedProvider}
         isGenerating={isLoading}
+        // Timeline controls props (moved from sidebar)
+        timelineCached={timelineCached}
+        timelineGeneratedAt={timelineGeneratedAt}
+        timelineScenarioType={timelineScenarioType}
+        onRegenerateTimeline={regenerateTimeline}
+        currentProfile={currentProfile}
+        onExportPDF={handleExportPDF}
+        isExporting={isExporting}
       />
     );
   };
@@ -76,14 +156,7 @@ export default function TimelinePage() {
           onSectionClick={handleSectionClick}
           theme={theme}
           onThemeToggle={toggleTheme}
-          timelineCached={timelineCached}
-          timelineGeneratedAt={timelineGeneratedAt}
-          timelineScenarioType={timelineScenarioType}
-          onRegenerateTimeline={regenerateTimeline}
-          isGenerating={isLoading}
-          currentProfile={currentProfile}
-          timelineData={timelineData}
-          businessProfile={businessProfile}
+          // Profile selection props
           availableProfiles={availableProfiles}
           isLoadingProfiles={isLoadingProfiles}
           selectedProfileId={selectedProfileId}

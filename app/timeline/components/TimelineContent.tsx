@@ -4,6 +4,7 @@ import React, { MutableRefObject } from 'react';
 import styles from './TimelineContent.module.css';
 import { Timeline, Profile } from '../../services/types';
 import ProviderSelector from './ProviderSelector';
+import { ScenarioType } from '../../store/useBusinessProfileStore';
 
 interface TimelineSection {
     id: string;
@@ -21,15 +22,65 @@ interface TimelineContentProps {
     selectedProvider?: string | null;
     onProviderChange?: (provider: string) => void;
     isGenerating?: boolean;
+    // Timeline controls props (moved from sidebar)
+    timelineCached?: boolean;
+    timelineGeneratedAt?: string | null;
+    timelineScenarioType?: ScenarioType | null;
+    onRegenerateTimeline?: (profile: Profile, scenarioType: ScenarioType | null, provider: string | null) => Promise<any>;
+    currentProfile?: Profile | null;
+    onExportPDF?: () => void;
+    isExporting?: boolean;
 }
 
-export default function TimelineContent({ sections, timelineData, sectionRefs, businessProfile, selectedProvider, onProviderChange, isGenerating = false }: TimelineContentProps) {
+export default function TimelineContent({ 
+  sections, 
+  timelineData, 
+  sectionRefs, 
+  businessProfile, 
+  selectedProvider, 
+  onProviderChange, 
+  isGenerating = false,
+  // Timeline controls props
+  timelineCached = false,
+  timelineGeneratedAt = null,
+  timelineScenarioType = null,
+  onRegenerateTimeline,
+  currentProfile = null,
+  onExportPDF,
+  isExporting = false
+}: TimelineContentProps) {
   const registerRef = (id: string, element: HTMLElement | null) => {
     if (element) {
       sectionRefs.current[id] = element;
     }
   };
   
+  const formatGeneratedTime = (timestamp: string | null): string => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const handleRegenerateClick = async () => {
+    if (onRegenerateTimeline && currentProfile) {
+      try {
+        await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
+      } catch (error) {
+        console.error('Error regenerating timeline:', error);
+      }
+    }
+  };
+
   const getSectionContent = (sectionId: string) => {
     const contentMap: { [key: string]: { content: any, highlights: any[] } } = {
       'current-state': {
@@ -66,21 +117,75 @@ export default function TimelineContent({ sections, timelineData, sectionRefs, b
   
   return (
     <div className={styles.timelineContent}>
-      {/* Provider Header Section */}
-      {onProviderChange && (
+      {/* Provider & Controls Header Section */}
+      {(onProviderChange || timelineGeneratedAt) && (
         <div className={styles.providerHeader}>
           <div className={styles.providerHeaderContent}>
-            <div className={styles.providerInfo}>
-              <h3>AI Provider Selection</h3>
-              <p>Choose your preferred AI provider for timeline generation</p>
-            </div>
-            <div className={styles.providerControls}>
-              <ProviderSelector
-                selectedProvider={selectedProvider}
-                onProviderChange={onProviderChange}
-                disabled={isGenerating}
-              />
-            </div>
+            {onProviderChange && (
+              <div className={styles.providerSection}>
+                <div className={styles.providerControls}>
+                  <ProviderSelector
+                    selectedProvider={selectedProvider}
+                    onProviderChange={onProviderChange}
+                    disabled={isGenerating}
+                  />
+                </div>
+              </div>
+            )}
+            
+            {timelineGeneratedAt && (
+              <div className={styles.timelineControlsSection}>
+                <div className={styles.cacheInfo}>
+                  <div className={styles.cacheStatus}>
+                    {timelineCached ? '💾' : '✨'} 
+                    <span>
+                      {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
+                    </span>
+                    {timelineScenarioType && (
+                      <span className={styles.scenarioInfo}>
+                        • Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.timelineActions}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={handleRegenerateClick}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <span className={styles.spinner}>⟳</span>
+                        Regenerating...
+                      </>
+                    ) : (
+                      <>
+                        🔄 Regenerate Timeline
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    className="btn btn-primary"
+                    onClick={onExportPDF}
+                    disabled={isExporting || !timelineData}
+                  >
+                    {isExporting ? (
+                      <>
+                        <span className={styles.spinner}>⟳</span>
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        📄 Export PDF
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

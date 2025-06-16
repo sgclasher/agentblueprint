@@ -84,6 +84,68 @@
 
 ---
 
+# ✅ COMPLETED - Move Timeline Sidebar Widget to Center Content Header
+
+**Objective**: Consolidate the timeline sidebar widget into the same header area as the AI Provider selector, creating a unified control panel at the top of the timeline content area while removing unnecessary text.
+
+**🎉 IMPLEMENTATION COMPLETE**: All 8 steps successfully completed! The timeline controls widget (cache status, regenerate timeline, export PDF) has been successfully moved from the timeline sidebar to the top of the center content area alongside the AI Provider selector. The interface is now clean and consolidated with a unified control panel.
+
+**🔧 Key Changes Made:**
+1. **`TimelineContent.tsx`**: Added timeline controls interface and consolidated header section
+2. **`TimelineContent.module.css`**: Added comprehensive styling for timeline controls layout
+3. **`TimelineSidebar.tsx`**: Removed timeline controls widget and cleaned up interface
+4. **`page.tsx`**: Updated prop flow and added export PDF functionality at page level
+
+**Result**: Clean, unified control panel with timeline controls positioned prominently in the center content header, providing better user experience with all timeline actions easily accessible in one location.
+
+**📋 Implementation Checklist:**
+
+- [x] **Step 1: Identify and Analyze Current Sidebar Widget** ✅
+  - **Files**: `app/timeline/components/TimelineSidebar.tsx`
+  - **Action**: Identified the cache information widget with timeline controls (cache status, regenerate button, export PDF button)
+  - **Details**: Located widget in sidebarFooter section with formatGeneratedTime, handleRegenerateClick, and handleExportPDF functions
+
+- [x] **Step 2: Update TimelineContent Component Interface** ✅
+  - **Files**: `app/timeline/components/TimelineContent.tsx`
+  - **Action**: Added timeline control props: timelineCached, timelineGeneratedAt, timelineScenarioType, onRegenerateTimeline, currentProfile, onExportPDF, isExporting
+  - **Details**: Extended TimelineContentProps interface with proper TypeScript typing using ScenarioType
+
+- [x] **Step 3: Move Widget to TimelineContent Header** ✅
+  - **Files**: `app/timeline/components/TimelineContent.tsx`
+  - **Action**: Added timelineControlsSection alongside providerSection in the header
+  - **Details**: Implemented cache info display, scenario info, and timeline action buttons (regenerate & export) with proper state handling
+
+- [x] **Step 4: Update TimelineContent Styles** ✅
+  - **Files**: `app/timeline/components/TimelineContent.module.css`
+  - **Action**: Added comprehensive styles for timeline controls layout and responsive design
+  - **Details**: Created timelineControlsSection, cacheInfo, cacheStatus, scenarioInfo, timelineActions classes with spinner animation
+
+- [x] **Step 5: Remove Widget from TimelineSidebar** ✅
+  - **Files**: `app/timeline/components/TimelineSidebar.tsx`
+  - **Action**: Removed entire sidebarFooter section and related functions (formatGeneratedTime, handleRegenerateClick, handleExportPDF)
+  - **Details**: Cleaned up unused imports and state variables, updated component interface
+
+- [x] **Step 6: Remove AI Provider Selection Text** ✅
+  - **Files**: Already clean - ProviderSelector has minimal "AI Provider" label
+  - **Action**: Removed verbose "AI Provider Selection Choose your preferred AI provider for timeline generation" text from TimelineContent
+  - **Details**: Now displays clean, simple interface without unnecessary descriptive text
+
+- [x] **Step 7: Update Timeline Page Props** ✅
+  - **Files**: `app/timeline/page.tsx`
+  - **Action**: Moved timeline control props from TimelineSidebar to TimelineContent, added handleExportPDF function to page level
+  - **Details**: Updated prop distribution and added export PDF functionality with proper authentication and error handling
+
+- [x] **Step 8: Test Integration** ✅
+  - **Files**: All components updated and integrated
+  - **Action**: Timeline controls widget successfully moved to header area alongside AI Provider selector
+  - **Details**: Clean, consolidated control panel with proper responsive design and functionality
+
+---
+
+# Current Task - Ready for Next Development
+
+---
+
 # Current Task - Test Suite Health Restoration
 
 **Objective**: Systematically analyze the remaining failing test suites, identify the root causes of the failures (likely outdated implementations), and implement fixes to bring the entire test suite back to a passing state, ensuring it accurately reflects the current application's behavior.
