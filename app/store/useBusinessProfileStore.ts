@@ -20,6 +20,8 @@ interface BusinessProfileState {
     timelineCached: boolean;
     timelineGeneratedAt: string | null;
     timelineScenarioType: ScenarioType | null;
+    selectedProfileId: string | null;
+    currentProfile: Profile | null;
 }
 
 interface BusinessProfileActions {
@@ -37,6 +39,8 @@ interface BusinessProfileActions {
     generateTimelineFromProfile: (profile: Partial<Profile>, forceRegenerate?: boolean, scenarioType?: ScenarioType | null, providerOverride?: string | null) => Promise<Timeline | undefined>;
     regenerateTimelineFromProfile: (profile: Partial<Profile>, scenarioType?: ScenarioType | null, provider?: string | null) => Promise<Timeline | undefined>;
     clearTimeline: () => void;
+    setSelectedProfileId: (profileId: string | null) => void;
+    setCurrentProfile: (profile: Profile | null) => void;
 }
 
 type BusinessProfileStore = BusinessProfileState & BusinessProfileActions;
@@ -65,6 +69,8 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
       timelineCached: false,
       timelineGeneratedAt: null,
       timelineScenarioType: null,
+      selectedProfileId: null,
+      currentProfile: null,
       
       setBusinessProfile: (profile) => 
         set({ businessProfile: { ...get().businessProfile, ...profile } }),
@@ -198,6 +204,10 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
         timelineGeneratedAt: null,
         timelineScenarioType: null
       }),
+
+      setSelectedProfileId: (profileId) => set({ selectedProfileId: profileId }),
+      
+      setCurrentProfile: (profile) => set({ currentProfile: profile }),
     }),
     {
       name: 'business-profile-storage',

@@ -62,7 +62,11 @@ export function useTimeline() {
     toggleTheme,
     timelineCached,
     timelineGeneratedAt,
-    timelineScenarioType
+    timelineScenarioType,
+    selectedProfileId: persistedProfileId,
+    currentProfile: persistedCurrentProfile,
+    setSelectedProfileId,
+    setCurrentProfile
   } = useBusinessProfileStore();
 
   const searchParams = useSearchParams();
@@ -71,12 +75,13 @@ export function useTimeline() {
   const [activeSection, setActiveSection] = useState('current-state');
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
-  
   // New state for profile selection
   const [availableProfiles, setAvailableProfiles] = useState<Profile[]>([]);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState<boolean>(false);
-  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(profileIdFromUrl);
+  
+  // Use persisted profile ID from store, or URL parameter as fallback
+  const currentProfileId = profileIdFromUrl || persistedProfileId;
+  const currentProfile = persistedCurrentProfile;
 
   const contentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<{ [key: string]: HTMLElement }>({});
@@ -90,26 +95,30 @@ export function useTimeline() {
     }
 
     const initializeTimeline = async () => {
-      if (profileIdFromUrl) {
+      if (currentProfileId) {
         setIsLoading(true);
         try {
-          const loadedProfile = await ProfileService.getProfile(profileIdFromUrl);
+          const loadedProfile = await ProfileService.getProfile(currentProfileId);
           if (loadedProfile) {
             setCurrentProfile(loadedProfile);
+            setSelectedProfileId(currentProfileId);
             await generateTimelineFromProfile(loadedProfile);
           } else {
             setCurrentProfile(null);
+            setSelectedProfileId(null);
           }
         } catch (error) {
           console.error("Error loading profile for timeline:", error);
           setCurrentProfile(null);
+          setSelectedProfileId(null);
         } finally {
           setIsLoading(false);
         }
       } else {
-        // No profile ID in URL - clear timeline data and current profile
+        // No profile ID available - clear timeline data and current profile
         setIsLoading(false);
         setCurrentProfile(null);
+        setSelectedProfileId(null);
         // Clear any persisted timeline data when no profile is selected
         const { clearTimeline } = useBusinessProfileStore.getState();
         clearTimeline();
@@ -120,7 +129,7 @@ export function useTimeline() {
     return () => {
       effectRan.current = true;
     }
-  }, [profileIdFromUrl, generateTimelineFromProfile]);
+  }, [currentProfileId, generateTimelineFromProfile, setCurrentProfile, setSelectedProfileId]);
 
 
   useLayoutEffect(() => {
@@ -223,12 +232,7 @@ export function useTimeline() {
     } catch (error) {
       console.error('Error generating timeline for selected profile:', error);
     }
-  }, [generateTimelineFromProfile]);
-
-  // Sync selectedProfileId with URL parameter
-  useEffect(() => {
-    setSelectedProfileId(profileIdFromUrl);
-  }, [profileIdFromUrl]);
+  }, [generateTimelineFromProfile, setSelectedProfileId, setCurrentProfile]);
 
   return {
     timelineData,
@@ -252,7 +256,7 @@ export function useTimeline() {
     // Profile selection functionality
     availableProfiles,
     isLoadingProfiles,
-    selectedProfileId,
+    selectedProfileId: currentProfileId,
     handleProfileSelect
   };
 } 
