@@ -7,6 +7,7 @@
   height: 100%;
   border-right: 1px solid var(--timeline-border-primary);
   transition: width var(--timeline-transition-duration) ease;
+  overflow: hidden; /* Prevent overflow issues */
 }
 
 .timelineSidebarHeader {
@@ -56,6 +57,7 @@
   flex-direction: column;
   gap: var(--timeline-spacing-sm); /* Space between nav items */
   position: relative; /* Ensure this is a positioning context for the progress bar */
+  margin-bottom: var(--timeline-spacing-md); /* Space for fixed footer */
 }
 
 .timelineNavItem {
@@ -146,16 +148,15 @@
   margin-top: auto;
   padding-top: var(--timeline-spacing-lg);
   border-top: 1px solid var(--timeline-border-secondary);
+  position: sticky;
+  bottom: 0;
+  background-color: var(--timeline-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--timeline-spacing-md);
 }
 
-.cacheInfo {
-  padding: var(--timeline-spacing-md);
-  margin-top: var(--timeline-spacing-lg);
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--backdrop-blur));
-  border-radius: var(--border-radius-lg);
-  border: 1px solid var(--timeline-border-secondary);
-}
+/* cacheInfo styles no longer needed - content moved to widget container */
 
 .cacheStatus {
   display: flex;

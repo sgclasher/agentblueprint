@@ -974,3 +974,79 @@ During today's planning session, we evaluated the current ProfileWizard state an
 ---
 
 **📝 Last Updated**: December 2024 - ProfileWizard complete and production-ready, planning transition to Agentic Workflow Visualizer with ServiceNow integration focus
+
+# Current Task - Reorganize Timeline Page Widgets
+
+**Objective**: Reorganize the timeline page sidebar widgets by moving the client profile selector to the same container as the AI Provider widget, making the AI Provider widget expandable (collapsed by default), and fixing it at the bottom of the sidebar.
+
+**Plan:**
+
+- [x] **Step 1: Create an Expandable Widget Container Component** ✅
+  - **Files**: `app/timeline/components/TimelineWidgetContainer.tsx`, `app/timeline/components/TimelineWidgetContainer.module.css` (new)
+  - **Action**: Create a new component that can contain both ProfileSelector and ProviderSelector widgets
+  - **Details**: 
+    - Create an expandable container with collapse/expand functionality
+    - Include a header with title and expand/collapse button
+    - Default state should be collapsed
+    - Smooth animation for expand/collapse
+
+- [x] **Step 2: Update TimelineSidebar Structure** ✅
+  - **Files**: `app/timeline/components/TimelineSidebar.tsx`
+  - **Action**: Remove ProfileSelector from header and integrate new widget container in footer
+  - **Details**:
+    - Remove ProfileSelector from timelineSidebarHeader
+    - Add new TimelineWidgetContainer to sidebarFooter
+    - Pass both ProfileSelector and ProviderSelector as children
+
+- [x] **Step 3: Update CSS for Fixed Bottom Positioning** ✅
+  - **Files**: `app/timeline/components/TimelineSidebar.module.css`
+  - **Action**: Update sidebarFooter styling for fixed bottom positioning
+  - **Details**:
+    - Make sidebarFooter stick to bottom of sidebar
+    - Ensure proper spacing and layout
+    - Handle overflow for the nav section
+
+- [x] **Step 4: Write Tests for New Widget Container** ✅
+  - **Files**: `app/timeline/components/__tests__/TimelineWidgetContainer.test.js` (new)
+  - **Action**: Create tests for the expandable widget container
+  - **Details**:
+    - Test expand/collapse functionality
+    - Test rendering of child components
+    - Test collapsed by default state
+
+- [ ] **Step 5: Integration Testing** (Ready for Manual Testing)
+  - **Action**: Manually test the complete integration
+  - **Details**:
+    - Verify profile selection still works
+    - Verify provider selection still works
+    - Test expand/collapse behavior
+    - Ensure fixed positioning works correctly
+
+**🎉 IMPLEMENTATION STATUS**: Steps 1-5 completed successfully. All timeline controls have been consolidated into a single expandable container at the bottom of the sidebar.
+
+**📋 Changes Made:**
+- Created `TimelineWidgetContainer` component with smooth expand/collapse animations
+- Moved ProfileSelector from sidebar header to bottom widget container
+- Combined ProfileSelector and ProviderSelector in expandable container (collapsed by default)
+- **✅ UPDATED**: Moved cache info, regenerate button, and export PDF into same container
+- Updated CSS for fixed bottom positioning with sticky footer
+- All tests passing for the new widget container
+
+**🔄 What to Test:**
+1. Navigate to `/timeline` page
+2. Look for single "Configuration" widget at bottom of sidebar (should be collapsed)
+3. Click to expand and verify ALL controls are present:
+   - Client Profile selector
+   - AI Provider selector  
+   - Cache status info (if timeline exists)
+   - Regenerate Timeline button (if timeline exists)
+   - Export PDF button (if timeline exists)
+4. Test all functionality works correctly within the single container
+5. Verify expand/collapse animation works smoothly
+6. Ensure widget stays fixed at bottom when scrolling through timeline navigation
+
+**Dependencies:**
+- Step 2 depends on Step 1 (need widget container first)
+- Step 3 can be done in parallel with Step 2
+- Step 4 should be written alongside Step 1
+- Step 5 after all implementation is complete

@@ -4,6 +4,7 @@ import React, { useLayoutEffect, useRef, useState, FC } from 'react';
 import styles from './TimelineSidebar.module.css';
 import ProviderSelector from './ProviderSelector';
 import ProfileSelector from './ProfileSelector';
+import TimelineWidgetContainer from './TimelineWidgetContainer';
 import useBusinessProfileStore, { ScenarioType } from '../../store/useBusinessProfileStore';
 import { Profile, Timeline } from '../../services/types';
 import { supabase } from '../../lib/supabase';
@@ -218,15 +219,6 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
         <div className={styles.headerContainer}>
           <h3>Your AI Journey</h3>
         </div>
-        
-        {/* Profile Selector */}
-        {onProfileSelect && (
-          <ProfileSelector
-            selectedProfileId={selectedProfileId}
-            onProfileSelect={onProfileSelect}
-            disabled={isGenerating}
-          />
-        )}
       </div>
       
       <nav className={styles.timelineNav} ref={navRef}>
@@ -265,79 +257,89 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
       </nav>
 
       <div className={styles.sidebarFooter}>
-        {timelineGeneratedAt && (
-          <div className={styles.cacheInfo}>
-            <div className={styles.cacheStatus}>
-              {timelineCached ? '💾' : '✨'} 
-              <span>
-                {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
-              </span>
-            </div>
-            
-            {timelineScenarioType && (
-              <div className={styles.scenarioInfo}>
-                Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
-              </div>
-            )}
-
-            <ProviderSelector
-              selectedProvider={selectedProvider}
-              onProviderChange={setSelectedProvider}
+        {/* Widget Container with All Timeline Controls */}
+        <TimelineWidgetContainer title="Configuration" defaultExpanded={false}>
+          {onProfileSelect && (
+            <ProfileSelector
+              selectedProfileId={selectedProfileId}
+              onProfileSelect={onProfileSelect}
               disabled={isGenerating}
             />
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--timeline-spacing-sm)' }}>
-              <button
-                className="btn btn-secondary"
-                onClick={handleRegenerateClick}
-                disabled={isGenerating}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-xs)'
-                }}
-              >
-                {isGenerating ? (
-                  <>
-                    <span className={styles.spinner}>⟳</span>
-                    Regenerating...
-                  </>
-                ) : (
-                  <>
-                    🔄 Regenerate Timeline
-                  </>
-                )}
-              </button>
+          )}
+          <ProviderSelector
+            selectedProvider={selectedProvider}
+            onProviderChange={setSelectedProvider}
+            disabled={isGenerating}
+          />
+          
+          {timelineGeneratedAt && (
+            <div style={{ marginTop: 'var(--timeline-spacing-md)' }}>
+              <div className={styles.cacheStatus}>
+                {timelineCached ? '💾' : '✨'} 
+                <span>
+                  {timelineCached ? 'Cached' : 'Fresh'} • {formatGeneratedTime(timelineGeneratedAt)}
+                </span>
+              </div>
               
-              <button
-                className="btn btn-primary"
-                onClick={handleExportPDF}
-                disabled={isExporting || !timelineData}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 'var(--spacing-xs)',
-                  fontSize: '0.9rem'
-                }}
-              >
-                {isExporting ? (
-                  <>
-                    <span className={styles.spinner}>⟳</span>
-                    Exporting...
-                  </>
-                ) : (
-                  <>
-                    📄 Export PDF
-                  </>
-                )}
-              </button>
+              {timelineScenarioType && (
+                <div className={styles.scenarioInfo}>
+                  Scenario: {timelineScenarioType.charAt(0).toUpperCase() + timelineScenarioType.slice(1)}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--timeline-spacing-sm)', marginTop: 'var(--timeline-spacing-md)' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleRegenerateClick}
+                  disabled={isGenerating}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 'var(--spacing-xs)'
+                  }}
+                >
+                  {isGenerating ? (
+                    <>
+                      <span className={styles.spinner}>⟳</span>
+                      Regenerating...
+                    </>
+                  ) : (
+                    <>
+                      🔄 Regenerate Timeline
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  className="btn btn-primary"
+                  onClick={handleExportPDF}
+                  disabled={isExporting || !timelineData}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 'var(--spacing-xs)',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  {isExporting ? (
+                    <>
+                      <span className={styles.spinner}>⟳</span>
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      📄 Export PDF
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </TimelineWidgetContainer>
       </div>
     </aside>
   );
