@@ -5,9 +5,9 @@ import { Profile } from '../../../services/types';
 import styles from './CompanyOverviewStep.module.css';
 
 interface SummaryStepProps {
-  data: Profile;
+  data: Partial<Profile>;
   updateData: (path: string, value: any) => void;
-  onGenerateTimeline?: (profile: Profile) => void;
+  onGenerateTimeline?: (profile: Partial<Profile>) => void;
   isGenerating?: boolean;
 }
 
@@ -28,22 +28,22 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div>
-              <strong>Company Name:</strong> {data.companyName || 'Not specified'}
+              <strong>Company Name:</strong> {data?.companyName || 'Not specified'}
             </div>
             <div>
-              <strong>Industry:</strong> {data.industry || 'Not specified'}
+              <strong>Industry:</strong> {data?.industry || 'Not specified'}
             </div>
             <div>
-              <strong>Employee Count:</strong> {data.employeeCount || 'Not specified'}
+              <strong>Employee Count:</strong> {data?.employeeCount || 'Not specified'}
             </div>
             <div>
-              <strong>Annual Revenue:</strong> {data.annualRevenue || 'Not specified'}
+              <strong>Annual Revenue:</strong> {data?.annualRevenue || 'Not specified'}
             </div>
             <div>
-              <strong>Primary Location:</strong> {data.primaryLocation || 'Not specified'}
+              <strong>Primary Location:</strong> {data?.primaryLocation || 'Not specified'}
             </div>
             <div>
-              <strong>Website:</strong> {data.websiteUrl ? (
+              <strong>Website:</strong> {data?.websiteUrl ? (
                 <a href={data.websiteUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-blue)' }}>
                   {data.websiteUrl}
                 </a>
@@ -54,7 +54,7 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
       </div>
 
       {/* Strategic Initiatives Summary */}
-      {data.strategicInitiatives && data.strategicInitiatives.length > 0 && (
+      {data?.strategicInitiatives && data.strategicInitiatives.length > 0 && (
         <div style={{ marginBottom: '2rem' }}>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Strategic Initiatives ({data.strategicInitiatives.length})</h3>
           {data.strategicInitiatives.map((initiative, index) => (
@@ -122,7 +122,7 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
       )}
 
       {/* Systems & Applications Summary */}
-      {data.systemsAndApplications && data.systemsAndApplications.length > 0 && (
+      {data?.systemsAndApplications && data.systemsAndApplications.length > 0 && (
         <div style={{ marginBottom: '2rem' }}>
           <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
             Systems & Applications ({data.systemsAndApplications.length})
@@ -159,7 +159,7 @@ const SummaryStep: FC<SummaryStepProps> = ({ data, updateData, onGenerateTimelin
           <label htmlFor="notes">Additional notes about this client</label>
           <textarea
             id="notes"
-            value={data.notes || ''}
+            value={data?.notes || ''}
             onChange={(e: ChangeEvent<HTMLTextAreaElement>) => updateData('notes', e.target.value)}
             placeholder="Add any additional context, observations, or next steps..."
             rows={4}

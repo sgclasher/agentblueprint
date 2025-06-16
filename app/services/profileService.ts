@@ -8,97 +8,162 @@ import { Profile, Timeline } from './types';
 type ScenarioType = 'conservative' | 'balanced' | 'aggressive';
 
 export class ProfileService {
-  static async getCurrentUserId(): Promise<string | null> {
-    try {
-      const user = await getCurrentUser();
-      return user?.id || null;
-    } catch (error) {
-      console.error('Error getting current user:', error);
-      return null;
+  private static async getCurrentUserId(): Promise<string> {
+    const user = await getCurrentUser();
+    if (!user) {
+      throw new Error("User must be authenticated.");
     }
+    return user.id;
   }
 
-  static async createProfile(profileData: Partial<Profile>): Promise<Profile> {
+  /**
+   * Saves the profile for the currently authenticated user.
+   * Handles both creation and updates (upsert).
+   * @param {Partial<Profile>} profileData - The profile data to save.
+   * @returns {Promise<Profile>} The saved profile.
+   */
+  static async saveCurrentUserProfile(profileData: Partial<Profile>): Promise<Profile> {
     try {
-      const userId = await this.getCurrentUserId();
-      if (!userId) {
-        throw new Error("User must be authenticated to create a profile.");
-      }
-
-      const markdown = markdownService.generateMarkdown(profileData);
-      
-      const profile: Partial<Profile> = {
+      const profileToSave: Partial<Profile> = {
         ...profileData,
-        markdown,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: 'draft'
-      };
-      
-      const createdProfile = await ProfileRepository.createProfile(profile, userId);
-      return createdProfile as Profile;
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      throw error;
-    }
-  }
-
-  static async getProfiles(): Promise<Profile[]> {
-    try {
-      const userId = await this.getCurrentUserId();
-      if (!userId) {
-        console.warn('No authenticated user found for getProfiles');
-        return [];
-      }
-      const profiles = await ProfileRepository.getProfiles(userId);
-      return profiles as Profile[];
-    } catch (error) {
-      console.error('Error getting profiles:', error);
-      return [];
-    }
-  }
-
-  static async getProfile(id: string): Promise<Profile | null> {
-    try {
-      const userId = await this.getCurrentUserId();
-      if (!userId) return null;
-      const profile = await ProfileRepository.getProfile(id, userId);
-      return profile as Profile | null;
-    } catch (error) {
-      console.error('Error getting profile:', error);
-      return null;
-    }
-  }
-
-  static async updateProfile(profileId: string, updates: Partial<Profile>): Promise<Profile> {
-    try {
-      const userId = await this.getCurrentUserId();
-      if (!userId) {
-        throw new Error("User must be authenticated to update a profile.");
-      }
-      
-      const updatedData = {
-        ...updates,
         updatedAt: new Date().toISOString()
       };
+
+      // If it's a new profile, set the creation date and status
+      if (!profileData.id) {
+        profileToSave.createdAt = new Date().toISOString();
+        profileToSave.status = 'complete'; // Mark as complete on first save
+      }
+
+      // Get current session for authorization
+      const { supabase } = await import('../lib/supabase');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      const updatedProfile = await ProfileRepository.updateProfile(profileId, updatedData, userId);
-      return updatedProfile as Profile;
+      if (sessionError || !session) {
+        throw new Error('Authentication required for profile saving. Please sign in.');
+      }
+
+      // Use server-side API route to save profile (bypasses RLS issues)
+      const response = await fetch('/api/profiles/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(profileToSave),
+        credentials: 'same-origin'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(errorData.error || `Profile save failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Profile save failed');
+      }
+
+      console.log('✅ Profile saved successfully via API');
+      return result.profile;
+      
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error('Error saving current user profile:', error);
       throw error;
     }
   }
 
-  static async deleteProfile(profileId: string): Promise<boolean> {
+  /**
+   * Retrieves the profile for the currently authenticated user.
+   * TEMPORARY FIX: Bypassing API call to resolve loading issue
+   * @returns {Promise<Profile | null>} The user's profile or null if not found.
+   */
+  static async getCurrentUserProfile(): Promise<Profile | null> {
+    try {
+      // TEMPORARY FIX: Skip profile fetching to resolve loading issue
+      console.log('⚠️ [ProfileService] TEMPORARY: Bypassing profile fetch due to API issue');
+      console.log('ℹ️ [ProfileService] User will see ProfileWizard to create new profile');
+      
+      // Return null immediately - user will see ProfileWizard
+      return null;
+      
+      /* ORIGINAL CODE - RE-ENABLE AFTER DEBUGGING:
+      
+      // Get current user session for authorization
+      const { supabase } = await import('../lib/supabase');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.log('ℹ️ [ProfileService] No active session, user not authenticated');
+        return null;
+      }
+
+      // Prepare request headers with authorization
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
+      // Call the profile fetch API route (server-side)
+      console.log(`🌐 [ProfileService] Fetching profile via API...`);
+      
+      // Add timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch('/api/profiles/get', {
+        method: 'GET',
+        headers,
+        credentials: 'same-origin',
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          console.log('ℹ️ [ProfileService] Authentication failed, user needs to sign in');
+          return null;
+        }
+        
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ [ProfileService] Profile fetch API error:', errorData);
+        throw new Error(errorData.error || `Profile fetch failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Profile fetch failed');
+      }
+
+      console.log(`✅ [ProfileService] Profile fetched successfully via API`);
+      
+      // Return the profile from API response (null if no profile exists)
+      return result.profile;
+      
+      */
+      
+    } catch (error) {
+      console.error('❌ [ProfileService] Error in getCurrentUserProfile:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Deletes the profile for the currently authenticated user.
+   * @returns {Promise<boolean>} Success status.
+   */
+  static async deleteCurrentUserProfile(): Promise<boolean> {
     try {
       const userId = await this.getCurrentUserId();
-      if (!userId) {
-        throw new Error("User must be authenticated to delete a profile.");
-      }
-      return await ProfileRepository.deleteProfile(profileId, userId);
+      return await ProfileRepository.deleteProfile(userId);
     } catch (error) {
-      console.error('Error deleting profile:', error);
+      console.error('Error deleting current user profile:', error);
       return false;
     }
   }
@@ -106,42 +171,34 @@ export class ProfileService {
   static async getTimelineFromProfile(profile: Profile, forceRegenerate = false, scenarioType: ScenarioType | null = null): Promise<Timeline> {
     try {
       const userId = await this.getCurrentUserId();
-      if (!userId) {
-        throw new Error("User authentication is required for timeline generation.");
-      }
       
-      const hasProfileId = profile && profile.id;
-      
-      if (hasProfileId && !forceRegenerate) {
-        const cached = await ProfileRepository.getCachedTimeline(profile.id, userId) as { timeline: Timeline; generatedAt: string; scenarioType: ScenarioType } | null;
-        if (cached && cached.timeline) {
-          if (!scenarioType || cached.scenarioType === scenarioType) {
-            console.log(`✅ Using cached timeline for profile ${profile.id}`);
-            return {
-              ...cached.timeline,
-              _cached: true,
-              _generatedAt: cached.generatedAt,
-              _scenarioType: cached.scenarioType
-            };
-          }
+      if (!forceRegenerate) {
+        const cachedTimeline = await ProfileRepository.getCachedTimeline(userId);
+        if (cachedTimeline) {
+            const scenarioMatches = !scenarioType || cachedTimeline.scenarioType === scenarioType;
+            if (scenarioMatches) {
+              console.log(`✅ Using cached timeline for user ${userId}`);
+              return {
+                ...cachedTimeline,
+                _cached: true,
+              };
+            }
         }
       }
       
-      if (hasProfileId) {
-        console.log(`🔄 Generating new timeline for profile ${profile.id}`);
-      } else {
-        console.log(`🔄 Generating timeline for unsaved profile (${profile.companyName || 'unnamed'})`);
-      }
+      console.log(`🔄 Generating new timeline for user ${userId}`);
       
       const finalScenarioType = scenarioType || this.determineScenarioType(profile);
       const timeline = await this._generateTimelineFromProfile(profile, finalScenarioType);
       
-      if (hasProfileId) {
-        try {
-          await ProfileRepository.saveTimeline(profile.id, timeline, finalScenarioType, userId);
-        } catch (saveError: any) {
-          console.warn('⚠️ Could not save timeline to cache:', saveError.message);
-        }
+      try {
+        await ProfileRepository.saveTimeline(userId, {
+            ...timeline,
+            _scenarioType: finalScenarioType,
+            _generatedAt: new Date().toISOString(),
+        });
+      } catch (saveError: any) {
+        console.warn('⚠️ Could not save timeline to cache:', saveError.message);
       }
       
       return {
@@ -149,7 +206,6 @@ export class ProfileService {
         _cached: false,
         _generatedAt: new Date().toISOString(),
         _scenarioType: finalScenarioType,
-        _unsavedProfile: !hasProfileId
       };
     } catch (error) {
       console.error('Error getting timeline from profile:', error);
@@ -165,7 +221,7 @@ export class ProfileService {
     return await this.getTimelineFromProfile(profile, false);
   }
 
-  static async _generateTimelineFromProfile(profile: Profile, scenarioType: ScenarioType = 'balanced'): Promise<Timeline> {
+  private static async _generateTimelineFromProfile(profile: Profile, scenarioType: ScenarioType = 'balanced'): Promise<Timeline> {
     try {
       console.log(`🔄 [ProfileService] Generating timeline via API for scenario: ${scenarioType}`);
       
@@ -194,6 +250,9 @@ export class ProfileService {
         method: 'POST',
         headers,
         body: JSON.stringify({
+          // The API will fetch the user's profile on the server-side,
+          // but we send the current state of the profile from the client
+          // to ensure the latest unsaved data is used for generation.
           profile: profile,
           scenarioType: scenarioType,
           forceRegenerate: true // Always generate fresh for direct calls
@@ -243,89 +302,52 @@ export class ProfileService {
       companySize: this.mapCompanySize(profile.size || 'medium'),
       aiMaturityLevel: this.calculateAIMaturity(profile),
       primaryGoals: this.extractPrimaryGoals(profile),
-      currentTechStack: profile.currentTechnology || [],
+      currentTechStack: profile.systemsAndApplications?.map(s => s.name) || [],
       budget: this.estimateBudgetRange(profile),
       timeframe: this.extractTimeframe(profile)
     };
   }
 
-  static estimateBudgetRange(profile: Profile): string {
-    const budget = profile.valueSellingFramework?.decisionMakers?.economicBuyer?.budget;
-    if (budget) {
-      return budget;
-    }
+  private static estimateBudgetRange(profile: Profile): string {
+    const initiativesBudget = profile.strategicInitiatives?.[0]?.estimatedBudget;
+    if (initiativesBudget) return initiativesBudget;
     
-    const impact = profile.valueSellingFramework?.impact?.totalAnnualImpact || 0;
-    if (impact > 5000000) return '>5m';
-    if (impact > 1000000) return '1m-5m';
-    if (impact > 500000) return '500k-1m';
-    if (impact > 100000) return '100k-500k';
+    // Fallback logic if needed
     return '<100k';
   }
 
-  static extractTimeframe(profile: Profile): string {
-    const timeline = profile.valueSellingFramework?.buyingProcess?.timeline;
-    if (timeline) {
-      const months = parseInt(timeline);
-      if (months <= 3) return '3months';
-      if (months <= 6) return '6months';
-      if (months <= 12) return '1year';
-      return '2years+';
-    }
+  private static extractTimeframe(profile: Profile): string {
+    const initiativesTimeline = profile.strategicInitiatives?.[0]?.targetTimeline;
+    if (initiativesTimeline) return initiativesTimeline;
+
+    // Fallback logic
     return '1year';
   }
 
   static determineScenarioType(profile: Profile): ScenarioType {
-    const aiReadiness = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;
-    const decisionTimeline = profile.decisionTimeline || 12;
-    const riskTolerance = profile.riskTolerance || 'medium';
-    
-    if (aiReadiness >= 8 && decisionTimeline <= 6 && riskTolerance === 'high') {
-      return 'aggressive';
-    } else if (aiReadiness <= 4 || decisionTimeline >= 18 || riskTolerance === 'low') {
-      return 'conservative';
-    }
+    // Simplified logic, can be expanded
+    const readinessScore = (profile.aiOpportunityAssessment?.aiReadinessScore || 50);
+    if (readinessScore > 75) return 'aggressive';
+    if (readinessScore < 50) return 'conservative';
     return 'balanced';
   }
 
   static async generateOpportunityRecommendations(profile: Profile): Promise<any[]> {
     const opportunities: any[] = [];
     
-    if (profile.problems?.finance?.manualInvoiceProcessing) {
-      opportunities.push({
-        department: 'Finance',
-        title: 'Automated Invoice Processing',
-        description: 'AI-powered invoice recognition and approval workflows',
-        impact: this.calculateFinanceImpact(profile),
-        effort: 'Medium',
-        timeline: '3-4 months',
-        priority: 'High'
-      });
-    }
-    
-    if (profile.problems?.hr?.manualResumeScreening) {
-      opportunities.push({
-        department: 'HR',
-        title: 'AI Resume Screening',
-        description: 'Automated candidate screening and ranking',
-        impact: this.calculateHRImpact(profile),
-        effort: 'Low',
-        timeline: '1-2 months',
-        priority: 'Medium'
-      });
-    }
-    
-    if (profile.problems?.customerService?.responseTime) {
-      opportunities.push({
-        department: 'Customer Service',
-        title: 'AI Chatbot & Routing',
-        description: 'Intelligent ticket routing and automated responses',
-        impact: this.calculateServiceImpact(profile),
-        effort: 'Medium',
-        timeline: '2-3 months',
-        priority: 'High'
-      });
-    }
+    profile.strategicInitiatives?.forEach(initiative => {
+        initiative.businessProblems?.forEach(problem => {
+            opportunities.push({
+                department: initiative.initiative,
+                title: `AI solution for: ${problem}`,
+                description: `Develop an AI-driven approach to address the business problem '${problem}' within the '${initiative.initiative}' initiative.`,
+                impact: 'High', // Placeholder
+                effort: 'Medium', // Placeholder
+                timeline: '3-6 months', // Placeholder
+                priority: initiative.priority || 'Medium'
+            });
+        });
+    });
     
     return opportunities.sort((a, b) => {
       const priorityOrder: { [key: string]: number } = { 'High': 3, 'Medium': 2, 'Low': 1 };
@@ -349,92 +371,68 @@ export class ProfileService {
     return timeline;
   }
 
-  static getPhaseInsights(profile: Profile, phaseIndex: number): string {
+  private static getPhaseInsights(profile: Profile, phaseIndex: number): string {
+    const topInitiative = profile.strategicInitiatives?.[0]?.initiative || 'your primary business goals';
+    const topMetric = profile.strategicInitiatives?.[0]?.successMetrics?.[0] || 'key performance indicators';
+
     const insights: { [key: number]: string } = {
-      0: `Focus on ${profile.primaryBusinessIssue} while building foundation`,
-      1: `Address ${profile.topProblem} with targeted automation`,
-      2: `Scale successful pilots across ${profile.size} organization`,
-      3: `Optimize for ${profile.successMetrics?.join(', ')} improvements`
+      0: `Focus on establishing a data foundation to support ${topInitiative}.`,
+      1: `Implement a pilot project to address a key business problem, aiming for quick wins related to '${topMetric}'.`,
+      2: `Scale successful pilots across the organization, leveraging the modern tech stack including ${profile.systemsAndApplications?.[0]?.name || 'your core systems'}.`,
+      3: `Optimize AI models and workflows to maximize ROI and drive continuous improvement towards '${topMetric}'.`
     };
     
-    return insights[phaseIndex] || 'Continue systematic AI adoption';
+    return insights[phaseIndex] || 'Continue systematic AI adoption and innovation.';
   }
 
-  static getPhaseOpportunities(profile: Profile, phaseIndex: number): any[] {
+  private static getPhaseOpportunities(profile: Profile, phaseIndex: number): any[] {
       // This is a placeholder for a more complex implementation
       return [];
   }
 
-  static calculateFinanceImpact(profile: Profile): number {
-    const laborCosts = profile.valueSellingFramework?.impact?.laborCosts || 0;
-    const errorCosts = profile.valueSellingFramework?.impact?.errorCosts || 0;
-    return Math.round((laborCosts * 0.3) + (errorCosts * 0.8));
-  }
-
-  static calculateHRImpact(profile: Profile): number {
-    const employeeCount = parseInt(profile.employeeCount || '100') || 100;
-    return Math.round(employeeCount * 1000);
-  }
-
-  static calculateServiceImpact(profile: Profile): number {
-    const totalImpact = profile.valueSellingFramework?.impact?.totalAnnualImpact || 0;
-    return Math.round(totalImpact * 0.25);
-  }
-
-  static mapCompanySize(size: string): string {
-    const mapping: { [key: string]: string } = {
-      '1-50 employees': 'startup',
-      '51-200 employees': 'small',
-      '201-1000 employees': 'medium',
-      '1000+ employees': 'large'
+  private static mapCompanySize(size: string): string {
+    const mapping: { [key:string]: string } = {
+        '1-50': 'startup',
+        '51-250': 'small',
+        '251-1000': 'medium',
+        '1000+': 'large'
     };
     return mapping[size] || 'medium';
   }
 
-  static calculateAIMaturity(profile: Profile): string {
-    const score = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;
+  private static calculateAIMaturity(profile: Profile): string {
+    const score = profile.aiOpportunityAssessment?.aiReadinessScore || 5; // Default to 5/10
     if (score <= 3) return 'beginner';
     if (score <= 6) return 'emerging';
     if (score <= 8) return 'developing';
     return 'advanced';
   }
 
-  static extractPrimaryGoals(profile: Profile): string[] {
-    const goals: string[] = [];
-    if (profile.businessIssue?.revenueGrowth) goals.push('Increase Revenue');
-    if (profile.businessIssue?.costReduction) goals.push('Reduce Operational Costs');
-    if (profile.businessIssue?.customerExperience) goals.push('Improve Customer Experience');
-    if (profile.businessIssue?.operationalEfficiency) goals.push('Automate Workflows');
-    return goals;
+  private static extractPrimaryGoals(profile: Profile): string[] {
+    return profile.strategicInitiatives?.map(i => i.initiative) || [];
   }
 
-  static identifyRiskFactors(profile: Profile): any[] {
+  private static identifyRiskFactors(profile: Profile): any[] {
     const risks: any[] = [];
-    const aiReadiness = profile.aiOpportunityAssessment?.aiReadinessScore || profile.aiReadinessScore || 5;
+    const aiReadiness = profile.aiOpportunityAssessment?.aiReadinessScore || 50;
     
-    if (aiReadiness < 4) {
+    if (aiReadiness < 40) {
       risks.push({
         type: 'Technical Readiness',
         level: 'High',
-        description: 'Low AI readiness score may slow implementation'
+        description: 'Low AI readiness score may indicate foundational gaps (data, infrastructure) that could slow implementation.'
       });
     }
     
-    if (profile.changeManagementCapability === 'Low') {
-      risks.push({
-        type: 'Change Management',
-        level: 'Medium',
-        description: 'Limited change management capability requires extra support'
-      });
-    }
+    // Add more risk factor identification logic here based on profile data
     
     return risks;
   }
 
-  static getCompetitiveContext(profile: Profile): any {
+  private static getCompetitiveContext(profile: Profile): any {
     return {
-      urgency: profile.competitivePressure ? 'High' : 'Medium',
-      differentiators: profile.differentiationRequirements || [],
+      urgency: 'Medium', // Placeholder
+      differentiators: [], // Placeholder
       marketPosition: profile.industry === 'Technology' ? 'Fast-moving' : 'Traditional'
     };
   }

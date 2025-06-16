@@ -4,18 +4,21 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './TimelinePlaceholder.module.css';
 
-export const WelcomeMessage: React.FC = () => {
-  const router = useRouter();
+interface WelcomeMessageProps {
+  onGenerate: () => void;
+}
+
+export const WelcomeMessage: React.FC<WelcomeMessageProps> = ({ onGenerate }) => {
   return (
     <div className={styles.timelineEmpty}>
-      <h2>Welcome to Your AI Transformation Timeline</h2>
-      <p>Create a client profile first to generate a personalized AI transformation roadmap.</p>
+      <h2>Generate Your AI Transformation Timeline</h2>
+      <p>Your business profile is ready. Click the button below to generate your personalized AI transformation roadmap.</p>
       <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '2rem' }}>
         <button 
           className="btn btn-primary"
-          onClick={() => router.push('/profiles')}
+          onClick={onGenerate}
         >
-          Create Client Profile
+          Generate AI Timeline
         </button>
       </div>
     </div>

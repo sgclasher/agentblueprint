@@ -2,14 +2,14 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { supabase } from '../lib/supabase';
 import { Profile, Timeline } from '../services/types';
+import { ProfileService } from '../services/profileService';
+import useAuthStore from './useAuthStore';
 
 export type ScenarioType = 'conservative' | 'balanced' | 'aggressive';
 type Theme = 'light' | 'dark';
 
-interface BusinessProfileState {
-    businessProfile: Partial<Profile>;
+interface TimelineState {
     scenarioType: ScenarioType;
     selectedProvider: string | null;
     selectedYear: number;
@@ -20,13 +20,9 @@ interface BusinessProfileState {
     timelineCached: boolean;
     timelineGeneratedAt: string | null;
     timelineScenarioType: ScenarioType | null;
-    selectedProfileId: string | null;
-    currentProfile: Profile | null;
 }
 
-interface BusinessProfileActions {
-    setBusinessProfile: (profile: Partial<Profile>) => void;
-    updateBusinessProfile: (updates: Partial<Profile>) => void;
+interface TimelineActions {
     setScenarioType: (type: ScenarioType) => void;
     setSelectedProvider: (provider: string | null) => void;
     setSelectedYear: (year: number) => void;
@@ -34,31 +30,16 @@ interface BusinessProfileActions {
     toggleTheme: () => void;
     expandAllSections: () => void;
     collapseAllSections: () => void;
-    hasValidProfile: () => boolean;
-    generateTimeline: (profile?: Partial<Profile>) => Promise<void>;
-    generateTimelineFromProfile: (profile: Partial<Profile>, forceRegenerate?: boolean, scenarioType?: ScenarioType | null, providerOverride?: string | null) => Promise<Timeline | undefined>;
-    regenerateTimelineFromProfile: (profile: Partial<Profile>, scenarioType?: ScenarioType | null, provider?: string | null) => Promise<Timeline | undefined>;
+    generateTimeline: (forceRegenerate?: boolean) => Promise<Timeline | undefined>;
     clearTimeline: () => void;
-    setSelectedProfileId: (profileId: string | null) => void;
-    setCurrentProfile: (profile: Profile | null) => void;
 }
 
-type BusinessProfileStore = BusinessProfileState & BusinessProfileActions;
+type TimelineStore = TimelineState & TimelineActions;
 
-
-const useBusinessProfileStore = create<BusinessProfileStore>()(
+const useBusinessProfileStore = create<TimelineStore>()(
   persist(
     (set, get) => ({
-      businessProfile: {
-        companyName: '',
-        industry: '',
-        companySize: '',
-        currentTechStack: [],
-        aiMaturityLevel: '',
-        primaryGoals: [],
-        budget: '',
-        timeframe: '',
-      },
+      // State related to the timeline generation and UI, not the profile itself
       scenarioType: 'balanced',
       selectedProvider: null,
       selectedYear: new Date().getFullYear(),
@@ -69,14 +50,6 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
       timelineCached: false,
       timelineGeneratedAt: null,
       timelineScenarioType: null,
-      selectedProfileId: null,
-      currentProfile: null,
-      
-      setBusinessProfile: (profile) => 
-        set({ businessProfile: { ...get().businessProfile, ...profile } }),
-        
-      updateBusinessProfile: (updates) => 
-        set({ businessProfile: { ...get().businessProfile, ...updates } }),
       
       setScenarioType: (type) => set({ scenarioType: type }),
       
@@ -106,95 +79,36 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
       
       collapseAllSections: () => set({ expandedSections: {} }),
       
-      hasValidProfile: () => {
-        const { businessProfile } = get();
-        return !!(businessProfile.companyName && 
-               businessProfile.industry && 
-               businessProfile.companySize &&
-               businessProfile.aiMaturityLevel &&
-               businessProfile.primaryGoals &&
-               (businessProfile.primaryGoals as any[]).length > 0);
-      },
-      
-      generateTimeline: async (profile) => {
-        set({ isGenerating: true });
-        
-        if (profile) {
-          set({ businessProfile: profile });
-        }
-        
-        const { businessProfile, scenarioType, selectedProvider } = get();
-        
-        try {
-          const response = await fetch('/api/timeline/generate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              businessProfile,
-              scenarioType,
-              provider: selectedProvider,
-            })
-          });
+      generateTimeline: async (forceRegenerate = false) => {
+        const { scenarioType, selectedProvider } = get();
+        const profile = useAuthStore.getState().profile;
 
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          set({ timelineData: data.timeline, isGenerating: false });
-        } catch (error) {
-          console.error('Error generating timeline:', error);
-          set({ isGenerating: false });
-          throw error;
+        if (!profile) {
+          throw new Error("No profile loaded. Cannot generate timeline.");
         }
-      },
-      
-      generateTimelineFromProfile: async (profile, forceRegenerate = false, scenarioType = null, providerOverride = null) => {
+
         set({ isGenerating: true });
         try {
-          const { selectedProvider } = get();
-          const providerToUse = providerOverride || selectedProvider;
-          const { data: { session } } = await supabase.auth.getSession();
-          const headers: HeadersInit = { 'Content-Type': 'application/json' };
-          if (session?.access_token) {
-            headers['Authorization'] = `Bearer ${session.access_token}`;
-          }
-          const response = await fetch('/api/timeline/generate-from-profile', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-              profileId: profile.id || null,
-              profile: profile,
-              forceRegenerate,
-              scenarioType,
-              provider: providerToUse,
-            })
-          });
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-          }
-          const data = await response.json();
+          const result = await ProfileService.getTimelineFromProfile(
+            profile,
+            forceRegenerate,
+            scenarioType
+          );
+
           set({ 
-            timelineData: data.timeline, 
+            timelineData: result,
             isGenerating: false,
-            timelineCached: data.cached || false,
-            timelineGeneratedAt: data.generatedAt,
-            timelineScenarioType: data.scenarioType || 'balanced'
+            timelineCached: result._cached || false,
+            timelineGeneratedAt: result._generatedAt || new Date().toISOString(),
+            timelineScenarioType: result._scenarioType || scenarioType
           });
-          return data;
+
+          return result;
         } catch (error) {
           console.error('Error generating timeline from profile:', error);
           set({ isGenerating: false });
           throw error;
         }
-      },
-
-      regenerateTimelineFromProfile: async (profile, scenarioType = null, provider = null) => {
-        return await get().generateTimelineFromProfile(profile, true, scenarioType, provider);
       },
       
       clearTimeline: () => set({ 
@@ -204,13 +118,9 @@ const useBusinessProfileStore = create<BusinessProfileStore>()(
         timelineGeneratedAt: null,
         timelineScenarioType: null
       }),
-
-      setSelectedProfileId: (profileId) => set({ selectedProfileId: profileId }),
-      
-      setCurrentProfile: (profile) => set({ currentProfile: profile }),
     }),
     {
-      name: 'business-profile-storage',
+      name: 'timeline-ui-storage', // Renamed to reflect its new purpose
       storage: createJSONStorage(() => localStorage),
     }
   )

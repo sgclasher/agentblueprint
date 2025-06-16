@@ -5,7 +5,7 @@ import { Profile, StrategicInitiative, SystemApplication } from '../../../servic
 import styles from './CompanyOverviewStep.module.css';
 
 interface StepProps {
-    data: Profile;
+    data: Partial<Profile>;
     updateData: (path: string, value: any) => void;
 }
 
@@ -206,7 +206,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
             <input
               id="companyName"
               type="text"
-              value={data.companyName || ''}
+              value={data?.companyName || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('companyName', e.target.value)}
               placeholder="Enter company name"
               required
@@ -218,7 +218,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
             <label htmlFor="industry">Industry *</label>
             <select
               id="industry"
-              value={data.industry || ''}
+              value={data?.industry || ''}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => updateData('industry', e.target.value)}
               required
               className={styles.formSelect}
@@ -235,7 +235,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
             <input
               id="employeeCount"
               type="text"
-              value={data.employeeCount || ''}
+              value={data?.employeeCount || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('employeeCount', e.target.value)}
               placeholder="e.g., 500, 10,000+, 50-100"
               className={styles.formInput}
@@ -247,7 +247,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
             <input
               id="annualRevenue"
               type="text"
-              value={data.annualRevenue || ''}
+              value={data?.annualRevenue || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('annualRevenue', e.target.value)}
               placeholder="e.g., $50M, $1.2B"
               className={styles.formInput}
@@ -259,7 +259,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
             <input
               id="primaryLocation"
               type="text"
-              value={data.primaryLocation || ''}
+              value={data?.primaryLocation || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('primaryLocation', e.target.value)}
               placeholder="City, State/Country"
               className={styles.formInput}
@@ -271,7 +271,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
             <input
               id="websiteUrl"
               type="url"
-              value={data.websiteUrl || ''}
+              value={data?.websiteUrl || ''}
               onChange={(e: ChangeEvent<HTMLInputElement>) => updateData('websiteUrl', e.target.value)}
               placeholder="https://company.com"
               className={styles.formInput}
@@ -287,7 +287,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
           Add key business initiatives and their primary contacts.
         </p>
         
-        {data.strategicInitiatives?.map((initiative, index) => (
+        {data?.strategicInitiatives?.map((initiative, index) => (
           <div key={index} style={{ 
             border: '1px solid var(--border-primary)', 
             borderRadius: '8px', 
@@ -492,23 +492,19 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                         <button
                           type="button"
                           onClick={() => removeBusinessProblem(index, problemIndex)}
+                          data-testid={`remove-problem-${index}-${problemIndex}`}
                           style={{
                             background: 'var(--accent-red)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
                             padding: '0.5rem',
-                            fontSize: '0.75rem',
                             cursor: 'pointer',
-                            minWidth: '32px',
-                            height: '32px',
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
+                            alignItems: 'center'
                           }}
-                          title="Remove problem"
                         >
-                          ×
+                          &times;
                         </button>
                       </div>
                     ))}
@@ -703,7 +699,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
           Add key systems, applications, and technology infrastructure used by the client.
         </p>
         
-        {(data.systemsAndApplications || []).map((system, index) => (
+        {(data?.systemsAndApplications || []).map((system, index) => (
           <div key={index} style={{ 
             border: '1px solid var(--border-primary)', 
             borderRadius: '8px', 

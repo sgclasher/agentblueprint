@@ -26,15 +26,14 @@ const WIZARD_STEPS = [
 interface ProfileWizardProps {
     onComplete: (profile: Profile) => void;
     onCancel: () => void;
-    initialData?: Profile | null;
+    initialData?: Partial<Profile> | null;
     isEditMode?: boolean;
     onSave?: (profile: Profile) => void;
 }
 
 const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialData, isEditMode = false, onSave }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [profileData, setProfileData] = useState<Profile>(initialData || {
-    id: '',
+  const [profileData, setProfileData] = useState<Partial<Profile>>(initialData || {
     companyName: '',
     industry: '',
     employeeCount: '',
@@ -105,27 +104,12 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
         if (!proceed) return;
       }
 
-      let profile;
-      if (isEditMode && initialData?.id) {
-        profile = await ProfileService.updateProfile(initialData.id, profileData);
-      } else {
-        profile = await ProfileService.createProfile(profileData);
-      }
-      onComplete(profile);
-    } catch (error) {
-      console.error(`Error ${isEditMode ? 'updating' : 'creating'} profile:`, error);
-    }
-  };
+      // Use the new consolidated save method
+      const savedProfile = await ProfileService.saveCurrentUserProfile(profileData);
+      onComplete(savedProfile);
 
-  const handleSave = async () => {
-    if (!onSave || !isEditMode || !initialData?.id) return;
-    
-    try {
-      const profile = await ProfileService.updateProfile(initialData.id, profileData);
-      onSave(profile);
     } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Failed to save profile. Please try again.');
+      console.error(`Error saving profile:`, error);
     }
   };
 
@@ -138,13 +122,16 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
         return;
       }
       
-      await ProfileService.generateTimelineFromProfile(profileData);
-      
-      if (!profileData.id) {
-        window.location.href = `/timeline`;
+      // Ensure we have a saved profile with an ID before redirecting
+      const savedProfile = await ProfileService.saveCurrentUserProfile(profileData);
+      onComplete(savedProfile); // Update state in the parent component
+
+      if (savedProfile.id) {
+         window.location.href = `/timeline`; // The timeline page will now get the profile from the auth store
       } else {
-        window.location.href = `/timeline?profileId=${profileData.id}`;
+         alert('Could not save profile, cannot generate timeline.');
       }
+
     } catch (error) {
       console.error('Error generating timeline:', error);
       alert(`Failed to generate timeline: ${(error as Error).message}`);
@@ -236,7 +223,7 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
     }
   };
 
-  const markdownPreview = showMarkdownPreview ? markdownService.generateMarkdown(profileData) : '';
+  const markdownPreview = showMarkdownPreview ? markdownService.generateMarkdown(profileData as Profile) : '';
 
   return (
     <div style={{
@@ -507,19 +494,6 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
               {currentStep === 0 ? 'Cancel' : 'Back'}
             </button>
 
-            {isEditMode && onSave && (
-              <button 
-                type="button" 
-                onClick={handleSave}
-                className="btn btn-neutral"
-                style={{
-                  fontSize: '0.875rem'
-                }}
-              >
-                Save
-              </button>
-            )}
-
             {currentStep < WIZARD_STEPS.length - 1 ? (
               <button 
                 type="button" 
@@ -534,7 +508,7 @@ const ProfileWizard: FC<ProfileWizardProps> = ({ onComplete, onCancel, initialDa
                 onClick={handleComplete}
                 className="btn btn-success"
               >
-                {isEditMode ? 'Update Profile' : 'Create Profile'}
+                {isEditMode ? 'Update Profile' : 'Save Profile'}
               </button>
             )}
           </div>

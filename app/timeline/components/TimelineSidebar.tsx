@@ -3,7 +3,6 @@
 import React, { useLayoutEffect, useRef, useState, FC } from 'react';
 import styles from './TimelineSidebar.module.css';
 import ProviderSelector from './ProviderSelector';
-import ProfileSelector from './ProfileSelector';
 import TimelineWidgetContainer from './TimelineWidgetContainer';
 import useBusinessProfileStore, { ScenarioType } from '../../store/useBusinessProfileStore';
 import { Profile, Timeline } from '../../services/types';
@@ -25,16 +24,11 @@ interface TimelineSidebarProps {
     timelineCached: boolean;
     timelineGeneratedAt: string | null;
     timelineScenarioType: ScenarioType | null;
-    onRegenerateTimeline: (profile: Profile, scenarioType: ScenarioType | null, provider: string | null) => Promise<any>;
+    onRegenerateTimeline: (scenarioType?: ScenarioType) => Promise<any>;
     isGenerating: boolean;
     currentProfile: Profile | null;
+    hasProfile: boolean;
     timelineData?: Timeline | null;
-    businessProfile?: Partial<Profile>;
-    // Profile selection props
-    availableProfiles?: Profile[];
-    isLoadingProfiles?: boolean;
-    selectedProfileId?: string | null;
-    onProfileSelect?: (profile: Profile | null) => void;
 }
 
 const TimelineSidebar: FC<TimelineSidebarProps> = ({ 
@@ -47,13 +41,8 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   onRegenerateTimeline,
   isGenerating = false,
   currentProfile = null,
+  hasProfile,
   timelineData,
-  businessProfile,
-  // Profile selection props
-  availableProfiles = [],
-  isLoadingProfiles = false,
-  selectedProfileId = null,
-  onProfileSelect
 }) => {
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
@@ -85,9 +74,9 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   };
 
   const handleRegenerateClick = async () => {
-    if (onRegenerateTimeline && currentProfile) {
+    if (onRegenerateTimeline && hasProfile) {
       try {
-        const result = await onRegenerateTimeline(currentProfile, timelineScenarioType, selectedProvider);
+        await onRegenerateTimeline(timelineScenarioType || undefined);
       } catch (error) {
         console.error('Error regenerating timeline:', error);
       }
@@ -95,8 +84,8 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
   };
 
   const handleExportPDF = async () => {
-    if (!timelineData || !businessProfile) {
-      alert('No timeline data available to export');
+    if (!timelineData || !currentProfile) {
+      alert('No timeline data or profile available to export');
       return;
     }
 
@@ -118,7 +107,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
         },
         body: JSON.stringify({
           timelineData,
-          businessProfile,
+          businessProfile: currentProfile,
           options: {
             format: 'A4',
             orientation: 'portrait',
@@ -259,17 +248,10 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
       <div className={styles.sidebarFooter}>
         {/* Widget Container with All Timeline Controls */}
         <TimelineWidgetContainer title="Configuration" defaultExpanded={false}>
-          {onProfileSelect && (
-            <ProfileSelector
-              selectedProfileId={selectedProfileId}
-              onProfileSelect={onProfileSelect}
-              disabled={isGenerating}
-            />
-          )}
           <ProviderSelector
             selectedProvider={selectedProvider}
             onProviderChange={setSelectedProvider}
-            disabled={isGenerating}
+            disabled={isGenerating || !hasProfile}
           />
           
           {timelineGeneratedAt && (
@@ -291,7 +273,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
                 <button
                   className="btn btn-secondary"
                   onClick={handleRegenerateClick}
-                  disabled={isGenerating}
+                  disabled={isGenerating || !hasProfile}
                   style={{
                     width: '100%',
                     display: 'flex',

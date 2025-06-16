@@ -7,14 +7,12 @@ import { Profile } from '../../../services/types';
 describe('CompanyOverviewStep', () => {
   const mockUpdateData = jest.fn();
 
-  const baseMockProfile: Profile = {
+  const baseMockProfile: Partial<Profile> = {
     id: '123',
     companyName: 'Test Corp',
     industry: 'Technology',
     strategicInitiatives: [],
     systemsAndApplications: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   };
 
   beforeEach(() => {
@@ -96,7 +94,7 @@ describe('CompanyOverviewStep', () => {
       };
       render(<CompanyOverviewStep data={testData as Profile} updateData={mockUpdateData} />);
 
-      const removeButton = screen.getByTitle('Remove problem');
+      const removeButton = screen.getByTestId('remove-problem-0-0');
       await user.click(removeButton);
 
       expect(mockUpdateData).toHaveBeenCalledWith('strategicInitiatives', [

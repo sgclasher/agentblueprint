@@ -2,13 +2,13 @@
 
 ## 🗄️ Core Tables
 
-### **client_profiles**
-Primary table for all profile data with JSONB flexibility.
+### **profiles**
+Primary table for business profile data, with a one-to-one relationship with users.
 
 ```sql
-CREATE TABLE client_profiles (
+CREATE TABLE profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE, -- Enforces one profile per user
   profile_data JSONB NOT NULL,           -- Flexible profile content
   markdown_content TEXT,                 -- Generated markdown representation
   timeline_cache JSONB,                  -- Cached AI timeline data
@@ -115,19 +115,19 @@ The `profile_data` JSONB column stores profile information with **backward compa
 
 ### **Security Policies**
 ```sql
--- Users can only access their own profiles
-ALTER TABLE client_profiles ENABLE ROW LEVEL SECURITY;
+-- A user can only access their own single profile
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own profiles" ON client_profiles
+CREATE POLICY "Users can view their own profile" ON profiles
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own profiles" ON client_profiles  
+CREATE POLICY "Users can insert their own profile" ON profiles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own profiles" ON client_profiles
+CREATE POLICY "Users can update their own profile" ON profiles
   FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own profiles" ON client_profiles
+CREATE POLICY "Users can delete their own profile" ON profiles
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Similar policies for credentials table
@@ -142,24 +142,24 @@ These changes are **backward compatible** and safe to implement:
 
 ```sql
 -- ✅ Adding new columns
-ALTER TABLE client_profiles ADD COLUMN new_feature_cache JSONB;
-ALTER TABLE client_profiles ADD COLUMN feature_metadata TEXT;
+ALTER TABLE profiles ADD COLUMN new_feature_cache JSONB;
+ALTER TABLE profiles ADD COLUMN feature_metadata TEXT;
 
 -- ✅ Adding JSONB fields (backward compatible)
 -- Old profiles will ignore new fields, new profiles can use them
-UPDATE client_profiles 
+UPDATE profiles 
 SET profile_data = profile_data || '{"newFeature": "defaultValue"}'
 WHERE profile_data->>'newFeature' IS NULL;
 
 -- ✅ Adding indexes for performance
-CREATE INDEX idx_profiles_company_name ON client_profiles 
+CREATE INDEX idx_profiles_company_name ON profiles 
 USING GIN ((profile_data->>'companyName'));
 
 -- ✅ New tables for independent features
 CREATE TABLE workflow_visualizations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  profile_id UUID REFERENCES client_profiles(id) ON DELETE CASCADE,
+  profile_id UUID REFERENCES profiles(id) ON DELETE SET NULL, -- Can link to the user's single profile
   workflow_data JSONB NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -169,16 +169,16 @@ CREATE TABLE workflow_visualizations (
 
 ```sql
 -- ⚠️ Modifying existing columns
-ALTER TABLE client_profiles ALTER COLUMN profile_data TYPE TEXT; -- BREAKING!
+ALTER TABLE profiles ALTER COLUMN profile_data TYPE TEXT; -- BREAKING!
 
 -- ⚠️ Removing columns  
-ALTER TABLE client_profiles DROP COLUMN markdown_content; -- BREAKING!
+ALTER TABLE profiles DROP COLUMN markdown_content; -- BREAKING!
 
 -- ⚠️ Changing RLS policies
-DROP POLICY "Users can view own profiles" ON client_profiles; -- SECURITY RISK!
+DROP POLICY "Users can view their own profile" ON profiles; -- SECURITY RISK!
 
 -- ⚠️ Renaming tables or columns
-ALTER TABLE client_profiles RENAME TO user_profiles; -- BREAKING!
+ALTER TABLE profiles RENAME TO user_business_profiles; -- BREAKING!
 ```
 
 ## 🚀 Development Patterns
@@ -186,30 +186,28 @@ ALTER TABLE client_profiles RENAME TO user_profiles; -- BREAKING!
 ### **Adding Cache for New AI Feature**
 ```sql
 -- 1. Add cache column
-ALTER TABLE client_profiles ADD COLUMN my_feature_cache JSONB;
+ALTER TABLE profiles ADD COLUMN my_feature_cache JSONB;
 
 -- 2. Create index if needed
-CREATE INDEX idx_profiles_my_feature_cache ON client_profiles 
+CREATE INDEX idx_profiles_my_feature_cache ON profiles 
 USING GIN (my_feature_cache);
 ```
 
 ```typescript
 // 3. Add repository methods
-async saveMyCacheFeature(profileId: string, userId: string, cacheData: any) {
+async saveMyCacheFeature(userId: string, cacheData: any) {
   const { error } = await this.supabase
-    .from('client_profiles')
+    .from('profiles')
     .update({ my_feature_cache: cacheData, updated_at: new Date().toISOString() })
-    .eq('id', profileId)
     .eq('user_id', userId);
     
   if (error) throw error;
 }
 
-async getMyCacheFeature(profileId: string, userId: string) {
+async getMyCacheFeature(userId: string) {
   const { data, error } = await this.supabase
-    .from('client_profiles')
+    .from('profiles')
     .select('my_feature_cache')
-    .eq('id', profileId)
     .eq('user_id', userId)
     .single();
     
@@ -227,7 +225,7 @@ const newProfileData = {
 
 // ✅ Safe: Update specific JSONB paths
 await supabase
-  .from('client_profiles')
+  .from('profiles')
   .update({ 
     profile_data: supabase.rpc('jsonb_set', {
       target: 'profile_data',
@@ -235,7 +233,6 @@ await supabase
       new_value: '"newValue"'
     })
   })
-  .eq('id', profileId)
   .eq('user_id', userId);
 ```
 
@@ -244,14 +241,14 @@ await supabase
 ### **JSONB Indexing**
 ```sql
 -- Index frequently queried JSON fields
-CREATE INDEX idx_profiles_company_name ON client_profiles 
+CREATE INDEX idx_profiles_company_name ON profiles 
 USING GIN ((profile_data->>'companyName'));
 
-CREATE INDEX idx_profiles_industry ON client_profiles 
+CREATE INDEX idx_profiles_industry ON profiles 
 USING GIN ((profile_data->>'industry'));
 
 -- Index for array fields
-CREATE INDEX idx_profiles_initiatives ON client_profiles 
+CREATE INDEX idx_profiles_initiatives ON profiles 
 USING GIN ((profile_data->'strategicInitiatives'));
 ```
 
@@ -310,8 +307,8 @@ export function migrateProfileData(profileData: any): any {
 - ⚠️ Performance-impacting changes
 
 ### **Development Checklist**
-- [ ] Will existing profiles work with this change?
-- [ ] Do I need data migration for existing records?
+- [ ] Will the existing profile work with this change?
+- [ ] Do I need a data migration for existing records?
 - [ ] Are new fields optional with sensible defaults?
 - [ ] Does this require new indexes for performance?
 - [ ] Are security policies maintained? 

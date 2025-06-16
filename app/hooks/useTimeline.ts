@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import useBusinessProfileStore, { ScenarioType } from '../store/useBusinessProfileStore';
-import { ProfileService } from '../services/profileService';
-import { Profile, Timeline } from '../services/types';
+import useAuthStore from '../store/useAuthStore';
+import { Timeline } from '../services/types';
 
 interface TimelineSection {
     id: string;
@@ -52,84 +51,34 @@ const getTimelineSections = (timelineData: Timeline | null): TimelineSection[] =
 
 export function useTimeline() {
   const {
-    businessProfile,
     timelineData,
     isGenerating,
-    generateTimelineFromProfile,
-    regenerateTimelineFromProfile,
-    hasValidProfile,
+    generateTimeline,
     theme,
     toggleTheme,
     timelineCached,
     timelineGeneratedAt,
     timelineScenarioType,
-    selectedProfileId: persistedProfileId,
-    currentProfile: persistedCurrentProfile,
-    setSelectedProfileId,
-    setCurrentProfile
   } = useBusinessProfileStore();
-
-  const searchParams = useSearchParams();
-  const profileIdFromUrl = searchParams.get('profileId');
+  
+  const { profile: currentProfile, isLoading: isAuthLoading } = useAuthStore();
 
   const [activeSection, setActiveSection] = useState('current-state');
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  // New state for profile selection
-  const [availableProfiles, setAvailableProfiles] = useState<Profile[]>([]);
-  const [isLoadingProfiles, setIsLoadingProfiles] = useState<boolean>(false);
-  
-  // Use persisted profile ID from store, or URL parameter as fallback
-  const currentProfileId = profileIdFromUrl || persistedProfileId;
-  const currentProfile = persistedCurrentProfile;
 
   const contentRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<{ [key: string]: HTMLElement }>({});
-  const effectRan = useRef(false);
-
+  
   const timelineSections = useMemo(() => getTimelineSections(timelineData), [timelineData]);
 
   useEffect(() => {
-    if (effectRan.current === true && process.env.NODE_ENV === 'development') {
-      return;
+    // Only attempt to generate a timeline if auth has loaded and a profile exists.
+    if (!isAuthLoading && currentProfile) {
+      // The generateTimeline function from the store now handles everything.
+      // It has its own internal logic to avoid re-fetching if data exists.
+      generateTimeline(false); 
     }
-
-    const initializeTimeline = async () => {
-      if (currentProfileId) {
-        setIsLoading(true);
-        try {
-          const loadedProfile = await ProfileService.getProfile(currentProfileId);
-          if (loadedProfile) {
-            setCurrentProfile(loadedProfile);
-            setSelectedProfileId(currentProfileId);
-            await generateTimelineFromProfile(loadedProfile);
-          } else {
-            setCurrentProfile(null);
-            setSelectedProfileId(null);
-          }
-        } catch (error) {
-          console.error("Error loading profile for timeline:", error);
-          setCurrentProfile(null);
-          setSelectedProfileId(null);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        // No profile ID available - clear timeline data and current profile
-        setIsLoading(false);
-        setCurrentProfile(null);
-        setSelectedProfileId(null);
-        // Clear any persisted timeline data when no profile is selected
-        const { clearTimeline } = useBusinessProfileStore.getState();
-        clearTimeline();
-      }
-    };
-    initializeTimeline();
-
-    return () => {
-      effectRan.current = true;
-    }
-  }, [currentProfileId, generateTimelineFromProfile, setCurrentProfile, setSelectedProfileId]);
+  }, [currentProfile, isAuthLoading, generateTimeline]);
 
 
   useLayoutEffect(() => {
@@ -190,55 +139,15 @@ export function useTimeline() {
     }
   }, []);
 
-  const regenerateTimeline = useCallback(async (profile: Profile | null, scenarioType: ScenarioType | null = null, provider: string | null = null) => {
-    if (profile) {
-      return await regenerateTimelineFromProfile(profile, scenarioType, provider);
-    }
-    return undefined;
-  }, [regenerateTimelineFromProfile]);
-
-  // Load available profiles for dropdown
-  useEffect(() => {
-    const loadProfiles = async () => {
-      try {
-        setIsLoadingProfiles(true);
-        const profiles = await ProfileService.getProfiles();
-        setAvailableProfiles(profiles);
-      } catch (error) {
-        console.error('Error loading profiles for selector:', error);
-        setAvailableProfiles([]);
-      } finally {
-        setIsLoadingProfiles(false);
-      }
-    };
-
-    loadProfiles();
-  }, []);
-
-  // Profile selection handler
-  const handleProfileSelect = useCallback(async (profile: Profile | null) => {
-    if (!profile) {
-      setSelectedProfileId(null);
-      setCurrentProfile(null);
-      return;
-    }
-
-    setSelectedProfileId(profile.id);
-    setCurrentProfile(profile);
-    
-    try {
-      // Use generateTimelineFromProfile which includes caching logic
-      await generateTimelineFromProfile(profile);
-    } catch (error) {
-      console.error('Error generating timeline for selected profile:', error);
-    }
-  }, [generateTimelineFromProfile, setSelectedProfileId, setCurrentProfile]);
+  const regenerateTimeline = useCallback(async (scenarioType?: ScenarioType) => {
+    // The store's generateTimeline function now handles regeneration.
+    await generateTimeline(true);
+  }, [generateTimeline]);
 
   return {
     timelineData,
-    businessProfile,
     currentProfile,
-    isLoading: isLoading || isGenerating,
+    isLoading: isAuthLoading || isGenerating,
     activeSection,
     scrollProgress,
     timelineSections,
@@ -251,12 +160,6 @@ export function useTimeline() {
     handleSectionClick,
     toggleTheme,
     regenerateTimeline,
-    hasValidProfile,
-    isProfileTimeline: !!profileIdFromUrl,
-    // Profile selection functionality
-    availableProfiles,
-    isLoadingProfiles,
-    selectedProfileId: currentProfileId,
-    handleProfileSelect
+    hasProfile: !!currentProfile,
   };
 } 

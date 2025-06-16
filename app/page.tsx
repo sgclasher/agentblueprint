@@ -12,7 +12,7 @@ export default function Home() {
   useEffect(() => {
     // Initialize auth on mount
     initialize();
-  }, [initialize]);
+  }, []); // ← Fixed: Empty dependency array prevents infinite loop
 
   useEffect(() => {
     // Redirect based on auth status once loading is complete

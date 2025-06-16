@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { useTimeline } from '../hooks/useTimeline';
 import GlobalHeader from '../components/GlobalHeader';
 import TimelineSidebar from './components/TimelineSidebar';
@@ -10,10 +11,26 @@ import styles from './Timeline.module.css';
 import './timeline.css';
 import { TimelinePlaceholder, WelcomeMessage } from './components/TimelinePlaceholder';
 
+// New component for when a user has no profile
+const NoProfileMessage: React.FC = () => (
+    <div className={styles.noProfileContainer}>
+        <h2>Create a Business Profile to Begin</h2>
+        <p>
+            To generate a personalized AI Transformation Timeline, you first need to create your business profile.
+            This profile captures key information about your company that our AI uses to build your roadmap.
+        </p>
+        <Link href="/profile" className="btn btn-primary">
+            Go to Your Profile
+        </Link>
+        <p className={styles.subtleText}>
+            Your profile is where you'll manage all your business information.
+        </p>
+    </div>
+);
+
 export default function TimelinePage() {
   const {
     timelineData,
-    businessProfile,
     currentProfile,
     isLoading,
     activeSection,
@@ -25,35 +42,38 @@ export default function TimelinePage() {
     handleSectionClick,
     toggleTheme,
     regenerateTimeline,
-    isProfileTimeline,
     timelineCached,
     timelineGeneratedAt,
     timelineScenarioType,
-    // Profile selection functionality
-    availableProfiles,
-    isLoadingProfiles,
-    selectedProfileId,
-    handleProfileSelect
+    hasProfile,
   } = useTimeline();
 
   const renderContent = () => {
     if (isLoading) {
-      const message = isProfileTimeline 
+      const message = hasProfile 
         ? "Generating personalized roadmap from your profile..."
-        : "Creating your personalized transformation roadmap...";
+        : "Checking for your profile...";
       return <TimelinePlaceholder title="Loading Your AI Timeline" message={message} />;
+    }
+    
+    if (!hasProfile) {
+        return <NoProfileMessage />;
     }
 
     if (!timelineData) {
-      return <WelcomeMessage />;
+      return <WelcomeMessage onGenerate={() => regenerateTimeline()} />;
     }
     
+    if (!currentProfile) {
+        return <TimelinePlaceholder title="Error" message="Could not load profile." />;
+    }
+
     return (
       <TimelineContent 
         sections={timelineSections}
         timelineData={timelineData}
         sectionRefs={sectionRefs}
-        businessProfile={businessProfile}
+        businessProfile={currentProfile} // Pass the profile to the content
       />
     );
   };
@@ -75,12 +95,7 @@ export default function TimelinePage() {
           onRegenerateTimeline={regenerateTimeline}
           isGenerating={isLoading}
           currentProfile={currentProfile}
-          timelineData={timelineData}
-          businessProfile={businessProfile}
-          availableProfiles={availableProfiles}
-          isLoadingProfiles={isLoadingProfiles}
-          selectedProfileId={selectedProfileId}
-          onProfileSelect={handleProfileSelect}
+          hasProfile={hasProfile}
         />
         
         <div className={styles.timelineMain} ref={contentRef}>
