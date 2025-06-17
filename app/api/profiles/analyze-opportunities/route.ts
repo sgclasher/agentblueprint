@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { ProfileRepository } from '../../../repositories/profileRepository';
 import { CredentialsRepository } from '../../../repositories/credentialsRepository';
 import { aiService } from '../../../services/aiService';
 import { AI_OPPORTUNITIES_SYSTEM_PROMPT, AI_OPPORTUNITIES_USER_PROMPT } from '../../../lib/llm/prompts/aiOpportunitiesPrompt';
@@ -100,19 +99,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the user's profile directly using the repository
-    const profile = await ProfileRepository.getProfileByUserId(user.id);
+    // Get the user's profile using service role client (same pattern as /api/profiles/get)
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
     
-    if (!profile) {
-      return NextResponse.json(
-        { success: false, error: 'Profile not found. Please create a profile first.' },
-        { status: 404 }
-      );
+    if (profileError) {
+      if (profileError.code === 'PGRST116') {
+        return NextResponse.json(
+          { success: false, error: 'Profile not found. Please create a profile first.' },
+          { status: 404 }
+        );
+      }
+      console.error('[AI Opportunities] Profile fetch error:', profileError);
+      throw profileError;
     }
+
+    // Transform profile to match expected format (same as /api/profiles/get)
+    const profile = {
+      id: profileData.id,
+      ...profileData.profile_data,
+      markdown: profileData.markdown_content,
+      createdAt: profileData.created_at,
+      updatedAt: profileData.updated_at,
+    };
 
     // Check for cached opportunities (unless forcing regeneration)
     if (!forceRegenerate) {
-      const cachedOpportunities = await ProfileRepository.getCachedOpportunities(user.id);
+      const { data: cacheData, error: cacheError } = await supabase
+        .from('profiles')
+        .select('ai_opportunities_cache')
+        .eq('user_id', user.id)
+        .single();
+        
+      const cachedOpportunities = cacheData?.ai_opportunities_cache || null;
+      
       if (cachedOpportunities) {
         return NextResponse.json({
           success: true,
@@ -173,8 +196,14 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Cache the opportunities analysis
-    await ProfileRepository.saveOpportunities(user.id, opportunitiesAnalysis);
+    // Cache the opportunities analysis using service role client
+    await supabase
+      .from('profiles')
+      .update({
+        ai_opportunities_cache: opportunitiesAnalysis,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
 
     return NextResponse.json({
       success: true,
@@ -226,7 +255,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const cachedOpportunities = await ProfileRepository.getCachedOpportunities(user.id);
+    // Get cached opportunities using service role client directly
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('ai_opportunities_cache')
+      .eq('user_id', user.id)
+      .single();
+      
+    if (error && error.code !== 'PGRST116') {
+      console.error('[AI Opportunities] Cache fetch error:', error);
+      throw error;
+    }
+    
+    const cachedOpportunities = data?.ai_opportunities_cache || null;
 
     if (!cachedOpportunities) {
       return NextResponse.json({

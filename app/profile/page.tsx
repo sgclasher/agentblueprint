@@ -8,10 +8,14 @@ import ProfileWizard from '../profiles/components/ProfileWizard';
 import { Profile } from '../services/types';
 import { 
   User, Mail, Calendar, Shield, Settings, Database, LogOut, Edit, Save, X,
-  Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap, LucideIcon, TrendingUp, FileEdit, Info, BrainCircuit, Users as ContactsIcon, Code, FileText
+  Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap, LucideIcon, TrendingUp, FileEdit, Info, BrainCircuit, Users as ContactsIcon, Code, FileText, Server, Brain
 } from 'lucide-react';
 import styles from '../profiles/[id]/ProfileDetail.module.css';
 import { markdownService } from '../services/markdownService';
+
+// Import new tab components
+import AIOpportunitiesTab from './components/AIOpportunitiesTab';
+import SystemsTab from './components/SystemsTab';
 
 // ====================================================================
 // Tab Components (Adapted from the old [id]/page.tsx)
@@ -271,12 +275,20 @@ export default function ProfilePage() {
       <div className={styles.tabBar}>
         <div className={styles.tabNavigation}>
           <button className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`} onClick={() => setActiveTab('overview')}><Info size={16}/> Overview</button>
+          <button className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`} onClick={() => setActiveTab('opportunities')}><Brain size={16}/> AI Opportunities</button>
+          <button className={`${styles.tabButton} ${activeTab === 'systems' ? styles.activeTab : ''}`} onClick={() => setActiveTab('systems')}><Server size={16}/> Systems</button>
         </div>
       </div>
 
       <div className={styles.content}>
         {activeTab === 'overview' && editableProfile && (
           <ProfileOverviewTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
+        )}
+        {activeTab === 'opportunities' && editableProfile && (
+          <AIOpportunitiesTab profile={editableProfile} isEditing={isEditing} />
+        )}
+        {activeTab === 'systems' && editableProfile && (
+          <SystemsTab profile={editableProfile} isEditing={isEditing} />
         )}
       </div>
     </div>
