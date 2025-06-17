@@ -1,54 +1,36 @@
 # Development History & Agent Instructions
 
-## 🎯 Current Task: Fix Profile Loading After Save
+## 🎯 Current Task: Restore Full Profile Detail Page Features
 
-### **Plan: Fix Profile Loading After Save**
+### **COMPLETED: Fix Profile Loading After Save** ✅ **RESOLVED** (June 2025)
 
-#### Phase 1: Enable Profile Loading in Services
-- [x] **Step 1: Remove ProfileService Bypass** ✅ 
-  - Files: `app/services/profileService.ts`
-  - Remove the temporary `return null;` bypass in `getCurrentUserProfile()`
-  - Re-enable the existing API call logic to `/api/profiles/get`
+**Issue**: Profile would save successfully but wouldn't load on page revisit, showing ProfileWizard instead of saved data.
 
-- [x] **Step 2: Remove AuthStore Bypass** ✅
-  - Files: `app/store/useAuthStore.ts`
-  - Remove the temporary bypass in the `initialize()` method
-  - Re-enable profile fetching during authentication initialization
-  - Re-enable profile fetching in the auth state change listener
+**Root Cause**: API endpoint `/api/profiles/get` was calling `ProfileRepository` (client-side supabase with RLS) instead of using service role client directly.
 
-#### Phase 2: Test and Debug API Integration
-- [ ] **Step 3: Test API Endpoint Directly**
-  - Manually test `/api/profiles/get` endpoint with proper authentication headers
-  - Verify the endpoint receives requests and returns expected responses
-  - Check authentication token flow and user verification
+**Solution**: Updated `/api/profiles/get` to use service role client directly, matching the save endpoint pattern.
 
-- [ ] **Step 4: Test Complete Save-Load Cycle**
-  - Test: Save profile → verify in database → reload page → check profile loads
-  - Add comprehensive logging to track the request flow
-  - Verify authentication state persistence across page reloads
+**Status**: ✅ **COMPLETELY RESOLVED** - Profile save-load cycle now works perfectly.
 
-#### Phase 3: Error Handling and Edge Cases
-- [ ] **Step 5: Enhance Error Handling**
-  - Files: `app/services/profileService.ts`, `app/store/useAuthStore.ts`
-  - Add better error messages for profile loading failures
-  - Implement retry logic for transient failures
-  - Add user-friendly fallback behavior
+---
 
-- [ ] **Step 6: Verify Profile Page Rendering**
-  - Files: `app/profile/page.tsx`
-  - Ensure conditional rendering works correctly (ProfileWizard vs profile display)
-  - Test edge cases: loading states, authentication failures, network errors
+### **NEXT: Restore Full Profile Detail Page Features** 
 
-#### Phase 4: Testing and Validation  
-- [ ] **Step 7: Manual Testing**
-  - Create a test profile and verify the complete workflow
-  - Test across browser sessions and page refreshes
-  - Verify mobile responsiveness and cross-browser compatibility
+The profile page currently only shows basic "Overview" tab, but originally had comprehensive business intelligence features that were simplified during the single-profile architecture transition.
 
-- [ ] **Step 8: Update Documentation**
-  - Files: `instructions.md`, `README.md`
-  - Update task status and mark issue as resolved
-  - Document any changes made to the authentication flow
+#### **Features to Restore:**
+- [ ] **AI Opportunities Analysis Tab** - Comprehensive AI opportunity recommendations with business impact metrics
+- [ ] **Systems & Applications Tab** - Technology infrastructure overview with criticality ratings  
+- [ ] **Enhanced Timeline Integration** - Quick access to AI transformation timeline generation
+- [ ] **Strategic Initiatives Detail** - Full business intelligence with contacts, outcomes, metrics
+- [ ] **Analysis/Intelligence Tab** - Advanced business insights and recommendations
+
+#### **Files Modified Today:**
+- `app/services/profileService.ts` - Removed temporary bypasses, restored API calling
+- `app/store/useAuthStore.ts` - Removed temporary bypasses, restored profile fetching  
+- `app/api/profiles/get/route.ts` - **KEY FIX**: Updated to use service role client directly
+- `app/profile/page.tsx` - Added debug functionality (can be removed)
+- `app/api/debug-profiles/route.ts` - Debug endpoint (can be removed)
 
 ---
 

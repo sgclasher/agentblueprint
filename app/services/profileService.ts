@@ -132,6 +132,12 @@ export class ProfileService {
       }
 
       console.log(`✅ [ProfileService] Profile fetched successfully via API`);
+      console.log(`📊 [ProfileService] API Response:`, { 
+        success: result.success, 
+        hasProfile: !!result.profile,
+        profileId: result.profile?.id,
+        profileCompany: result.profile?.companyName 
+      });
       
       // Return the profile from API response (null if no profile exists)
       return result.profile;

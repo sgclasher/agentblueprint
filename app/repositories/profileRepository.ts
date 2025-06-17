@@ -75,11 +75,21 @@ export class ProfileRepository {
     }
 
     try {
+      console.log(`🔍 [ProfileRepository] Querying profiles table for user_id: ${userId}`);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
+
+      console.log(`📊 [ProfileRepository] Query result:`, {
+        hasData: !!data,
+        hasError: !!error,
+        errorCode: error?.code,
+        errorMessage: error?.message,
+        dataKeys: data ? Object.keys(data) : null
+      });
 
       if (error) {
         // 'PGRST116' is the code for "Not Found", which is not a throw-worthy error.
@@ -97,10 +107,18 @@ export class ProfileRepository {
           
           throw error;
         }
+        console.log(`ℹ️ [ProfileRepository] No profile found (PGRST116) for user ${userId}`);
         return null; // A user may not have a profile yet, this is not an error.
       }
 
-      return data ? this.transformFromDatabase(data) : null;
+      const transformedProfile = data ? this.transformFromDatabase(data) : null;
+      console.log(`✅ [ProfileRepository] Profile transformed:`, {
+        hasProfile: !!transformedProfile,
+        profileId: transformedProfile?.id,
+        companyName: transformedProfile?.companyName
+      });
+
+      return transformedProfile;
     } catch (error) {
       console.error('❌ Exception in getProfileByUserId:', error);
       throw new Error('Failed to fetch profile from Supabase.');

@@ -158,6 +158,34 @@ export default function ProfilePage() {
   const handleProfileCreated = (newProfile: Profile) => {
     setProfile(newProfile);
   };
+
+  const handleDebugProfiles = async () => {
+    try {
+      const { supabase } = await import('../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        alert('Not authenticated');
+        return;
+      }
+
+      const response = await fetch('/api/debug-profiles', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'same-origin'
+      });
+
+      const result = await response.json();
+      console.log('🔍 [DEBUG] Database state:', result);
+      alert(`Debug Results:\n\nProfiles found: ${result.allProfilesCount}\nCheck console for details`);
+    } catch (error) {
+      console.error('Debug failed:', error);
+      alert('Debug failed - check console');
+    }
+  };
   
   const getIndustryIcon = (industry: string | undefined): React.ReactNode => {
     if (!industry) return <Briefcase size={24} />;
@@ -187,10 +215,16 @@ export default function ProfilePage() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
         <GlobalHeader />
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+          <button className="btn" onClick={handleDebugProfiles} style={{ fontSize: '12px', padding: '4px 8px' }}>
+            🔍 Debug DB
+          </button>
+        </div>
         <ProfileWizard
           onComplete={handleProfileCreated}
           onCancel={() => alert("You'll need to create a profile to use the app's features.")}
           initialData={{
+            id: '',
             companyName: '', industry: '', employeeCount: '', annualRevenue: '',
             primaryLocation: '', websiteUrl: '', strategicInitiatives: []
           } as Profile}
@@ -227,6 +261,7 @@ export default function ProfilePage() {
               <>
                 <button className="btn btn-secondary" onClick={() => setIsEditing(true)}><FileEdit size={18} /> Edit Profile</button>
                 <button className="btn btn-primary" onClick={() => router.push('/timeline')}><TrendingUp size={18} /> AI Timeline</button>
+                <button className="btn" onClick={handleDebugProfiles} style={{marginLeft: '8px'}}>🔍 Debug DB</button>
               </>
             )}
           </div>
