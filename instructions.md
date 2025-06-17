@@ -4,6 +4,58 @@
 
 ### **Plan: Fix Profile Loading After Save**
 
+#### Phase 1: Enable Profile Loading in Services
+- [x] **Step 1: Remove ProfileService Bypass** ✅ 
+  - Files: `app/services/profileService.ts`
+  - Remove the temporary `return null;` bypass in `getCurrentUserProfile()`
+  - Re-enable the existing API call logic to `/api/profiles/get`
+
+- [x] **Step 2: Remove AuthStore Bypass** ✅
+  - Files: `app/store/useAuthStore.ts`
+  - Remove the temporary bypass in the `initialize()` method
+  - Re-enable profile fetching during authentication initialization
+  - Re-enable profile fetching in the auth state change listener
+
+#### Phase 2: Test and Debug API Integration
+- [ ] **Step 3: Test API Endpoint Directly**
+  - Manually test `/api/profiles/get` endpoint with proper authentication headers
+  - Verify the endpoint receives requests and returns expected responses
+  - Check authentication token flow and user verification
+
+- [ ] **Step 4: Test Complete Save-Load Cycle**
+  - Test: Save profile → verify in database → reload page → check profile loads
+  - Add comprehensive logging to track the request flow
+  - Verify authentication state persistence across page reloads
+
+#### Phase 3: Error Handling and Edge Cases
+- [ ] **Step 5: Enhance Error Handling**
+  - Files: `app/services/profileService.ts`, `app/store/useAuthStore.ts`
+  - Add better error messages for profile loading failures
+  - Implement retry logic for transient failures
+  - Add user-friendly fallback behavior
+
+- [ ] **Step 6: Verify Profile Page Rendering**
+  - Files: `app/profile/page.tsx`
+  - Ensure conditional rendering works correctly (ProfileWizard vs profile display)
+  - Test edge cases: loading states, authentication failures, network errors
+
+#### Phase 4: Testing and Validation  
+- [ ] **Step 7: Manual Testing**
+  - Create a test profile and verify the complete workflow
+  - Test across browser sessions and page refreshes
+  - Verify mobile responsiveness and cross-browser compatibility
+
+- [ ] **Step 8: Update Documentation**
+  - Files: `instructions.md`, `README.md`
+  - Update task status and mark issue as resolved
+  - Document any changes made to the authentication flow
+
+---
+
+## 🎯 Previous Task: Fix Profile Loading After Save (Legacy)
+
+### **Plan: Fix Profile Loading After Save**
+
 - [x] **Step 1: Fix RLS Policies in Database** ✅
   - Files: Database schema (Supabase SQL)
   - Update RLS policies for the `profiles` table to allow proper read/write access

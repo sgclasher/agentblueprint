@@ -76,20 +76,10 @@ export class ProfileService {
 
   /**
    * Retrieves the profile for the currently authenticated user.
-   * TEMPORARY FIX: Bypassing API call to resolve loading issue
    * @returns {Promise<Profile | null>} The user's profile or null if not found.
    */
   static async getCurrentUserProfile(): Promise<Profile | null> {
     try {
-      // TEMPORARY FIX: Skip profile fetching to resolve loading issue
-      console.log('⚠️ [ProfileService] TEMPORARY: Bypassing profile fetch due to API issue');
-      console.log('ℹ️ [ProfileService] User will see ProfileWizard to create new profile');
-      
-      // Return null immediately - user will see ProfileWizard
-      return null;
-      
-      /* ORIGINAL CODE - RE-ENABLE AFTER DEBUGGING:
-      
       // Get current user session for authorization
       const { supabase } = await import('../lib/supabase');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -145,8 +135,6 @@ export class ProfileService {
       
       // Return the profile from API response (null if no profile exists)
       return result.profile;
-      
-      */
       
     } catch (error) {
       console.error('❌ [ProfileService] Error in getCurrentUserProfile:', error);

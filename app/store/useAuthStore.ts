@@ -61,9 +61,18 @@ const useAuthStore = create<AuthStore>((set, get) => {
       
       console.log('✅ [AuthStore] Session retrieved, authenticated:', !!session);
       
-      // TEMPORARY: Skip profile fetching to debug
-      console.log('⚠️ [AuthStore] TEMPORARY: Skipping profile fetching during init');
-      const userProfile: Profile | null = null;
+      // Fetch user profile if authenticated
+      let userProfile: Profile | null = null;
+      if (session?.user) {
+        console.log('👤 [AuthStore] Fetching user profile...');
+        try {
+          userProfile = await ProfileService.getCurrentUserProfile();
+          console.log('✅ [AuthStore] Profile fetched:', !!userProfile);
+        } catch (error) {
+          console.error('❌ [AuthStore] Profile fetch failed during init:', error);
+          // Don't throw - continue with null profile, user can create one
+        }
+      }
 
       console.log('🔧 [AuthStore] Setting initial state...');
       set({
@@ -81,9 +90,18 @@ const useAuthStore = create<AuthStore>((set, get) => {
       supabase.auth.onAuthStateChange(async (event, session) => {
         console.log(`🔄 [AuthStore] Auth state changed: ${event}`);
         
-        // TEMPORARY: Skip profile fetching here too
-        console.log('⚠️ [AuthStore] TEMPORARY: Skipping profile fetching in auth state change');
-        const userProfile: Profile | null = null;
+        // Fetch user profile if authenticated
+        let userProfile: Profile | null = null;
+        if (session?.user) {
+          console.log('👤 [AuthStore] Fetching profile after auth state change...');
+          try {
+            userProfile = await ProfileService.getCurrentUserProfile();
+            console.log('✅ [AuthStore] Profile fetched after auth change:', !!userProfile);
+          } catch (error) {
+            console.error('❌ [AuthStore] Profile fetch failed after auth change:', error);
+            // Don't throw - continue with null profile
+          }
+        }
         
         set({
           user: session?.user ?? null,
