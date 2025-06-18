@@ -12,6 +12,7 @@ import styles from '../../profiles/[id]/ProfileDetail.module.css';
 interface SystemsTabProps {
   profile: Profile;
   isEditing: boolean;
+  updateProfile?: (path: string, value: any) => void;
 }
 
 const SystemsTab: FC<SystemsTabProps> = ({ profile, isEditing }) => {
@@ -68,6 +69,32 @@ const SystemsTab: FC<SystemsTabProps> = ({ profile, isEditing }) => {
     };
     
     return config[criticality] || config['Medium'];
+  };
+
+  const getCriticalityBadgeStyle = (criticality: string) => {
+    const styles: { [key: string]: {
+      bg: string;
+      color: string;
+      border: string;
+    }} = {
+      'High': { 
+        bg: 'rgba(239, 68, 68, 0.1)',
+        color: 'var(--accent-red)',
+        border: 'rgba(239, 68, 68, 0.3)'
+      },
+      'Medium': { 
+        bg: 'rgba(245, 158, 11, 0.1)',
+        color: 'var(--accent-yellow)',
+        border: 'rgba(245, 158, 11, 0.3)'
+      },
+      'Low': { 
+        bg: 'rgba(16, 185, 129, 0.1)',
+        color: 'var(--accent-green)',
+        border: 'rgba(16, 185, 129, 0.3)'
+      }
+    };
+    
+    return styles[criticality] || styles['Medium'];
   };
 
   const getCategoryColor = (category: string): string => {
@@ -198,9 +225,10 @@ const SystemsTab: FC<SystemsTabProps> = ({ profile, isEditing }) => {
                           borderRadius: 'var(--border-radius)',
                           fontSize: '0.75rem',
                           fontWeight: 'var(--font-weight-medium)',
-                          backgroundColor: 'white',
-                          border: `1px solid ${criticalityConfig.border.replace('border-', '')}`
-                        }} className={`${criticalityConfig.bg} ${criticalityConfig.color}`}>
+                          backgroundColor: getCriticalityBadgeStyle(system.criticality || 'Medium').bg,
+                          color: getCriticalityBadgeStyle(system.criticality || 'Medium').color,
+                          border: `1px solid ${getCriticalityBadgeStyle(system.criticality || 'Medium').border}`
+                        }}>
                           <CriticalityIcon size={14} />
                           {criticalityConfig.label}
                         </div>

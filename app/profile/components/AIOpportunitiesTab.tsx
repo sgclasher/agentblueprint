@@ -54,14 +54,21 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [preferredProvider, setPreferredProvider] = useState<string>('');
+  const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
 
-  // Load cached opportunities on component mount
+  // Auto-load cached opportunities on component mount (fixes UX issue)
   useEffect(() => {
-    loadCachedOpportunities();
-  }, []);
+    if (!hasAttemptedLoad && !isLoading) {
+      loadCachedOpportunities();
+    }
+  }, [hasAttemptedLoad, isLoading]); // Only run when hasAttemptedLoad or isLoading changes
 
+  // Load cached opportunities from server
   const loadCachedOpportunities = async () => {
+    if (hasAttemptedLoad) return; // Prevent multiple loads
+    
     try {
+      setIsLoading(true);
       const { supabase } = await import('../../lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -83,8 +90,12 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
           setIsCached(result.cached);
         }
       }
+      setHasAttemptedLoad(true);
     } catch (error) {
       console.error('Failed to load cached opportunities:', error);
+      setHasAttemptedLoad(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -101,8 +112,6 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
       if (!profile.id || !profile.companyName) {
         throw new Error('Profile is incomplete. Please ensure your profile has required information (company name, industry, etc.).');
       }
-
-
 
       const { supabase } = await import('../../lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
@@ -137,6 +146,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
 
       setOpportunities(result.opportunities);
       setIsCached(result.cached);
+      setHasAttemptedLoad(true);
 
     } catch (error: any) {
       console.error('Analysis generation failed:', error);
@@ -179,9 +189,10 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
   if (isEditing) {
     return (
       <div className={styles.tabContent}>
-        <div className={styles.emptyOpportunities}>
-          <p>AI Opportunities analysis is not available in edit mode.</p>
-          <p>Complete your profile edits to generate business intelligence.</p>
+        <div className={styles.editModeMessage}>
+          <Brain size={48} style={{ marginBottom: '1rem', color: 'var(--accent-blue)' }} />
+          <h4>AI Opportunities Analysis</h4>
+          <p>AI opportunities analysis is automatically generated based on your strategic initiatives and systems data. This tab is not directly editable - instead, update your information in the Analysis and Systems tabs, then return here to generate fresh insights.</p>
         </div>
       </div>
     );
@@ -211,6 +222,21 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
                   </span>
                 )}
               </div>
+            )}
+            {!opportunities && !hasAttemptedLoad && (
+              <button 
+                className="btn btn-secondary"
+                onClick={loadCachedOpportunities}
+                disabled={isLoading}
+                style={{ marginRight: '0.5rem' }}
+              >
+                {isLoading ? (
+                  <RefreshCw size={18} className="animate-spin" style={{ marginRight: '0.5rem' }} />
+                ) : (
+                  <Clock size={18} style={{ marginRight: '0.5rem' }} />
+                )}
+                {isLoading ? 'Loading...' : 'Load Cached'}
+              </button>
             )}
             <button 
               className="btn btn-primary"
@@ -242,9 +268,14 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
         )}
 
         {!opportunities && !isLoading && (
-          <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-            Generate an AI-powered analysis of business opportunities tailored to your company's strategic initiatives and technology infrastructure.
-          </p>
+          <div style={{ margin: 0, color: 'var(--text-muted)' }}>
+            <p style={{ marginBottom: '1rem' }}>
+              Generate an AI-powered analysis of business opportunities tailored to your company's strategic initiatives and technology infrastructure.
+            </p>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              💡 {hasAttemptedLoad ? 'No cached analysis found. ' : ''}Click "Generate Analysis" to create{hasAttemptedLoad ? ' a' : ' your first'} AI-powered assessment.
+            </p>
+          </div>
         )}
       </div>
 

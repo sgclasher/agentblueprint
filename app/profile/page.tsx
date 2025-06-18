@@ -8,7 +8,7 @@ import ProfileWizard from '../profiles/components/ProfileWizard';
 import { Profile } from '../services/types';
 import { 
   User, Mail, Calendar, Shield, Settings, Database, LogOut, Edit, Save, X,
-  Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap, LucideIcon, TrendingUp, FileEdit, Info, BrainCircuit, Users as ContactsIcon, Code, FileText, Server, Brain
+  Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap, LucideIcon, TrendingUp, FileEdit, Info, BrainCircuit, Users as ContactsIcon, Code, FileText, Server, Brain, BarChart3, Users
 } from 'lucide-react';
 import styles from '../profiles/[id]/ProfileDetail.module.css';
 import { markdownService } from '../services/markdownService';
@@ -16,6 +16,12 @@ import { markdownService } from '../services/markdownService';
 // Import new tab components
 import AIOpportunitiesTab from './components/AIOpportunitiesTab';
 import SystemsTab from './components/SystemsTab';
+import AnalysisTab from './components/AnalysisTab';
+import ContactsTab from './components/ContactsTab';
+
+// Import custom hooks
+import { useStrategicInitiatives } from './hooks/useStrategicInitiatives';
+import { useSystemsManagement } from './hooks/useSystemsManagement';
 
 // ====================================================================
 // Tab Components (Adapted from the old [id]/page.tsx)
@@ -34,6 +40,10 @@ interface ProfileTabProps {
 const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updateProfile }) => {
     if (!profile) return null;
 
+    // Use custom hooks for form management
+    const strategicInitiatives = useStrategicInitiatives(profile, updateProfile);
+    const systemsManagement = useSystemsManagement(profile, updateProfile);
+
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         updateProfile(e.target.name, e.target.value);
     };
@@ -41,6 +51,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
     return (
         <div className={styles.tabContent}>
             <div className={styles.overviewGrid}>
+                {/* Company Information Card */}
                 <div className={styles.infoCard}>
                     <h3>Company Information</h3>
                     <div className={styles.infoGrid}>
@@ -69,17 +80,408 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                         ))}
                     </div>
                 </div>
-                 <div className={styles.infoCard}>
-                    <h3>Profile Summary</h3>
+
+                {/* Strategic Initiatives Card */}
+                <div className={styles.infoCard}>
+                    <h3>Strategic Initiatives {isEditing && profile.strategicInitiatives && `(${profile.strategicInitiatives.length})`}</h3>
+                    {isEditing ? (
+                        <div>
+                            {(profile.strategicInitiatives || []).map((initiative, index) => (
+                                <div key={index} style={{
+                                    border: '1px solid var(--border-primary)',
+                                    borderRadius: '8px',
+                                    padding: '1rem',
+                                    marginBottom: '1rem',
+                                    background: 'var(--bg-secondary)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1rem' }}>Initiative {index + 1}</h4>
+                                        <button
+                                            type="button"
+                                            onClick={() => strategicInitiatives.removeStrategicInitiative(index)}
+                                            style={{
+                                                background: 'var(--accent-red)',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                padding: '0.25rem 0.5rem',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gap: '1rem' }}>
+                                        <div>
+                                            <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                Initiative Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className={styles.editableInput}
+                                                value={initiative.initiative}
+                                                onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'initiative', e.target.value)}
+                                                placeholder="e.g., Digital Transformation Program"
+                                            />
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Priority
+                                                </label>
+                                                <select
+                                                    className={styles.editableSelect}
+                                                    value={initiative.priority || 'Medium'}
+                                                    onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'priority', e.target.value)}
+                                                >
+                                                    <option value="High">High</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="Low">Low</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Status
+                                                </label>
+                                                <select
+                                                    className={styles.editableSelect}
+                                                    value={initiative.status || 'Planning'}
+                                                    onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'status', e.target.value)}
+                                                >
+                                                    <option value="Planning">Planning</option>
+                                                    <option value="In Progress">In Progress</option>
+                                                    <option value="On Hold">On Hold</option>
+                                                    <option value="Completed">Completed</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {/* Contact Information */}
+                                        <div style={{ border: '1px solid var(--border-primary)', borderRadius: '6px', padding: '0.75rem' }}>
+                                            <h5 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: 'var(--text-primary)' }}>Contact Information</h5>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Name</label>
+                                                    <input
+                                                        type="text"
+                                                        className={styles.editableInput}
+                                                        value={initiative.contact?.name || ''}
+                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.name', e.target.value)}
+                                                        placeholder="Contact name"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Title</label>
+                                                    <input
+                                                        type="text"
+                                                        className={styles.editableInput}
+                                                        value={initiative.contact?.title || ''}
+                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.title', e.target.value)}
+                                                        placeholder="Job title"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Email</label>
+                                                    <input
+                                                        type="email"
+                                                        className={styles.editableInput}
+                                                        value={initiative.contact?.email || ''}
+                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.email', e.target.value)}
+                                                        placeholder="email@company.com"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Phone</label>
+                                                    <input
+                                                        type="text"
+                                                        className={styles.editableInput}
+                                                        value={initiative.contact?.phone || ''}
+                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.phone', e.target.value)}
+                                                        placeholder="Phone number"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Business Problems */}
+                                        <div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Business Problems
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => strategicInitiatives.addArrayItem(index, 'businessProblems')}
+                                                    style={{
+                                                        background: 'var(--accent-blue)',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '4px',
+                                                        padding: '0.25rem 0.5rem',
+                                                        fontSize: '0.8rem',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    + Add Problem
+                                                </button>
+                                            </div>
+                                            {(initiative.businessProblems || []).map((problem, pIndex) => (
+                                                <div key={pIndex} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                                    <input
+                                                        type="text"
+                                                        className={styles.editableInput}
+                                                        value={problem}
+                                                        onChange={(e) => strategicInitiatives.updateArrayItem(index, 'businessProblems', pIndex, e.target.value)}
+                                                        placeholder="Describe a business problem"
+                                                        style={{ flex: 1 }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => strategicInitiatives.removeArrayItem(index, 'businessProblems', pIndex)}
+                                                        style={{
+                                                            background: 'var(--accent-red)',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '4px',
+                                                            padding: '0.5rem',
+                                                            cursor: 'pointer',
+                                                            minWidth: '32px'
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            <button
+                                type="button"
+                                onClick={strategicInitiatives.addStrategicInitiative}
+                                style={{
+                                    background: 'var(--accent-blue)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '0.75rem 1rem',
+                                    fontSize: '0.9rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    width: '100%',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                + Add Strategic Initiative
+                            </button>
+                        </div>
+                    ) : (
+                        <div>
+                            {(profile.strategicInitiatives || []).length === 0 ? (
+                                <p style={{ color: 'var(--text-muted)' }}>No strategic initiatives defined.</p>
+                            ) : (
+                                (profile.strategicInitiatives || []).map((initiative, index) => (
+                                    <div key={index} style={{ marginBottom: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
+                                        <h4 style={{ margin: '0 0 0.5rem 0' }}>{initiative.initiative}</h4>
+                                        <p style={{ margin: '0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                            Contact: {initiative.contact?.name || 'N/A'} ({initiative.contact?.title || 'N/A'})
+                                        </p>
+                                        {initiative.businessProblems && initiative.businessProblems.length > 0 && (
+                                            <div style={{ marginTop: '0.5rem' }}>
+                                                <small style={{ color: 'var(--text-muted)' }}>Problems: {initiative.businessProblems.length}</small>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Systems & Applications Card */}
+                <div className={styles.infoCard}>
+                    <h3>Systems & Applications {isEditing && profile.systemsAndApplications && `(${profile.systemsAndApplications.length})`}</h3>
+                    {isEditing ? (
+                        <div>
+                            {(profile.systemsAndApplications || []).map((system, index) => (
+                                <div key={index} style={{
+                                    border: '1px solid var(--border-primary)',
+                                    borderRadius: '8px',
+                                    padding: '1rem',
+                                    marginBottom: '1rem',
+                                    background: 'var(--bg-secondary)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                        <h4 style={{ margin: 0, fontSize: '1rem' }}>System {index + 1}</h4>
+                                        <button
+                                            type="button"
+                                            onClick={() => systemsManagement.removeSystemApplication(index)}
+                                            style={{
+                                                background: 'var(--accent-red)',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                padding: '0.25rem 0.5rem',
+                                                fontSize: '0.8rem',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gap: '1rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    System Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className={styles.editableInput}
+                                                    value={system.name}
+                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'name', e.target.value)}
+                                                    placeholder="e.g., Salesforce CRM"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Category
+                                                </label>
+                                                <select
+                                                    className={styles.editableSelect}
+                                                    value={system.category}
+                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'category', e.target.value)}
+                                                >
+                                                    <option value="">Select Category</option>
+                                                    <option value="CRM">CRM</option>
+                                                    <option value="ERP">ERP</option>
+                                                    <option value="Cloud Platform">Cloud Platform</option>
+                                                    <option value="Database">Database</option>
+                                                    <option value="Analytics">Analytics</option>
+                                                    <option value="Communication">Communication</option>
+                                                    <option value="Security">Security</option>
+                                                    <option value="DevOps">DevOps</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Vendor
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className={styles.editableInput}
+                                                    value={system.vendor || ''}
+                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'vendor', e.target.value)}
+                                                    placeholder="e.g., Salesforce"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Version
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className={styles.editableInput}
+                                                    value={system.version || ''}
+                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'version', e.target.value)}
+                                                    placeholder="e.g., Enterprise"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                    Criticality
+                                                </label>
+                                                <select
+                                                    className={styles.editableSelect}
+                                                    value={system.criticality || 'Medium'}
+                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'criticality', e.target.value)}
+                                                >
+                                                    <option value="High">High</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="Low">Low</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)' }}>
+                                                Description
+                                            </label>
+                                            <textarea
+                                                className={styles.editableTextarea}
+                                                value={system.description || ''}
+                                                onChange={(e) => systemsManagement.updateSystemApplication(index, 'description', e.target.value)}
+                                                placeholder="Brief description of how this system is used"
+                                                rows={2}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            <button
+                                type="button"
+                                onClick={systemsManagement.addSystemApplication}
+                                style={{
+                                    background: 'var(--accent-blue)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '0.75rem 1rem',
+                                    fontSize: '0.9rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    width: '100%',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                + Add System/Application
+                            </button>
+                        </div>
+                    ) : (
+                        <div>
+                            {(profile.systemsAndApplications || []).length === 0 ? (
+                                <p style={{ color: 'var(--text-muted)' }}>No systems and applications defined.</p>
+                            ) : (
+                                (profile.systemsAndApplications || []).map((system, index) => (
+                                    <div key={index} style={{ marginBottom: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
+                                        <h4 style={{ margin: '0 0 0.5rem 0' }}>{system.name}</h4>
+                                        <p style={{ margin: '0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                            {system.category} • {system.vendor || 'N/A'} • {system.criticality || 'Medium'} Priority
+                                        </p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Profile Summary Card */}
+                <div className={styles.infoCard}>
+                    <h3>Profile Notes</h3>
                     {isEditing ? (
                         <div style={{padding: 'var(--spacing-md)'}}>
-                            <label>Notes</label>
+                            <label>Additional Notes</label>
                             <textarea
                                 name="notes"
                                 value={profile.notes || ''}
                                 onChange={handleChange}
                                 className={styles.editableTextarea}
                                 rows={5}
+                                placeholder="Add any additional notes about this business profile..."
                             />
                         </div>
                     ) : (
@@ -162,34 +564,6 @@ export default function ProfilePage() {
   const handleProfileCreated = (newProfile: Profile) => {
     setProfile(newProfile);
   };
-
-  const handleDebugProfiles = async () => {
-    try {
-      const { supabase } = await import('../lib/supabase');
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        alert('Not authenticated');
-        return;
-      }
-
-      const response = await fetch('/api/debug-profiles', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        credentials: 'same-origin'
-      });
-
-      const result = await response.json();
-      console.log('🔍 [DEBUG] Database state:', result);
-      alert(`Debug Results:\n\nProfiles found: ${result.allProfilesCount}\nCheck console for details`);
-    } catch (error) {
-      console.error('Debug failed:', error);
-      alert('Debug failed - check console');
-    }
-  };
   
   const getIndustryIcon = (industry: string | undefined): React.ReactNode => {
     if (!industry) return <Briefcase size={24} />;
@@ -219,11 +593,6 @@ export default function ProfilePage() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
         <GlobalHeader />
-        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
-          <button className="btn" onClick={handleDebugProfiles} style={{ fontSize: '12px', padding: '4px 8px' }}>
-            🔍 Debug DB
-          </button>
-        </div>
         <ProfileWizard
           onComplete={handleProfileCreated}
           onCancel={() => alert("You'll need to create a profile to use the app's features.")}
@@ -265,7 +634,6 @@ export default function ProfilePage() {
               <>
                 <button className="btn btn-secondary" onClick={() => setIsEditing(true)}><FileEdit size={18} /> Edit Profile</button>
                 <button className="btn btn-primary" onClick={() => router.push('/timeline')}><TrendingUp size={18} /> AI Timeline</button>
-                <button className="btn" onClick={handleDebugProfiles} style={{marginLeft: '8px'}}>🔍 Debug DB</button>
               </>
             )}
           </div>
@@ -275,8 +643,10 @@ export default function ProfilePage() {
       <div className={styles.tabBar}>
         <div className={styles.tabNavigation}>
           <button className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`} onClick={() => setActiveTab('overview')}><Info size={16}/> Overview</button>
+          <button className={`${styles.tabButton} ${activeTab === 'analysis' ? styles.activeTab : ''}`} onClick={() => setActiveTab('analysis')}><BarChart3 size={16}/> Analysis</button>
           <button className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`} onClick={() => setActiveTab('opportunities')}><Brain size={16}/> AI Opportunities</button>
           <button className={`${styles.tabButton} ${activeTab === 'systems' ? styles.activeTab : ''}`} onClick={() => setActiveTab('systems')}><Server size={16}/> Systems</button>
+          <button className={`${styles.tabButton} ${activeTab === 'contacts' ? styles.activeTab : ''}`} onClick={() => setActiveTab('contacts')}><Users size={16}/> Contacts</button>
         </div>
       </div>
 
@@ -284,11 +654,17 @@ export default function ProfilePage() {
         {activeTab === 'overview' && editableProfile && (
           <ProfileOverviewTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
         )}
+        {activeTab === 'analysis' && editableProfile && (
+          <AnalysisTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
+        )}
         {activeTab === 'opportunities' && editableProfile && (
           <AIOpportunitiesTab profile={editableProfile} isEditing={isEditing} />
         )}
         {activeTab === 'systems' && editableProfile && (
-          <SystemsTab profile={editableProfile} isEditing={isEditing} />
+          <SystemsTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
+        )}
+        {activeTab === 'contacts' && editableProfile && (
+          <ContactsTab profile={editableProfile} isEditing={isEditing} />
         )}
       </div>
     </div>

@@ -121,9 +121,16 @@
   background: var(--btn-secondary-hover);
 }
 .activeTab {
-  color: white;
+  color: var(--text-primary);
   border-bottom-color: var(--accent-blue);
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.15);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Light mode specific enhancement for active tab */
+[data-theme="light"] .activeTab {
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--accent-blue-dark);
 }
 
 
@@ -390,3 +397,75 @@
 .valueItem {
   margin-bottom: 1rem;
 } 
+
+/* === Edit Mode Styles === */
+.editableInput {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all var(--transition-fast) ease;
+}
+
+.editableInput:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.editableTextarea {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  transition: all var(--transition-fast) ease;
+}
+
+.editableTextarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.editableSelect {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease;
+}
+
+.editableSelect:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.editModeMessage {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: var(--border-radius-xl);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  color: var(--text-secondary);
+}
+
+.editModeMessage h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
