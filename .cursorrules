@@ -1,5 +1,5 @@
 # Development Guidelines
-
+- Anytime you need to develop AI-related code, ask for updated documentation (e.g. OpenAI, Anthropic, Google, etc)
 - Follow the project’s code style and linting rules.
 - Write clear, self-documenting code with descriptive names.
 - Update or add docstrings and documentation for any new or changed code.
