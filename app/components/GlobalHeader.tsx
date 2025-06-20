@@ -41,10 +41,10 @@ export default function GlobalHeader() {
       description: 'Platform overview and quick actions'
     },
     {
-      name: 'Clients',
-      href: '/profiles',
-      icon: Users,
-      description: 'Manage client intelligence'
+      name: 'Profile',
+      href: '/profile',
+      icon: User,
+      description: 'Manage your business profile'
     },
     {
       name: 'AI Timeline',
@@ -57,12 +57,6 @@ export default function GlobalHeader() {
       href: '/agentic-workflow',
       icon: GitBranch,
       description: 'Visualize agentic AI flows'
-    },
-    {
-      name: 'Settings',
-      href: '/admin',
-      icon: Settings,
-      description: 'Configure services and credentials'
     }
   ];
 
@@ -80,16 +74,6 @@ export default function GlobalHeader() {
         <div className="header-brand">
           <Link href="/" className="brand-link">
             <h1 className="app-title">Agent Blueprint</h1>
-            <div className="byline-wrapper" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-              <Image 
-                src="/images/nowgenticLogo.svg"
-                alt="Company Logo"
-                className="company-logo"
-                width={120}
-                height={28}
-                style={{ height: 28, width: 'auto' }}
-              />
-            </div>
           </Link>
         </div>
 
@@ -115,6 +99,14 @@ export default function GlobalHeader() {
           >
             {theme === 'dark' ? <Sun className="icon" /> : <Moon className="icon" />}
           </button>
+
+          <Link
+            href="/admin"
+            className="action-btn theme-toggle"
+            title="Settings"
+          >
+            <Settings className="icon" />
+          </Link>
 
           {user ? (
             <div className="user-menu">
