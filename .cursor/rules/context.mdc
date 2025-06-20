@@ -1,0 +1,40 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: General project conventions
+globs: **/*
+alwaysApply: true
+---
+
+# General Project Conventions
+
+- **Naming Conventions:**  
+  - Use kebab-case for file and folder names  
+  - Use PascalCase for React/Next.js components  
+  - Use camelCase for variables and functions  
+- **Indentation:**  
+  - Use 2 spaces for indentation (or 4 if your team prefers)  
+- **Imports:**  
+  - Group imports by origin (external, internal, local)  
+  - Use absolute imports for internal modules when possible  
+- **Comments:**  
+  - Write clear, concise comments for non-obvious logic  
+  - Use JSDoc for public APIs and complex functions  
+- **File Structure:**  
+  - Keep related files in the same directory  
+  - Avoid deep nesting of folders  
+- **Commit Messages:**  
+  - Write clear, concise commit messages  
+  - Reference issue numbers when applicable  
+- **Testing:**  
+  - Write unit tests for critical logic  
+  - Use descriptive test names  
+- **Documentation:**  
+  - Document public interfaces and modules  
+  - Keep READMEs up to date  
+- **Security:**  
+  - Never commit sensitive data (API keys, passwords)  
+  - Use environment variables for configuration  
