@@ -1,6 +1,25 @@
 ## Current Task
 
-- [ ] **Step 1: Unify Button Styles**. Modify `app/components/GlobalHeader.tsx` by applying the `theme-toggle` class to the `Settings` link to make its dimensions consistent with the theme toggle button.
+- [ ] **Step 1: Audit CSS Variables**. Check the current CSS variable definitions for dark mode to identify contrast issues.
+- [ ] **Step 2: Fix Feature Card Text Contrast**. Update the feature card text colors to ensure proper contrast in dark mode.
+- [ ] **Step 3: Fix Content Section Text Contrast**. Update the main content text colors for better readability.
+- [ ] **Step 4: Test All Text Elements**. Ensure all text elements have sufficient contrast in both light and dark modes.
+
+## Previous Task (Completed)
+
+- [x] **Step 1: Fix Page Layout Structure**. Modified Executive Summary page to include GlobalHeader and follow proper layout structure.
+- [x] **Step 2: Add Active Menu State Logic**. Added usePathname hook and active state detection to GlobalHeader component.
+- [x] **Step 3: Update CSS for Active States**. Added CSS styles for both desktop and mobile active navigation states.
+
+## Previous Task (Completed)
+
+- [x] **Step 1: Add Executive Summary Navigation Item**. Added "Executive Summary" to the navigation menu in `GlobalHeader.tsx`.
+- [x] **Step 2: Create Executive Summary Page**. Created `app/executive-summary/page.tsx` with professional "coming soon" design.
+- [x] **Step 3: Add CSS Module for Styling**. Created comprehensive styling that matches the design system.
+
+## Previous Task (Completed)
+
+- [x] **Step 1: Unify Button Styles**. Modified `app/components/GlobalHeader.tsx` by applying the `theme-toggle` class to the `Settings` link.
 
 ## Previous Task (Completed)
 

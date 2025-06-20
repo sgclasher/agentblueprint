@@ -288,6 +288,25 @@ body {
   transform: translateY(-1px);
 }
 
+.nav-link.active {
+  color: var(--text-primary);
+  background: var(--btn-primary-bg);
+  border: 1px solid var(--btn-primary-bg);
+}
+
+.nav-link.active .nav-icon {
+  color: white;
+}
+
+.nav-link.active span {
+  color: white;
+}
+
+.nav-link.active:hover {
+  background: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+}
+
 .nav-link .nav-icon {
   width: 18px;
   height: 18px;
@@ -434,6 +453,27 @@ body {
 .mobile-nav-link:hover {
   background: var(--btn-secondary-bg);
   color: var(--text-primary);
+}
+
+.mobile-nav-link.active {
+  background: var(--btn-primary-bg);
+  color: white;
+}
+
+.mobile-nav-link.active .nav-icon {
+  color: white;
+}
+
+.mobile-nav-link.active .nav-name {
+  color: white;
+}
+
+.mobile-nav-link.active .nav-description {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mobile-nav-link.active:hover {
+  background: var(--btn-primary-hover);
 }
 
 .mobile-nav-link .nav-icon {

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useTheme } from './theme/ThemeProvider';
 import useAuthStore from '../store/useAuthStore';
 import { 
@@ -18,6 +19,7 @@ import {
   User,
   Settings,
   GitBranch,
+  FileText,
   LucideIcon
 } from 'lucide-react';
 
@@ -32,6 +34,7 @@ export default function GlobalHeader() {
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const navigation: NavItem[] = [
     {
@@ -45,6 +48,12 @@ export default function GlobalHeader() {
       href: '/profile',
       icon: User,
       description: 'Manage your business profile'
+    },
+    {
+      name: 'Executive Summary',
+      href: '/executive-summary',
+      icon: FileText,
+      description: 'AI transformation executive overview'
     },
     {
       name: 'AI Timeline',
@@ -68,6 +77,13 @@ export default function GlobalHeader() {
     }
   };
 
+  const isActiveRoute = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <header className="global-header">
       <div className="header-container">
@@ -82,7 +98,7 @@ export default function GlobalHeader() {
             <Link
               key={item.name}
               href={item.href}
-              className="nav-link"
+              className={`nav-link ${isActiveRoute(item.href) ? 'active' : ''}`}
               title={item.description}
             >
               <item.icon className="nav-icon" />
@@ -145,7 +161,7 @@ export default function GlobalHeader() {
             <Link
               key={item.name}
               href={item.href}
-              className="mobile-nav-link"
+              className={`mobile-nav-link ${isActiveRoute(item.href) ? 'active' : ''}`}
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <item.icon className="nav-icon" />
