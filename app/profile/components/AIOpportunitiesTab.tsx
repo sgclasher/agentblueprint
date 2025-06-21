@@ -273,7 +273,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
               Generate an AI-powered analysis of business opportunities tailored to your company's strategic initiatives and technology infrastructure.
             </p>
             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              💡 {hasAttemptedLoad ? 'No cached analysis found. ' : ''}Click "Generate Analysis" to create{hasAttemptedLoad ? ' a' : ' your first'} AI-powered assessment.
+              💡 {hasAttemptedLoad ? 'No cached analysis found. ' : ''}Click &quot;Generate Analysis&quot; to create{hasAttemptedLoad ? ' a' : ' your first'} AI-powered assessment.
             </p>
           </div>
         )}

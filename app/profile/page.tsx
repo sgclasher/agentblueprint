@@ -31,18 +31,16 @@ interface ProfileTabProps {
     profile: Profile;
     isEditing: boolean;
     updateProfile: (path: string, value: any) => void;
+    strategicInitiatives?: any;
+    systemsManagement?: any;
 }
 
 // NOTE: For this refactoring, we'll only bring over the 'Overview' tab functionality.
 // The other tabs (Analysis, Contacts, Systems, etc.) can be brought over
 // in the same way if needed, but are omitted here for brevity.
 
-const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updateProfile }) => {
+const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updateProfile, strategicInitiatives, systemsManagement }) => {
     if (!profile) return null;
-
-    // Use custom hooks for form management
-    const strategicInitiatives = useStrategicInitiatives(profile, updateProfile);
-    const systemsManagement = useSystemsManagement(profile, updateProfile);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         updateProfile(e.target.name, e.target.value);
@@ -98,7 +96,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                         <h4 style={{ margin: 0, fontSize: '1rem' }}>Initiative {index + 1}</h4>
                                         <button
                                             type="button"
-                                            onClick={() => strategicInitiatives.removeStrategicInitiative(index)}
+                                            onClick={() => strategicInitiatives?.removeStrategicInitiative(index)}
                                             style={{
                                                 background: 'var(--accent-red)',
                                                 color: 'white',
@@ -122,7 +120,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 type="text"
                                                 className={styles.editableInput}
                                                 value={initiative.initiative}
-                                                onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'initiative', e.target.value)}
+                                                onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'initiative', e.target.value)}
                                                 placeholder="e.g., Digital Transformation Program"
                                             />
                                         </div>
@@ -135,7 +133,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 <select
                                                     className={styles.editableSelect}
                                                     value={initiative.priority || 'Medium'}
-                                                    onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'priority', e.target.value)}
+                                                    onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'priority', e.target.value)}
                                                 >
                                                     <option value="High">High</option>
                                                     <option value="Medium">Medium</option>
@@ -149,7 +147,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 <select
                                                     className={styles.editableSelect}
                                                     value={initiative.status || 'Planning'}
-                                                    onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'status', e.target.value)}
+                                                    onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'status', e.target.value)}
                                                 >
                                                     <option value="Planning">Planning</option>
                                                     <option value="In Progress">In Progress</option>
@@ -169,7 +167,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                         type="text"
                                                         className={styles.editableInput}
                                                         value={initiative.contact?.name || ''}
-                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.name', e.target.value)}
+                                                        onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'contact.name', e.target.value)}
                                                         placeholder="Contact name"
                                                     />
                                                 </div>
@@ -179,7 +177,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                         type="text"
                                                         className={styles.editableInput}
                                                         value={initiative.contact?.title || ''}
-                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.title', e.target.value)}
+                                                        onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'contact.title', e.target.value)}
                                                         placeholder="Job title"
                                                     />
                                                 </div>
@@ -189,7 +187,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                         type="email"
                                                         className={styles.editableInput}
                                                         value={initiative.contact?.email || ''}
-                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.email', e.target.value)}
+                                                        onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'contact.email', e.target.value)}
                                                         placeholder="email@company.com"
                                                     />
                                                 </div>
@@ -199,7 +197,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                         type="text"
                                                         className={styles.editableInput}
                                                         value={initiative.contact?.phone || ''}
-                                                        onChange={(e) => strategicInitiatives.updateStrategicInitiative(index, 'contact.phone', e.target.value)}
+                                                        onChange={(e) => strategicInitiatives?.updateStrategicInitiative(index, 'contact.phone', e.target.value)}
                                                         placeholder="Phone number"
                                                     />
                                                 </div>
@@ -214,7 +212,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 </label>
                                                 <button
                                                     type="button"
-                                                    onClick={() => strategicInitiatives.addArrayItem(index, 'businessProblems')}
+                                                    onClick={() => strategicInitiatives?.addArrayItem(index, 'businessProblems')}
                                                     style={{
                                                         background: 'var(--accent-blue)',
                                                         color: 'white',
@@ -234,13 +232,13 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                         type="text"
                                                         className={styles.editableInput}
                                                         value={problem}
-                                                        onChange={(e) => strategicInitiatives.updateArrayItem(index, 'businessProblems', pIndex, e.target.value)}
+                                                        onChange={(e) => strategicInitiatives?.updateArrayItem(index, 'businessProblems', pIndex, e.target.value)}
                                                         placeholder="Describe a business problem"
                                                         style={{ flex: 1 }}
                                                     />
                                                     <button
                                                         type="button"
-                                                        onClick={() => strategicInitiatives.removeArrayItem(index, 'businessProblems', pIndex)}
+                                                        onClick={() => strategicInitiatives?.removeArrayItem(index, 'businessProblems', pIndex)}
                                                         style={{
                                                             background: 'var(--accent-red)',
                                                             color: 'white',
@@ -262,7 +260,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                             
                             <button
                                 type="button"
-                                onClick={strategicInitiatives.addStrategicInitiative}
+                                onClick={strategicInitiatives?.addStrategicInitiative}
                                 style={{
                                     background: 'var(--accent-blue)',
                                     color: 'white',
@@ -321,7 +319,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                         <h4 style={{ margin: 0, fontSize: '1rem' }}>System {index + 1}</h4>
                                         <button
                                             type="button"
-                                            onClick={() => systemsManagement.removeSystemApplication(index)}
+                                            onClick={() => systemsManagement?.removeSystemApplication(index)}
                                             style={{
                                                 background: 'var(--accent-red)',
                                                 color: 'white',
@@ -346,7 +344,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                     type="text"
                                                     className={styles.editableInput}
                                                     value={system.name}
-                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'name', e.target.value)}
+                                                    onChange={(e) => systemsManagement?.updateSystemApplication(index, 'name', e.target.value)}
                                                     placeholder="e.g., Salesforce CRM"
                                                 />
                                             </div>
@@ -357,7 +355,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 <select
                                                     className={styles.editableSelect}
                                                     value={system.category}
-                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'category', e.target.value)}
+                                                    onChange={(e) => systemsManagement?.updateSystemApplication(index, 'category', e.target.value)}
                                                 >
                                                     <option value="">Select Category</option>
                                                     <option value="CRM">CRM</option>
@@ -382,7 +380,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                     type="text"
                                                     className={styles.editableInput}
                                                     value={system.vendor || ''}
-                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'vendor', e.target.value)}
+                                                    onChange={(e) => systemsManagement?.updateSystemApplication(index, 'vendor', e.target.value)}
                                                     placeholder="e.g., Salesforce"
                                                 />
                                             </div>
@@ -394,7 +392,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                     type="text"
                                                     className={styles.editableInput}
                                                     value={system.version || ''}
-                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'version', e.target.value)}
+                                                    onChange={(e) => systemsManagement?.updateSystemApplication(index, 'version', e.target.value)}
                                                     placeholder="e.g., Enterprise"
                                                 />
                                             </div>
@@ -405,7 +403,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 <select
                                                     className={styles.editableSelect}
                                                     value={system.criticality || 'Medium'}
-                                                    onChange={(e) => systemsManagement.updateSystemApplication(index, 'criticality', e.target.value)}
+                                                    onChange={(e) => systemsManagement?.updateSystemApplication(index, 'criticality', e.target.value)}
                                                 >
                                                     <option value="High">High</option>
                                                     <option value="Medium">Medium</option>
@@ -421,7 +419,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                             <textarea
                                                 className={styles.editableTextarea}
                                                 value={system.description || ''}
-                                                onChange={(e) => systemsManagement.updateSystemApplication(index, 'description', e.target.value)}
+                                                onChange={(e) => systemsManagement?.updateSystemApplication(index, 'description', e.target.value)}
                                                 placeholder="Brief description of how this system is used"
                                                 rows={2}
                                             />
@@ -432,7 +430,7 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                             
                             <button
                                 type="button"
-                                onClick={systemsManagement.addSystemApplication}
+                                onClick={systemsManagement?.addSystemApplication}
                                 style={{
                                     background: 'var(--accent-blue)',
                                     color: 'white',
@@ -509,6 +507,19 @@ export default function ProfilePage() {
   const [editableProfile, setEditableProfile] = useState<Profile | null>(null);
   const [editableUser, setEditableUser] = useState({ displayName: '' });
 
+  const updateEditableProfile = (path: string, value: any) => {
+    setEditableProfile(prev => {
+        if (!prev) return null;
+        const newData = { ...prev };
+        (newData as any)[path] = value;
+        return newData;
+    });
+  };
+
+  // 🆕 Move hooks to top level to fix conditional hooks issue  
+  const strategicInitiatives = useStrategicInitiatives(editableProfile || {} as Profile, updateEditableProfile);
+  const systemsManagement = useSystemsManagement(editableProfile || {} as Profile, updateEditableProfile);
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push(`/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
@@ -526,15 +537,6 @@ export default function ProfilePage() {
     }
   }, [profile, user]);
   
-  const updateEditableProfile = (path: string, value: any) => {
-    setEditableProfile(prev => {
-        if (!prev) return null;
-        const newData = { ...prev };
-        (newData as any)[path] = value;
-        return newData;
-    });
-  };
-
   const handleSave = async () => {
     if (!editableProfile || !editableUser) return;
     
@@ -652,7 +654,7 @@ export default function ProfilePage() {
 
       <div className={styles.content}>
         {activeTab === 'overview' && editableProfile && (
-          <ProfileOverviewTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
+          <ProfileOverviewTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} strategicInitiatives={strategicInitiatives} systemsManagement={systemsManagement} />
         )}
         {activeTab === 'analysis' && editableProfile && (
           <AnalysisTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />

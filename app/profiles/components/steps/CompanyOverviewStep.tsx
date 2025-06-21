@@ -192,6 +192,83 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
     updateData('systemsAndApplications', updatedSystems);
   };
 
+  // 🆕 Progressive Complexity - Business Objectives Management
+  const addBusinessObjective = () => {
+    const currentObjectives = data.businessObjectives || [];
+    const newObjective = { objective: '', targetMetric: '' };
+    updateData('businessObjectives', [...currentObjectives, newObjective]);
+  };
+
+  const updateBusinessObjective = (index: number, field: string, value: string) => {
+    const currentObjectives = [...(data.businessObjectives || [])];
+    currentObjectives[index] = {
+      ...currentObjectives[index],
+      [field]: value,
+    };
+    updateData('businessObjectives', currentObjectives);
+  };
+
+  const removeBusinessObjective = (index: number) => {
+    const currentObjectives = data.businessObjectives || [];
+    const updatedObjectives = currentObjectives.filter((_, i) => i !== index);
+    updateData('businessObjectives', updatedObjectives);
+  };
+
+  // 🆕 Progressive Complexity - Business Goals Management (SMB)
+  const addBusinessGoal = () => {
+    const currentGoals = data.businessGoals || [];
+    updateData('businessGoals', [...currentGoals, '']);
+  };
+
+  const updateBusinessGoal = (index: number, value: string) => {
+    const currentGoals = [...(data.businessGoals || [])];
+    currentGoals[index] = value;
+    updateData('businessGoals', currentGoals);
+  };
+
+  const removeBusinessGoal = (index: number) => {
+    const currentGoals = data.businessGoals || [];
+    const updatedGoals = currentGoals.filter((_, i) => i !== index);
+    updateData('businessGoals', updatedGoals);
+  };
+
+  // 🆕 Progressive Complexity - Key Challenges Management (SMB)
+  const addKeyChallenge = () => {
+    const currentChallenges = data.keyChallenges || [];
+    updateData('keyChallenges', [...currentChallenges, '']);
+  };
+
+  const updateKeyChallenge = (index: number, value: string) => {
+    const currentChallenges = [...(data.keyChallenges || [])];
+    currentChallenges[index] = value;
+    updateData('keyChallenges', currentChallenges);
+  };
+
+  const removeKeyChallenge = (index: number) => {
+    const currentChallenges = data.keyChallenges || [];
+    const updatedChallenges = currentChallenges.filter((_, i) => i !== index);
+    updateData('keyChallenges', updatedChallenges);
+  };
+
+  // 🆕 Progressive Complexity - Helper Functions
+  const getAutoGenerationPreview = () => {
+    if (!data.businessGoals || data.businessGoals.length === 0) return null;
+    
+    const goal = data.businessGoals[0];
+    if (goal.toLowerCase().includes('cost')) {
+      return 'Cost Reduction Program';
+    } else if (goal.toLowerCase().includes('revenue')) {
+      return 'Revenue Growth Program';
+    } else if (goal.toLowerCase().includes('efficiency')) {
+      return 'Operational Efficiency Program';
+    }
+    return 'Strategic Business Program';
+  };
+
+  const isValidForCompanySize = (size: string | undefined) => {
+    return size === 'SMB' || size === 'Mid-Market' || size === 'Enterprise';
+  };
+
   return (
     <div className={styles.wizardStep}>
       <h2>Company Profile</h2>
@@ -280,11 +357,331 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
         </div>
       </div>
 
+      {/* 🆕 Progressive Complexity - Company Size Selection */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Company Size & Approach</h3>
+        <div className={styles.formGroup}>
+          <label htmlFor="companySize">Company Size *</label>
+          <select
+            id="companySize"
+            value={data?.companySize || ''}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) => updateData('companySize', e.target.value)}
+            required
+            className={styles.formSelect}
+          >
+            <option value="">Select company size</option>
+            <option value="SMB">🏢 Small-Medium Business (1-500 employees)</option>
+            <option value="Mid-Market">🏭 Mid-Market (500-5,000 employees)</option>
+            <option value="Enterprise">🏛️ Enterprise (5,000+ employees)</option>
+          </select>
+        </div>
+        
+        {!isValidForCompanySize(data?.companySize) && (
+          <div style={{ 
+            padding: '1rem', 
+            backgroundColor: 'var(--bg-secondary)', 
+            border: '1px solid var(--border-primary)', 
+            borderRadius: '8px',
+            marginTop: '1rem'
+          }}>
+            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Select your company size</h4>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              This determines the complexity of the form and helps us tailor AI recommendations to your business needs.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 🆕 Progressive Complexity - Adaptive Business Planning Sections */}
+      {data?.companySize === 'SMB' && (
+        <>
+          {/* SMB Mode - Business Goals */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Business Goals</h3>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              💡 Keep it simple! What are your main business goals? We'll structure the details for you.
+            </p>
+            
+            {(data?.businessGoals || []).map((goal, index) => (
+              <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                <input
+                  type="text"
+                  value={goal}
+                  onChange={(e) => updateBusinessGoal(index, e.target.value)}
+                  placeholder="e.g., Reduce production costs by 20%"
+                  className={styles.formInput}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeBusinessGoal(index)}
+                  style={{
+                    background: 'var(--accent-red)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '0.5rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            
+            <button
+              type="button"
+              onClick={addBusinessGoal}
+              style={{
+                background: 'var(--accent-blue)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <span>+</span> Add Goal
+            </button>
+
+            {(!data?.businessGoals || data.businessGoals.length === 0) && (
+              <p style={{ 
+                fontSize: '0.875rem', 
+                color: 'var(--text-secondary)', 
+                fontStyle: 'italic',
+                marginTop: '0.5rem'
+              }}>
+                At least one business goal is recommended to generate AI insights.
+              </p>
+            )}
+          </div>
+
+          {/* SMB Mode - Key Challenges */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Key Challenges</h3>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              What are your biggest operational challenges? This helps us match AI solutions to your specific problems.
+            </p>
+            
+            {(data?.keyChallenges || []).map((challenge, index) => (
+              <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                <input
+                  type="text"
+                  value={challenge}
+                  onChange={(e) => updateKeyChallenge(index, e.target.value)}
+                  placeholder="e.g., Too much manual work in fulfillment"
+                  className={styles.formInput}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeKeyChallenge(index)}
+                  style={{
+                    background: 'var(--accent-red)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '0.5rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            
+            <button
+              type="button"
+              onClick={addKeyChallenge}
+              style={{
+                background: 'var(--accent-green)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <span>+</span> Add Challenge
+            </button>
+          </div>
+
+          {/* SMB Mode - Auto-Generation Preview */}
+          {getAutoGenerationPreview() && (
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+              border: '1px solid rgba(59, 130, 246, 0.3)', 
+              borderRadius: '8px',
+              marginBottom: '2rem'
+            }}>
+              <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>🤖 AI will help create:</h4>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Preview: <strong>{getAutoGenerationPreview()}</strong> with structured business intelligence details.
+              </p>
+            </div>
+          )}
+
+          {/* SMB Mode - Progressive Enhancement Hint */}
+          <div style={{ 
+            padding: '1rem', 
+            backgroundColor: 'var(--bg-secondary)', 
+            border: '1px solid var(--border-primary)', 
+            borderRadius: '8px',
+            marginBottom: '2rem'
+          }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              💼 Need more detailed planning? 
+              <button 
+                type="button"
+                onClick={() => updateData('companySize', 'Enterprise')}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: 'var(--accent-blue)', 
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Switch to Enterprise mode
+              </button> for full strategic initiative management.
+            </p>
+          </div>
+        </>
+      )}
+
+      {(data?.companySize === 'Mid-Market' || data?.companySize === 'Enterprise') && (
+        <>
+          {/* Enterprise Mode - Business Objectives */}
+          <div style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Business Objectives</h3>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              📈 Define high-level strategic objectives that guide your business initiatives.
+            </p>
+            
+            {(data?.businessObjectives || []).map((objective, index) => (
+              <div key={index} style={{ 
+                border: '1px solid var(--border-primary)', 
+                borderRadius: '8px', 
+                padding: '1rem', 
+                marginBottom: '1rem',
+                background: 'var(--bg-secondary)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Objective {index + 1}</h4>
+                  <button
+                    type="button"
+                    onClick={() => removeBusinessObjective(index)}
+                    style={{
+                      background: 'var(--accent-red)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+                
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Objective</label>
+                    <input
+                      type="text"
+                      value={objective.objective || ''}
+                      onChange={(e) => updateBusinessObjective(index, 'objective', e.target.value)}
+                      placeholder="e.g., Increase operational efficiency by 30%"
+                      className={styles.formInput}
+                    />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Target Metric</label>
+                    <input
+                      type="text"
+                      value={objective.targetMetric || ''}
+                      onChange={(e) => updateBusinessObjective(index, 'targetMetric', e.target.value)}
+                      placeholder="e.g., 30% efficiency gain"
+                      className={styles.formInput}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <button
+              type="button"
+              onClick={addBusinessObjective}
+              style={{
+                background: 'var(--accent-blue)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <span>+</span> Add Objective
+            </button>
+          </div>
+
+          {/* Enterprise Mode - Detailed Strategic Planning Note */}
+          <div style={{ 
+            padding: '1rem', 
+            backgroundColor: 'var(--bg-secondary)', 
+            border: '1px solid var(--border-primary)', 
+            borderRadius: '8px',
+            marginBottom: '2rem'
+          }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              📋 Detailed strategic planning mode enabled. Use the Strategic Initiatives section below for full program management with contacts, budgets, and timelines.
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* Data Preservation Notice */}
+      {data?.businessGoals && data.businessGoals.length > 0 && data?.strategicInitiatives && data.strategicInitiatives.length > 0 && (
+        <div style={{ 
+          padding: '1rem', 
+          backgroundColor: 'rgba(34, 197, 94, 0.1)', 
+          border: '1px solid rgba(34, 197, 94, 0.3)', 
+          borderRadius: '8px',
+          marginBottom: '2rem'
+        }}>
+          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>✅ Data Preserved</h4>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Existing data will be preserved when switching between modes. Your goals and initiatives will be combined intelligently.
+          </p>
+        </div>
+      )}
+
       {/* Strategic Initiatives */}
       <div style={{ marginBottom: '2rem' }}>
-        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Strategic Initiatives</h3>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+          Strategic Initiatives{data?.companySize === 'SMB' ? ' (Optional)' : ''}
+        </h3>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-          Add key business initiatives and their primary contacts.
+          {data?.companySize === 'SMB' 
+            ? "Optional - we&apos;ll help structure these if needed. Add any formal initiatives you already have."
+            : "Add key business initiatives and their primary contacts."
+          }
         </p>
         
         {data?.strategicInitiatives?.map((initiative, index) => (

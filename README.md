@@ -22,10 +22,11 @@
 
 ## 💡 Key Features
 
-### **1. Simple 2-Step Profile Creation**
-- **Step 1**: Company basics + strategic initiatives
-- **Step 2**: Review and generate AI insights
-- **Time**: < 10 minutes to complete
+### **1. Streamlined Onboarding & Progressive Complexity**
+- **Ultra-Fast Signup**: Just 3 core business fields (Company, Industry, Size) 
+- **Adaptive Experience**: SMB gets simple goals/challenges, Enterprise gets full strategic planning
+- **Progressive Enhancement**: Users can add complexity as they grow
+- **Time**: < 5 minutes to complete and see AI insights
 
 ### **2. AI Opportunities Analysis**
 - **6 Categories**: Process Automation, Decision Support, Customer Experience, Data Analytics, Workforce Augmentation, Risk Management
@@ -44,6 +45,7 @@
 - **Systems & Applications Inventory**: Understand your tech landscape
 - **AI Readiness Scoring**: 0-100 score across multiple dimensions
 - **5 Intelligence Tabs**: Overview, Analysis, AI Opportunities, Systems, Contacts
+- **Adaptive Complexity**: Simple view for SMBs, detailed planning for enterprises
 
 ### **5. Additional Power Features**
 - **Admin Dashboard**: Secure credential management for multiple AI providers
@@ -108,17 +110,28 @@ npm run dev
 Visit `http://localhost:3000` to get started!
 
 ### **Setup Steps:**
-1. **Sign up** for a user account
+1. **Sign up** with company details (streamlined 3-field onboarding)
 2. Navigate to `/admin` to **configure AI providers** (OpenAI, Gemini, or Claude)
-3. **Create your company profile** using the 2-step wizard
+3. **Complete your profile** with business goals or strategic initiatives  
 4. **Generate insights** and explore AI opportunities
 
 ## 📊 Data We Collect (MVP Focus)
 
-### **Essential Business Information**
-- Company name, industry, size, revenue
+### **Essential Business Information (Onboarding)**
+- **Company name** - Personalization and context
+- **Industry** - Critical for relevant AI recommendations  
+- **Company size** - Drives adaptive experience (SMB vs Enterprise)
+
+### **Extended Profile Data (Optional - Added Later)**
 - Strategic initiatives with business problems
 - Current systems and applications
+- Annual revenue, location, contact details
+- Detailed business objectives and metrics
+
+### **Progressive Data Collection**
+- **SMB Path**: Simple business goals + key challenges → AI auto-generates structured data
+- **Enterprise Path**: Full strategic planning with budgets, contacts, timelines
+- **Adaptive Forms**: Different complexity levels based on company size
 
 ### **Coming Soon** (Based on feedback)
 - Process documentation maturity
@@ -161,8 +174,6 @@ User Profile → Timeline Load API → Database Retrieval → Instant UI Display
 User Profile → AI Opportunities API → aiService.ts → Provider Selection → 
 Encrypted Credentials → AI Provider → Structured Response → Database Cache → UI Display
 ```
-
-
 
 ## 🔐 Security & Compliance
 
@@ -245,8 +256,11 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 - ✅ PDF export for reports
 - ✅ Mobile responsive design
 - ✅ Instant timeline loading (< 1 second)
+- ✅ Progressive complexity (SMB vs Enterprise experience)
 
 ### **Next Phase**
+- 🔄 Combined signup + profile onboarding
+- 🔄 Profile normalization & auto-generation
 - 🔄 Quick Assessment (5-minute version)
 - 🔄 ROI Calculator widget
 - 🔄 Enhanced data collection

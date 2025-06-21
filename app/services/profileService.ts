@@ -430,4 +430,204 @@ export class ProfileService {
       marketPosition: profile.industry === 'Technology' ? 'Fast-moving' : 'Traditional'
     };
   }
+
+  // 🆕 Progressive Complexity - Core Normalization Functions
+
+  /**
+   * Generates strategic initiatives from business goals and challenges.
+   * This is the core auto-generation logic for SMB users.
+   * @param businessGoals - Array of business objectives/goals
+   * @param keyChallenges - Array of key business challenges
+   * @returns Array of StrategicInitiative objects
+   */
+  static generateInitiativesFromObjectives(
+    businessGoals: string[], 
+    keyChallenges: string[]
+  ): any[] {
+    if (!businessGoals || businessGoals.length === 0) {
+      return [];
+    }
+
+    const initiatives: any[] = [];
+
+    businessGoals.forEach((goal, index) => {
+      // Map goal to initiative name
+      const initiativeName = ProfileService.generateInitiativeName(goal);
+      
+      // Distribute challenges among goals (if fewer goals than challenges)
+      const assignedChallenges = ProfileService.distributeChallenges(keyChallenges, index, businessGoals.length);
+      
+      const initiative = {
+        initiative: initiativeName,
+        businessProblems: assignedChallenges,
+        expectedOutcomes: [goal],
+        linkedObjective: goal,
+        contact: {
+          name: '',
+          title: '',
+          email: '',
+          linkedin: '',
+          phone: ''
+        },
+        priority: 'High' as const,
+        status: 'Planning' as const
+      };
+
+      initiatives.push(initiative);
+    });
+
+    return initiatives;
+  }
+
+  /**
+   * Normalizes profile data from different input methods (SMB vs Enterprise)
+   * into a consistent Profile structure for LLM processing.
+   * @param profileData - Raw profile input data
+   * @param companySize - Company size classification
+   * @returns Normalized Profile object
+   */
+  static normalizeProfileData(
+    profileData: Partial<any>, 
+    companySize?: 'SMB' | 'Mid-Market' | 'Enterprise'
+  ): any {
+    console.log('🔄 [ProfileService] Normalizing profile data:', { 
+      companyName: profileData.companyName,
+      companySize,
+      hasBusinessGoals: !!profileData.businessGoals,
+      hasStrategicInitiatives: !!profileData.strategicInitiatives 
+    });
+
+    // Start with the base profile data
+    const normalized: any = {
+      ...profileData,
+      companySize: companySize || 'Enterprise', // Default fallback
+      businessObjectives: profileData.businessObjectives || [],
+      strategicInitiatives: profileData.strategicInitiatives || []
+    };
+
+    // Auto-generate business objectives from business goals (SMB input)
+    if (profileData.businessGoals && profileData.businessGoals.length > 0) {
+      const autoObjectives = profileData.businessGoals.map((goal: string) => ({
+        objective: goal,
+        targetMetric: ProfileService.extractTargetMetric(goal)
+      }));
+      
+      normalized.businessObjectives = [...normalized.businessObjectives, ...autoObjectives];
+    }
+
+    // Auto-generate strategic initiatives if we have goals but no initiatives (SMB scenario)
+    if (companySize === 'SMB' && 
+        profileData.businessGoals && 
+        profileData.businessGoals.length > 0 && 
+        (!profileData.strategicInitiatives || profileData.strategicInitiatives.length === 0)) {
+      
+      const autoInitiatives = ProfileService.generateInitiativesFromObjectives(
+        profileData.businessGoals || [],
+        profileData.keyChallenges || []
+      );
+      
+      normalized.strategicInitiatives = autoInitiatives;
+      
+      console.log(`✅ [ProfileService] Auto-generated ${autoInitiatives.length} initiatives for SMB`);
+    }
+
+    // If we have both user-provided and auto-generated initiatives, merge them
+    if (profileData.businessGoals && 
+        profileData.strategicInitiatives && 
+        profileData.strategicInitiatives.length > 0) {
+      
+      const autoInitiatives = ProfileService.generateInitiativesFromObjectives(
+        profileData.businessGoals || [],
+        profileData.keyChallenges || []
+      );
+      
+      normalized.strategicInitiatives = [
+        ...profileData.strategicInitiatives,
+        ...autoInitiatives
+      ];
+      
+      console.log(`✅ [ProfileService] Combined existing and auto-generated initiatives`);
+    }
+
+    console.log('✅ [ProfileService] Profile normalization complete:', {
+      objectivesCount: normalized.businessObjectives.length,
+      initiativesCount: normalized.strategicInitiatives.length,
+      companySize: normalized.companySize
+    });
+
+    return normalized;
+  }
+
+  // Helper functions for auto-generation
+
+  private static generateInitiativeName(goal: string): string {
+    // Smart mapping of goals to initiative names
+    const goalLower = goal.toLowerCase();
+    
+    if (goalLower.includes('cost') || goalLower.includes('expense')) {
+      return 'Cost Reduction Program';
+    } else if (goalLower.includes('revenue') || goalLower.includes('sales') || goalLower.includes('growth')) {
+      return 'Revenue Growth Program';
+    } else if (goalLower.includes('efficiency') || goalLower.includes('productivity')) {
+      return 'Operational Efficiency Program';
+    } else if (goalLower.includes('customer') || goalLower.includes('satisfaction')) {
+      return 'Customer Experience Enhancement Program';
+    } else if (goalLower.includes('digital') || goalLower.includes('automation')) {
+      return 'Digital Transformation Program';
+    } else if (goalLower.includes('quality') || goalLower.includes('improve')) {
+      return 'Quality Improvement Program';
+    } else {
+      return 'Strategic Business Program';
+    }
+  }
+
+  private static distributeChallenges(challenges: string[], goalIndex: number, totalGoals: number): string[] {
+    if (!challenges || challenges.length === 0) {
+      return [];
+    }
+
+    // If we have as many or more goals than challenges, distribute evenly
+    if (totalGoals >= challenges.length) {
+      return goalIndex < challenges.length ? [challenges[goalIndex]] : [];
+    }
+
+    // If we have more challenges than goals, distribute them across goals
+    const challengesPerGoal = Math.ceil(challenges.length / totalGoals);
+    const startIndex = goalIndex * challengesPerGoal;
+    const endIndex = Math.min(startIndex + challengesPerGoal, challenges.length);
+    
+    return challenges.slice(startIndex, endIndex);
+  }
+
+  private static extractTargetMetric(goal: string): string {
+    // Extract numeric targets from goal text
+    const percentMatch = goal.match(/(\d+)%/);
+    if (percentMatch) {
+      const goalLower = goal.toLowerCase();
+      // More specific metric based on goal context
+      if (goalLower.includes('cost') || goalLower.includes('expense')) {
+        return `${percentMatch[1]}% cost reduction`;
+      } else if (goalLower.includes('revenue') || goalLower.includes('sales')) {
+        return `${percentMatch[1]}% revenue increase`;
+      } else if (goalLower.includes('efficiency') || goalLower.includes('productivity')) {
+        return `${percentMatch[1]}% efficiency gain`;
+      } else if (goalLower.includes('satisfaction')) {
+        return `${percentMatch[1]}% satisfaction improvement`;
+      } else {
+        return `${percentMatch[1]}% improvement`;
+      }
+    }
+    
+    const dollarMatch = goal.match(/\$([0-9,]+[KMB]?)/);
+    if (dollarMatch) {
+      return `${dollarMatch[0]} target`;
+    }
+    
+    // Generic fallback
+    return 'Measurable improvement';
+  }
 }
+
+// Export the normalization functions for use in other modules and tests
+export const normalizeProfileData = ProfileService.normalizeProfileData;
+export const generateInitiativesFromObjectives = ProfileService.generateInitiativesFromObjectives;

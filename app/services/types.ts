@@ -1,3 +1,9 @@
+// New Business Objective interface for progressive complexity
+export interface BusinessObjective {
+    objective: string;          // "Reduce production costs by 20%"
+    targetMetric: string;       // "20% cost reduction" 
+}
+
 export interface Profile {
     id: string;
     companyName: string;
@@ -8,6 +14,13 @@ export interface Profile {
     websiteUrl?: string;
     strategicInitiatives?: StrategicInitiative[];
     systemsAndApplications?: SystemApplication[];
+    
+    // 🆕 Progressive Complexity Fields
+    companySize?: 'SMB' | 'Mid-Market' | 'Enterprise';     // Adaptive UI behavior
+    businessObjectives?: BusinessObjective[];               // High-level goals
+    businessGoals?: string[];                               // SMB input (converted to objectives)
+    keyChallenges?: string[];                               // SMB input (converted to problems)
+    
     markdown?: string;
     createdAt?: string;
     updatedAt?: string;
@@ -40,6 +53,9 @@ export interface StrategicInitiative {
     estimatedBudget?: string;           // "$500K", "$2M-5M"
     priority?: 'High' | 'Medium' | 'Low';
     status?: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
+    
+    // 🆕 Progressive Complexity Fields
+    linkedObjective?: string;           // Links to BusinessObjective.objective
 }
 
 export interface SystemApplication {
