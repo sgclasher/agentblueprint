@@ -22,12 +22,160 @@
 
 ## Current Task
 
-**No active implementation task** - Timeline persistence is fully operational.
+### **Add Business Objectives Layer + Progressive Complexity (Hybrid Approach)** 
+
+**Objective**: Add Business Objectives as a parent concept above Strategic Initiatives, with adaptive complexity based on business size and optional auto-generation for SMBs.
+
+**Advisor Insights**: 
+- "Medium-sized businesses think very differently than enterprises"
+- "Don't force SMBs into enterprise thinking - let them describe their business in their own terms"
+- "Make Strategic Initiatives optional with smart defaults for smaller companies"
+
+**Why This Enhanced Approach**:
+- Keeps valuable execution details for enterprises
+- Simplifies experience for SMBs with auto-generation
+- One platform serves all segments (SMB to Enterprise)
+- Consistent timeline quality regardless of input method
+- Progressive complexity - users can add detail as they grow
+
+**🏗️ Architecture Overview**:
+```
+Different Inputs → Normalization Layer → Consistent Profile Structure → LLM Processing → UI Rendering
+
+SMB Path:     Goals + Challenges → Auto-Generate → strategicInitiatives[] → Timeline JSON → UI
+Enterprise:   Full Details → Direct Pass → strategicInitiatives[] → Timeline JSON → UI
+```
+
+**Key Principle**: The middle layers (LLM prompts, timeline processing, UI components) remain unchanged. We only add intelligent preprocessing to normalize different input styles into the same internal `Profile` structure.
+
+#### **Implementation Plan:**
+
+- [ ] **Step 1: Update Core Data Types & Normalization**
+  - **Files**: `app/services/types.ts`, `app/services/profileService.ts`
+  - Add `BusinessObjective` interface (simple text + target metric)
+  - Add optional `businessObjectives` array to Profile
+  - Add optional `linkedObjective` field to StrategicInitiative
+  - Add `companySize` field to Profile for adaptive behavior
+  - **Create `normalizeProfileData()` function** - the core normalization layer
+  - **Create `generateInitiativesFromObjectives()` helper** for auto-generation
+  - **Ensure backward compatibility** - existing profiles work without changes
+
+- [ ] **Step 2: Update Company Profile UI (Adaptive)**
+  - **Files**: `app/profiles/components/steps/CompanyOverviewStep.tsx`
+  - Add Business Objectives fields (1-3 objectives)
+  - Add company size selection (affects UI complexity)
+  - Add "Key Business Challenges" section for SMBs
+  - **Adaptive UI logic**:
+    - **SMB Mode**: Business Goals + Key Challenges (simple)
+    - **Enterprise Mode**: Business Objectives + Strategic Initiatives (detailed)
+  - **Progressive disclosure**: Users can switch between modes
+
+- [ ] **Step 3: Profile Processing & Normalization (Core Logic)**
+  - **Files**: `app/services/profileService.ts`
+  - **Implement normalization pipeline**:
+    ```javascript
+    profileData = normalizeProfileData(userInput, companySize);
+    // Always results in consistent strategicInitiatives[] structure
+    ```
+  - **Auto-generation logic**: Map business goals → strategic initiatives
+  - **Map challenges to business problems** within initiatives
+  - **Preserve existing data** - normalization only adds, never removes
+  - **Validation**: Ensure normalized data meets LLM prompt expectations
+
+- [ ] **Step 4: Update Strategic Initiatives Form (Optional & Linked)**
+  - **Files**: `app/profiles/components/StrategicInitiativesForm.tsx`
+  - Make entire section optional with clear messaging:
+    - "Strategic Initiatives (Optional - we'll help structure these if needed)"
+  - Add dropdown to link initiatives to business objectives
+  - **Show auto-generated initiatives** as editable suggestions for SMBs
+  - Add examples and guidance by company size
+  - **Migration path**: Auto-generated initiatives can be refined into detailed ones
+
+- [ ] **Step 5: Update Profile Display (Adaptive Complexity)**
+  - **Files**: `app/profile/page.tsx`, `app/profile/components/AnalysisTab.tsx`
+  - **Show Business Objectives at top** of Analysis tab
+  - **Adaptive display logic**:
+    - SMBs: Show "Implementation Areas" (auto-generated initiatives simplified)
+    - Enterprises: Show full Strategic Initiatives details with budget/contacts
+  - **Objective-Initiative linking**: Group initiatives under their objectives
+  - **Progressive enhancement**: SMBs can "upgrade" to enterprise view
+
+- [ ] **Step 6: Update AI Prompts (Enhanced Context, No Structural Changes)**
+  - **Files**: `app/lib/llm/prompts/aiOpportunitiesPrompt.ts`, `app/lib/llm/prompts/timelinePrompts.ts`
+  - **Add business objectives to context** (when available)
+  - **Include company size for AI tone adjustment** (SMB vs Enterprise language)
+  - **Handle auto-generated vs user-provided initiatives** transparently
+  - **Maintain existing prompt structure** - prompts still expect strategicInitiatives[]
+  - **Enhanced context**: "This company has 3 business objectives linked to 5 initiatives..."
+
+- [ ] **Step 7: Update Summary/Export Views (Adaptive Display)**
+  - **Files**: `app/profiles/components/steps/SummaryStep.tsx`
+  - **Adaptive summary structure**:
+    - SMBs: Goals → Challenges → AI Solutions
+    - Enterprises: Objectives → Initiatives → Execution Details
+  - **Maintain data integrity**: All data preserved regardless of display style
+  - **Export considerations**: Include both objectives and initiatives in exports
+
+- [ ] **Step 8: Testing & Validation**
+  - **Files**: New test files for normalization logic
+  - **Test auto-generation**: Goals + challenges → proper strategic initiatives
+  - **Test backward compatibility**: Existing profiles still work
+  - **Test UI adaptive behavior**: SMB vs Enterprise modes
+  - **Test LLM integration**: Normalized data generates quality timelines
+  - **Test edge cases**: Empty inputs, mixed data, migration scenarios
+
+**Benefits**:
+- ✅ One platform serves SMB to Enterprise without code duplication
+- ✅ Faster onboarding for smaller companies (no forced enterprise thinking)
+- ✅ Full functionality for enterprises (no features lost)
+- ✅ **Consistent timeline quality** regardless of input method (same LLM processing)
+- ✅ Progressive complexity - users can add detail as they grow
+- ✅ **No breaking changes** to existing data or architecture
+- ✅ **Architecture preserved** - only input normalization layer added
+
+**Example Progressive Experience**:
+
+**SMB Input (Simple):**
+```
+Business Goal: "Reduce production costs by 20%"
+Key Challenge: "Too much manual work in fulfillment"
+Company Size: 50 employees
+```
+
+**Normalized (Backend Processing):**
+```
+businessObjectives: [
+  { objective: "Reduce production costs by 20%", targetMetric: "20% cost reduction" }
+],
+strategicInitiatives: [
+  {
+    initiative: "Production Automation Program",
+    businessProblems: ["Manual fulfillment processes causing delays"],
+    expectedOutcomes: ["20% cost reduction"],
+    linkedObjective: "Reduce production costs by 20%",
+    // Auto-generated structure for consistent LLM processing
+  }
+]
+```
+
+**Enterprise Input (Detailed):**
+```
+Business Objective: "Operational Excellence - 30% efficiency gain"
+Strategic Initiative: "Manufacturing Automation Program"
+├── Budget: $2.5M
+├── Contact: Sarah Johnson, VP Operations  
+├── Timeline: Q2-Q4 2025
+├── Success Metrics: 40% faster processing
+└── Linked to: "Operational Excellence" objective
+```
+
+**🔄 Data Flow Validation**: 
+Both paths result in the same `strategicInitiatives[]` structure → Same LLM prompts → Same timeline JSON → Same UI rendering
 
 **Next Priority Options:**
-1. **Agentic Workflow Redesign** 🔥 - Complete Business → Implementation value story
-2. **Quick Assessment** - 5-minute alternative entry point  
-3. **Feature Simplification** - Remove complexity from non-core features
+1. **Execute this enhanced hybrid approach** 🔥 - Best value, serves all segments
+2. **Agentic Workflow Redesign** - Complete Business → Implementation value story  
+3. **Quick Assessment** - 5-minute alternative entry point
 
 ## **Implementation Summary** 🎉
 

@@ -26,9 +26,12 @@ The platform uses a **modular, provider-agnostic AI architecture** that allows i
 ### **Timeline Generation**
 - **Service**: `app/services/timelineService.ts`
 - **Prompts**: `app/lib/timeline/prompts/`
-- **API**: `app/api/timeline/generate-from-profile/route.ts`
-- **Database**: `cached_timeline`, `last_timeline_generated_at`
-- **Caching**: 80-90% cost reduction through intelligent caching
+- **APIs**: 
+  - `app/api/timeline/generate-from-profile/route.ts` (AI generation)
+  - `app/api/timeline/load/route.ts` (instant loading from database)
+- **Database**: `timeline_data` (JSONB), `last_timeline_generated_at` (TIMESTAMP)
+- **Architecture**: Permanent timeline storage with instant loading (< 1 second vs 2-3 minutes generation)
+- **User Flow**: Generate once → Store permanently → Load instantly on subsequent visits
 
 ### **AI Opportunities Analysis**
 - **Service**: `app/services/aiOpportunitiesService.ts`
@@ -230,12 +233,67 @@ export async function POST(request: NextRequest) {
 }
 ```
 
+### **Optional: Add Loading API (Timeline Pattern)**
+
+For features that benefit from instant loading (like timelines), create a separate loading endpoint:
+
+```typescript
+// app/api/profiles/your-feature-load/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { ProfileRepository } from '../../../repositories/profileRepository';
+import { getUser } from '../../../lib/supabase';
+
+export async function GET(request: NextRequest) {
+  try {
+    const user = await getUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Get cached data directly from database
+    const cachedData = await ProfileRepository.getCachedYourFeature(user.id);
+    
+    if (!cachedData) {
+      return NextResponse.json({
+        success: true,
+        data: null,
+        cached: false,
+        message: 'No cached data found'
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: cachedData,
+      cached: true,
+      generatedAt: cachedData._generatedAt,
+      method: 'Cached Load'
+    });
+
+  } catch (error: any) {
+    console.error('Feature load error:', error);
+    return NextResponse.json(
+      { error: 'Failed to load cached data' },
+      { status: 500 }
+    );
+  }
+}
+```
+
 ### **Step 4: Add Database Schema**
 
 ```sql
--- Add caching columns following established pattern
+-- Add data storage columns following established pattern
 ALTER TABLE client_profiles ADD COLUMN your_feature_data JSONB;
 ALTER TABLE client_profiles ADD COLUMN last_your_feature_generated_at TIMESTAMP;
+
+-- For timeline-style persistence (permanent storage):
+-- ALTER TABLE profiles ADD COLUMN timeline_data JSONB;
+-- ALTER TABLE profiles ADD COLUMN last_timeline_generated_at TIMESTAMP;
+
+-- Add indexes for performance if needed
+CREATE INDEX IF NOT EXISTS idx_profiles_your_feature_generated_at 
+ON profiles(user_id, last_your_feature_generated_at);
 ```
 
 ### **Step 5: Add Gemini Auto-Fix (If Needed)**
@@ -269,6 +327,17 @@ function attemptYourFeatureAutoFix(incomplete: any, profile: Profile): any {
 ```
 
 ## 🔄 **Database Change Best Practices**
+
+### **💾 Data Storage Patterns**
+
+**Timeline Pattern (Permanent Storage):**
+- Data persists until user explicitly regenerates
+- Instant loading on subsequent visits
+- Used for: AI-generated timelines, major analyses
+
+**Cache Pattern (Invalidatable Storage):**
+- Data may be cleared when profile changes
+- Used for: AI opportunities, dynamic analyses
 
 ### **✅ Safe Changes**
 
@@ -389,6 +458,48 @@ When adding a new AI feature:
 - [ ] **Authentication**: Proper user verification
 - [ ] **Testing**: Unit and integration tests
 - [ ] **Documentation**: Updated this guide
+- [ ] **UI Patterns**: Implement distinct loading states (cached vs generating)
+- [ ] **User Experience**: Add confirmation dialogs for expensive regenerations
+
+## 🎨 **UI/UX Patterns for AI Features**
+
+### **Loading States**
+```typescript
+// Distinguish between different types of loading
+<TimelinePlaceholder 
+  title={isGeneratingNew ? "Generating Your AI Timeline" : "Loading Your AI Timeline"} 
+  message={message}
+  isGenerating={isGeneratingNew}      // 2-3 minute AI generation
+  isLoadingCached={isLoadingCached}   // < 1 second database load
+/>
+```
+
+### **User Confirmation for Expensive Operations**
+```typescript
+const regenerateTimeline = useCallback(async () => {
+  // Prevent accidental expensive API calls
+  const confirmed = window.confirm(
+    'Are you sure you want to regenerate the timeline? This will create a new AI-generated timeline and may take a few minutes.'
+  );
+  
+  if (!confirmed) return;
+  
+  // Proceed with generation...
+}, []);
+```
+
+### **Visual Feedback for Cached vs Generated**
+```typescript
+// Show users when content was cached vs freshly generated
+{timelineCached && timelineGeneratedAt && (
+  <TimelineActions
+    timelineGeneratedAt={timelineGeneratedAt}
+    timelineScenarioType={timelineScenarioType}
+    onRegenerate={regenerateTimeline}
+    isGenerating={isLoading}
+  />
+)}
+```
 
 ## 🔮 **Future Considerations**
 
