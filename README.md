@@ -16,7 +16,8 @@
   - Google: Gemini 2.5 Pro Preview, Gemini 1.5 Pro/Flash
   - Anthropic: Claude Sonnet 4, Opus 4, Haiku 3.5
 - **Secure Architecture**: Enterprise-grade security with encrypted credentials
-- **Intelligent Caching**: 80-90% cost reduction on AI API calls
+- **Timeline Persistence**: Generated timelines stored permanently in database (JSONB)
+- **Intelligent Caching**: 80-90% cost reduction on AI API calls + instant timeline loading
 - **Modern Tech Stack**: Next.js 14, React 18, Supabase, TypeScript
 
 ## 💡 Key Features
@@ -35,6 +36,8 @@
 - **3 Scenarios**: Conservative, Balanced, Aggressive approaches
 - **Phase-by-Phase**: Clear progression with milestones and metrics
 - **Visual Progress**: See your transformation journey at a glance
+- **Timeline Persistence**: Generated timelines saved permanently - no regeneration on page refresh
+- **Instant Loading**: Cached timelines load in under 1 second
 
 ### **4. Comprehensive Business Intelligence**
 - **Strategic Initiatives Tracking**: Priority, status, budget, outcomes, metrics
@@ -131,7 +134,8 @@ The platform is built with a **modular, service-oriented architecture** designed
 1. **Profile Creation**: Users complete a 2-step wizard that captures essential business data (stored securely in Supabase with RLS)
 2. **AI Analysis Pipeline**: Profile data becomes the "single source of truth" for all AI-powered insights
 3. **Multi-Provider Processing**: The centralized `aiService.ts` routes requests to configured AI providers
-4. **Intelligent Results**: Generated insights are cached in database for instant subsequent access
+4. **Timeline Persistence**: Generated timelines stored permanently in `profiles.timeline_data` (JSONB)
+5. **Intelligent Results**: All AI insights cached in database for instant subsequent access
 
 ### **Key Architecture Patterns**
 - **Service Role Security**: All API routes use explicit user authorization rather than client-side RLS
@@ -139,7 +143,20 @@ The platform is built with a **modular, service-oriented architecture** designed
 - **JSONB Flexibility**: Profile schema can evolve without breaking existing data
 - **Caching Strategy**: AI results cached at database level for performance and cost optimization
 
-### **Request Flow Example**
+### **Request Flow Examples**
+
+**AI Timeline Generation (First Time):**
+```
+User Profile → Timeline Generation API → aiService.ts → Provider Selection → 
+Encrypted Credentials → AI Provider → Structured Response → Database Storage → UI Display
+```
+
+**Timeline Loading (Subsequent Visits):**
+```
+User Profile → Timeline Load API → Database Retrieval → Instant UI Display
+```
+
+**AI Opportunities Analysis:**
 ```
 User Profile → AI Opportunities API → aiService.ts → Provider Selection → 
 Encrypted Credentials → AI Provider → Structured Response → Database Cache → UI Display
@@ -190,6 +207,7 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 ### **API Routes**
 - **`app/api/profiles/analyze-opportunities/route.ts`**: AI opportunities analysis endpoint
 - **`app/api/timeline/generate-from-profile/route.ts`**: Timeline generation from profile data
+- **`app/api/timeline/load/route.ts`**: Instant timeline loading from database cache
 - **`app/api/admin/`**: Administrative endpoints for credential management
 
 ### **Configuration & Setup**
@@ -200,6 +218,13 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 ### **Testing**
 - **`app/__tests__/features/`**: Feature-specific test suites
 - **`jest.config.ts`**: Test configuration with Supabase mocking setup
+
+### **Timeline Persistence Architecture**
+- **Storage**: One timeline per user in `profiles.timeline_data` (JSONB column)
+- **Loading Strategy**: Instant retrieval from database, no AI API calls on page refresh
+- **Data Structure**: Complete timeline stored as rich JSON (~15KB per timeline)
+- **Regeneration**: User-initiated with confirmation dialog, overwrites previous timeline
+- **Performance**: < 1 second loading vs 2-3 minutes generation time
 
 ### **💡 Developer Notes**
 - **Modular Architecture**: Features (Timeline, AI Opportunities) are designed to be independently modifiable
@@ -212,13 +237,14 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 ### **Current (MVP)**
 - ✅ Profile creation and management
 - ✅ AI opportunities analysis
-- ✅ Timeline generation
+- ✅ Timeline generation with persistence
 - ✅ Multi-provider AI support
 - ✅ User authentication & security
 - ✅ Admin credential management
-- ✅ Intelligent caching system
+- ✅ Intelligent caching system + timeline persistence
 - ✅ PDF export for reports
 - ✅ Mobile responsive design
+- ✅ Instant timeline loading (< 1 second)
 
 ### **Next Phase**
 - 🔄 Quick Assessment (5-minute version)

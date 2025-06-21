@@ -171,7 +171,7 @@ export class ProfileRepository {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('timeline_cache')
+        .select('timeline_data, last_timeline_generated_at')
         .eq('user_id', userId)
         .single();
         
@@ -182,7 +182,17 @@ export class ProfileRepository {
         return null;
       }
       
-      return data?.timeline_cache || null;
+      if (!data?.timeline_data) {
+        return null;
+      }
+      
+      // Return timeline with metadata
+      return {
+        ...data.timeline_data,
+        _cached: true,
+        _generatedAt: data.last_timeline_generated_at,
+        _scenarioType: data.timeline_data.scenarioType || 'balanced'
+      };
     } catch (error) {
       console.error('❌ Exception in getCachedTimeline:', error);
       return null;
@@ -201,10 +211,14 @@ export class ProfileRepository {
     }
     
     try {
+      // Extract metadata from timeline data
+      const { _cached, _generatedAt, _scenarioType, ...cleanTimelineData } = timelineData;
+      
       const { error } = await supabase
         .from('profiles')
         .update({
-          timeline_cache: timelineData,
+          timeline_data: cleanTimelineData,
+          last_timeline_generated_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('user_id', userId);
@@ -214,6 +228,7 @@ export class ProfileRepository {
         throw error;
       }
       
+      console.log('✅ Timeline saved successfully with new schema');
       return true;
     } catch (error) {
       console.error('❌ Exception in saveTimeline:', error);
@@ -235,7 +250,8 @@ export class ProfileRepository {
       const { error } = await supabase
         .from('profiles')
         .update({
-          timeline_cache: null
+          timeline_data: null,
+          last_timeline_generated_at: null
         })
         .eq('user_id', userId);
         
@@ -244,10 +260,66 @@ export class ProfileRepository {
         throw error;
       }
       
+      console.log('✅ Timeline cache cleared successfully');
       return true;
     } catch (error) {
       console.error('❌ Exception in clearTimelineCache:', error);
       throw new Error('Failed to clear timeline cache.');
+    }
+  }
+
+  /**
+   * Get timeline metadata for a user.
+   * @param {string} userId - User ID (from Supabase Auth)
+   * @returns {Promise<Object|null>} Timeline metadata or null
+   */
+  static async getTimelineMetadata(userId: string): Promise<any | null> {
+    if (!userId) {
+      console.warn('⚠️ No userId provided to getTimelineMetadata');
+      return null;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .rpc('get_timeline_metadata', { user_uuid: userId });
+        
+      if (error) {
+        console.error('❌ Supabase getTimelineMetadata error:', error);
+        return null;
+      }
+      
+      return data?.[0] || null;
+    } catch (error) {
+      console.error('❌ Exception in getTimelineMetadata:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if user has a cached timeline for specific scenario.
+   * @param {string} userId - User ID (from Supabase Auth) 
+   * @param {string} scenarioType - Scenario type to check
+   * @returns {Promise<boolean>} Whether cached timeline exists for scenario
+   */
+  static async hasTimelineForScenario(userId: string, scenarioType: string): Promise<boolean> {
+    if (!userId) return false;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('timeline_data')
+        .eq('user_id', userId)
+        .single();
+        
+      if (error || !data?.timeline_data) {
+        return false;
+      }
+      
+      const cachedScenario = data.timeline_data.scenarioType || 'balanced';
+      return cachedScenario === scenarioType;
+    } catch (error) {
+      console.error('❌ Exception in hasTimelineForScenario:', error);
+      return false;
     }
   }
 

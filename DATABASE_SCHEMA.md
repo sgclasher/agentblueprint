@@ -11,12 +11,28 @@ CREATE TABLE profiles (
   user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE, -- Enforces one profile per user
   profile_data JSONB NOT NULL,           -- Flexible profile content
   markdown_content TEXT,                 -- Generated markdown representation
-  timeline_cache JSONB,                  -- Cached AI timeline data
+  timeline_cache JSONB,                  -- Legacy timeline cache (deprecated)
+  timeline_data JSONB,                   -- Timeline data with full structure
+  last_timeline_generated_at TIMESTAMP WITH TIME ZONE, -- Timeline generation timestamp
   ai_opportunities_cache JSONB,          -- Cached AI opportunities analysis
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
+
+### **Timeline Storage Migration**
+The platform has migrated to a new timeline storage approach:
+
+**Old Approach (Deprecated):**
+- `timeline_cache` column stored timeline with metadata mixed in
+- No separate timestamp tracking
+- Less efficient for querying and cache management
+
+**New Approach (Current):**
+- `timeline_data` stores pure timeline data
+- `last_timeline_generated_at` tracks generation time
+- Better separation of concerns and cache management
+- Enables timeline metadata queries and cache aging
 
 ### **credentials**
 Encrypted storage for user API credentials.
@@ -87,15 +103,39 @@ The `profile_data` JSONB column stores profile information with **backward compa
 
 ### **Cache Structures**
 
-#### **timeline_cache**
+#### **timeline_data**
 ```json
 {
-  "timeline": { /* AI-generated timeline object */ },
-  "scenarioType": "balanced",
-  "generatedAt": "2025-01-15T10:30:00Z",
-  "provider": "gemini-2.5-pro-preview-06-05"
+  "currentState": { 
+    "description": "Current AI readiness state",
+    "highlights": [{"label": "AI Readiness", "value": "30%"}]
+  },
+  "phases": [
+    {
+      "title": "Phase 1: Foundation",
+      "description": "Establish AI foundation and quick wins",
+      "initiatives": [...],
+      "technologies": ["Process Automation", "Data Analytics"],
+      "outcomes": [...],
+      "highlights": [{"label": "ROI", "value": "150%"}]
+    }
+  ],
+  "futureState": {
+    "description": "Fully AI-enabled organization",
+    "highlights": [{"label": "AI Integration", "value": "90%"}]
+  },
+  "summary": {
+    "totalInvestment": "$1.5M - $3.5M",
+    "expectedROI": "300% over 3 years",
+    "timeToValue": "6-12 months",
+    "riskLevel": "Medium"
+  },
+  "scenarioType": "balanced"
 }
 ```
+
+### **Legacy timeline_cache (Deprecated)**
+The `timeline_cache` column is maintained for backward compatibility but new implementations should use `timeline_data` and `last_timeline_generated_at`.
 
 #### **ai_opportunities_cache**  
 ```json

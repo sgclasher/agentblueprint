@@ -9,7 +9,7 @@ import TimelineContent from './components/TimelineContent';
 import MetricsWidget from './components/MetricsWidget';
 import styles from './Timeline.module.css';
 import './timeline.css';
-import { TimelinePlaceholder, WelcomeMessage } from './components/TimelinePlaceholder';
+import { TimelinePlaceholder, WelcomeMessage, TimelineActions } from './components/TimelinePlaceholder';
 
 // New component for when a user has no profile
 const NoProfileMessage: React.FC = () => (
@@ -50,10 +50,23 @@ export default function TimelinePage() {
 
   const renderContent = () => {
     if (isLoading) {
+      const isGeneratingNew = isLoading && timelineData === null;
+      const isLoadingCached = isLoading && !isGeneratingNew;
+      
       const message = hasProfile 
-        ? "Generating personalized roadmap from your profile..."
+        ? (isGeneratingNew 
+           ? "Generating personalized roadmap from your profile..." 
+           : "Loading your saved timeline...")
         : "Checking for your profile...";
-      return <TimelinePlaceholder title="Loading Your AI Timeline" message={message} />;
+        
+      return (
+        <TimelinePlaceholder 
+          title={isGeneratingNew ? "Generating Your AI Timeline" : "Loading Your AI Timeline"} 
+          message={message}
+          isGenerating={isGeneratingNew}
+          isLoadingCached={isLoadingCached}
+        />
+      );
     }
     
     if (!hasProfile) {
@@ -69,12 +82,22 @@ export default function TimelinePage() {
     }
 
     return (
-      <TimelineContent 
-        sections={timelineSections}
-        timelineData={timelineData}
-        sectionRefs={sectionRefs}
-        businessProfile={currentProfile} // Pass the profile to the content
-      />
+      <>
+        <TimelineContent 
+          sections={timelineSections}
+          timelineData={timelineData}
+          sectionRefs={sectionRefs}
+          businessProfile={currentProfile}
+        />
+        {timelineCached && timelineGeneratedAt && (
+          <TimelineActions
+            timelineGeneratedAt={timelineGeneratedAt}
+            timelineScenarioType={timelineScenarioType}
+            onRegenerate={regenerateTimeline}
+            isGenerating={isLoading}
+          />
+        )}
+      </>
     );
   };
 
