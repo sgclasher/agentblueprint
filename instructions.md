@@ -186,6 +186,52 @@ Generated solutions are validated for:
 - [ ] Implementation timelines show both technical build AND autonomy progression
 - [ ] Platform positioned as definitive agentic AI implementation guide
 
+### **Future Enhancements (Post-Solutions Implementation):**
+
+#### **Solution-Based Focused Timelines** 🎯
+- **Objective**: Add "View Implementation Timeline" button to each agentic solution
+- **Functionality**: Generate focused timelines specifically for implementing individual agentic solutions
+- **Timeline Content**: Show both technical development phases AND autonomy progression (Crawl > Walk > Run)
+- **Integration**: Leverage existing focused timeline infrastructure but with solution-specific context
+- **Value**: Complete the journey from business problem → agentic solution → detailed implementation roadmap
+
+**Implementation Approach:**
+```typescript
+// Each solution gets timeline generation capability
+interface AgenticSolution {
+  // ... existing properties
+  generateTimelineButton: boolean;    // "View Implementation Timeline"
+}
+
+// Timeline generation with solution context
+const generateSolutionTimeline = (solution: AgenticSolution, initiative: StrategicInitiative) => {
+  // Pass both solution details AND initiative context to timeline generator
+  // Show technical implementation steps + autonomy maturation phases
+  // Include agent development, tool integration, supervision handoff
+};
+```
+
+**Database Schema Addition:**
+```sql
+-- Link timelines to specific solutions (extends existing timelines table)
+ALTER TABLE timelines ADD COLUMN solution_id UUID REFERENCES agentic_solutions(id);
+ALTER TABLE timelines ADD COLUMN solution_name TEXT; -- Cached for display
+```
+
+**UI Flow:**
+```
+Solution Card → [View Implementation Timeline] → Focused Timeline Generation
+└── Shows: Agent development + Tool integration + Autonomy progression
+```
+
+**Success Criteria:**
+- [ ] Each agentic solution can generate its own implementation timeline
+- [ ] Timelines show technical AND autonomy progression phases
+- [ ] Clear path from business problem → solution → implementation plan
+- [ ] Executive confidence in concrete, step-by-step agent deployment
+
+---
+
 ## **Implementation Summary** 🎉
 
 ### **What Was Accomplished:**
