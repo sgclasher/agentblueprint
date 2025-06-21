@@ -22,6 +22,59 @@ export interface Timeline {
     [key: string]: any;
 }
 
+// 🆕 NEW: Enhanced Timeline Entity for Multiple Timeline Support
+export interface TimelineEntity {
+    id: string;
+    profileId: string;
+    userId: string;
+    timelineType: 'master' | 'focused';
+    initiativeId?: string;              // Only for focused timelines
+    initiativeName?: string;            // Cached for easy display
+    timelineData: Timeline;             // The actual timeline content
+    scenarioType: 'conservative' | 'balanced' | 'aggressive';
+    
+    // Quality tracking
+    qualityScore?: number;              // 0-100 rating
+    promptVersion?: string;             // Track which prompt generated this
+    aiModel?: string;                   // Track which AI model was used
+    
+    // User feedback
+    userRating?: number;                // 1-5 star rating
+    feedbackNotes?: string;             // User comments
+    
+    // Generation metadata
+    generationDurationMs?: number;      // How long it took to generate
+    tokensUsed?: number;                // AI API token usage
+    costCents?: number;                 // AI API cost tracking
+    
+    // Timestamps
+    createdAt: string;
+    updatedAt: string;
+}
+
+// 🆕 NEW: Timeline Summary for UI Display
+export interface TimelineSummary {
+    timelineType: 'master' | 'focused';
+    initiativeId?: string;
+    initiativeName?: string;
+    scenarioType: string;
+    qualityScore?: number;
+    userRating?: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// 🆕 NEW: Timeline Quality Metrics for Analytics
+export interface TimelineQualityMetrics {
+    timelineType: string;
+    aiModel: string;
+    promptVersion: string;
+    avgQualityScore: number;
+    avgUserRating: number;
+    totalTimelines: number;
+    avgGenerationTimeMs: number;
+}
+
 export interface StrategicInitiative {
     initiative: string;
     contact: {
