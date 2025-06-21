@@ -26,9 +26,29 @@
 
 **Objective**: Add Business Objectives as a parent concept above Strategic Initiatives, with adaptive complexity based on business size and optional auto-generation for SMBs.
 
-**✅ MAJOR PROGRESS TODAY** - Step 1 & 2 Complete!
+**Advisor Insights**: 
+- "Medium-sized businesses think very differently than enterprises"
+- "Don't force SMBs into enterprise thinking - let them describe their business in their own terms"
+- "Make Strategic Initiatives optional with smart defaults for smaller companies"
 
-#### **🎉 Completed Work:**
+**Why This Enhanced Approach**:
+- Keeps valuable execution details for enterprises
+- Simplifies experience for SMBs with auto-generation
+- One platform serves all segments (SMB to Enterprise)
+- Consistent timeline quality regardless of input method
+- Progressive complexity - users can add detail as they grow
+
+**🏗️ Architecture Overview**:
+```
+Different Inputs → Normalization Layer → Consistent Profile Structure → LLM Processing → UI Rendering
+
+SMB Path:     Goals + Challenges → Auto-Generate → strategicInitiatives[] → Timeline JSON → UI
+Enterprise:   Full Details → Direct Pass → strategicInitiatives[] → Timeline JSON → UI
+```
+
+**Key Principle**: The middle layers (LLM prompts, timeline processing, UI components) remain unchanged. We only add intelligent preprocessing to normalize different input styles into the same internal `Profile` structure.
+
+#### **Implementation Plan:**
 
 - [x] **Step 1: Update Core Data Types & Normalization** ✅ **COMPLETED**
   - **Files**: `app/services/types.ts`, `app/services/profileService.ts`
@@ -59,37 +79,6 @@
   - ✅ **Data Preservation**: Existing data maintained when switching modes
   - ✅ **Helper Functions**: Auto-generation preview, validation, mode switching
   - ✅ **Comprehensive test coverage** - 20/20 tests passing
-
-#### **🚀 NEW STRATEGIC APPROACH: Simplified Onboarding**
-
-**Problem Identified**: Current onboarding has redundant/unnecessary fields that create friction.
-
-**New Approach Decided**:
-1. **Ultra-Minimal Onboarding**: Reduce to 3 core fields only
-   - Company Name (personalization)
-   - Industry (critical for AI recommendations)
-   - Company Size (drives adaptive UI)
-
-2. **Remove from Onboarding** (move to profile page):
-   - ~~Employee Count~~ (redundant with Company Size)
-   - ~~Primary Location~~ (not essential for core analysis)
-   - ~~Annual Revenue~~ (nice-to-have, not blocking)
-   - ~~Website URL~~ (reference info only)
-
-3. **🎯 BEST IDEA: Combined Signup + Profile Flow**
-   - Instead of: Signup → Profile Creation (two steps)
-   - Do: Single "Get AI Insights" flow with Name, Email, Password + 3 business fields
-   - **Benefits**: Higher conversion, no drop-off, value-first experience
-   - **Result**: 6 total fields instead of current 7+ across two flows
-
-#### **Implementation Plan (Remaining Work):**
-
-- [ ] **Step 2.5: Implement Simplified Onboarding** 🔥 **HIGH PRIORITY**
-  - **Files**: `app/auth/signup/page.tsx`, `app/profiles/components/steps/CompanyOverviewStep.tsx`
-  - Create combined signup + profile creation flow
-  - Reduce to 6 fields total: Full Name, Email, Password, Company Name, Industry, Company Size
-  - Remove redundant fields from profile wizard
-  - Move removed fields to main profile page for later completion
 
 - [ ] **Step 3: Profile Processing & Normalization (Core Logic)**
   - **Files**: `app/services/profileService.ts`
@@ -145,17 +134,58 @@
   - **Test LLM integration**: Normalized data generates quality timelines
   - **Test edge cases**: Empty inputs, mixed data, migration scenarios
 
-**🏗️ Architecture Overview**:
+**Benefits**:
+- ✅ One platform serves SMB to Enterprise without code duplication
+- ✅ Faster onboarding for smaller companies (no forced enterprise thinking)
+- ✅ Full functionality for enterprises (no features lost)
+- ✅ **Consistent timeline quality** regardless of input method (same LLM processing)
+- ✅ Progressive complexity - users can add detail as they grow
+- ✅ **No breaking changes** to existing data or architecture
+- ✅ **Architecture preserved** - only input normalization layer added
+
+**Example Progressive Experience**:
+
+**SMB Input (Simple):**
 ```
-Different Inputs → Normalization Layer → Consistent Profile Structure → LLM Processing → UI Rendering
-
-SMB Path:     Goals + Challenges → Auto-Generate → strategicInitiatives[] → Timeline JSON → UI
-Enterprise:   Full Details → Direct Pass → strategicInitiatives[] → Timeline JSON → UI
+Business Goal: "Reduce production costs by 20%"
+Key Challenge: "Too much manual work in fulfillment"
+Company Size: 50 employees
 ```
 
-**Key Principle**: The middle layers (LLM prompts, timeline processing, UI components) remain unchanged. We only add intelligent preprocessing to normalize different input styles into the same internal `Profile` structure.
+**Normalized (Backend Processing):**
+```
+businessObjectives: [
+  { objective: "Reduce production costs by 20%", targetMetric: "20% cost reduction" }
+],
+strategicInitiatives: [
+  {
+    initiative: "Production Automation Program",
+    businessProblems: ["Manual fulfillment processes causing delays"],
+    expectedOutcomes: ["20% cost reduction"],
+    linkedObjective: "Reduce production costs by 20%",
+    // Auto-generated structure for consistent LLM processing
+  }
+]
+```
 
-**Next Session Priority**: Start with Step 2.5 (Simplified Onboarding) for immediate UX impact, then continue with Step 3 (Normalization Logic).
+**Enterprise Input (Detailed):**
+```
+Business Objective: "Operational Excellence - 30% efficiency gain"
+Strategic Initiative: "Manufacturing Automation Program"
+├── Budget: $2.5M
+├── Contact: Sarah Johnson, VP Operations  
+├── Timeline: Q2-Q4 2025
+├── Success Metrics: 40% faster processing
+└── Linked to: "Operational Excellence" objective
+```
+
+**🔄 Data Flow Validation**: 
+Both paths result in the same `strategicInitiatives[]` structure → Same LLM prompts → Same timeline JSON → Same UI rendering
+
+**Next Priority Options:**
+1. **Execute this enhanced hybrid approach** 🔥 - Best value, serves all segments
+2. **Agentic Workflow Redesign** - Complete Business → Implementation value story  
+3. **Quick Assessment** - 5-minute alternative entry point
 
 ## **Implementation Summary** 🎉
 
