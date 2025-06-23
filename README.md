@@ -2,6 +2,30 @@
 
 **🎯 Purpose**: Help businesses understand and implement agentic AI with clear ROI, actionable insights, and step-by-step implementation roadmaps.
 
+## 📚 Comprehensive Agentic AI Knowledge Base
+
+This platform includes extensive agentic AI expertise through curated knowledge base documents:
+
+### **Core Knowledge Base**
+- **`KB_AGENTIC_AI_GOVERNANCE.md`**: 5-pillar governance framework (Risk Management, Ethical Guardrails, Security, Compliance, Human Oversight)
+- **`KB_AGENTIC_INSIGHTS.md`**: BUILD implementation cycle and ROI calculation methodologies  
+- **`KB_AGENTIC_DESIGN_PATTERNS.md`**: Technical architecture patterns, frameworks (CrewAI, LangGraph, AutoGen), and optimization strategies
+- **`KB_AGENTIC_CURRENT_TRENDS.md`**: Current best practices, tool integration patterns, and reasoning architectures
+
+### **External Research Integration (Mid-2025)**
+- **`KB_AGENTIC_GUIDE_M.md`**: Manus comprehensive market analysis with 41 citations
+- **`KB_AGENTIC_GUIDE_C.md`**: Claude strategic and technical governance frameworks
+
+### **BUILD Implementation Framework**
+Our systematic 5-step approach for agentic AI implementation:
+- **B**usiness Picture: Understand processes to be automated
+- **U**nderstanding Design: Scope to manageable first version  
+- **I**mplementation: Deploy AI solution using appropriate patterns
+- **L**earning: Refine through systematic feedback
+- **D**eployment: Integrate into team workflows
+
+*This framework enables organizations to move from concept to production with confidence and measurable ROI.*
+
 ## 🚀 What This Platform Does
 
 ### **For Business Stakeholders**
@@ -12,8 +36,8 @@
 
 ### **For Technical Teams**
 - **Multi-Provider AI Support**: OpenAI GPT-4o, Google Gemini 2.5, Anthropic Claude
-  - OpenAI: GPT-4o, GPT-4.1, o1 series
-  - Google: Gemini 2.5 Pro Preview, Gemini 1.5 Pro/Flash
+  - OpenAI: GPT-4o, GPT-4.1, o1 series, o3
+  - Google: Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 1.5 Pro/Flash
   - Anthropic: Claude Sonnet 4, Opus 4, Haiku 3.5
 - **Secure Architecture**: Enterprise-grade security with encrypted credentials
 - **Timeline Persistence**: Generated timelines stored permanently in database (JSONB)
@@ -231,6 +255,17 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 - **Shared Infrastructure**: Changes to `aiService.ts`, repositories, and API patterns require coordination
 - **Safe Development**: Most UI and business logic changes can be made without affecting other features
 - **Testing Pattern**: Each major feature has dedicated test files - follow existing patterns for new features
+
+### **🤖 Cursor Rules Integration**
+Comprehensive Cursor Rules system automatically provides agentic AI context and patterns:
+- **`.cursor/rules/agentic-ai-context.mdc`**: Auto-loads all KB documents for solution generation files
+- **`.cursor/rules/solution-generation.mdc`**: Multi-agent analysis system rules and quality patterns
+- **`.cursor/rules/implementation-patterns.mdc`**: Framework selection, memory architecture, cost optimization
+- **`.cursor/rules/build-implementation.mdc`**: BUILD cycle methodology for systematic implementation
+- **`.cursor/rules/test-solution-generation.mdc`**: Comprehensive testing framework with validation patterns
+
+**File Pattern Triggers**: Rules automatically apply based on file patterns (e.g., `agenticSolution*.ts`, `AI*Tab.tsx`)
+**Manual Invocation**: Use `@agentic-ai-context` or similar to manually load specific rule sets
 
 ## 🚦 Roadmap
 
