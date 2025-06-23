@@ -34,18 +34,7 @@
     * Simple agentic blueprint elements (execution pattern, memory, tools, errors, oversight)
     * Cost ranges by implementation tier (No-Code: $0-100, Low-Code: $50-300, Pro-Code: varies)
     * Realistic timelines and skill requirements
-    * **Autonomy preferences** based on user's comfort level:
-      - Conservative: High human oversight (approve every action)
-      - Balanced: Medium oversight (batch reviews, approval gates)
-      - Progressive: Low oversight (policy-guided autonomous operation)
-    * **Simple ROI calculation** using this framework:
-      - Time savings: Hours/week saved × hourly rate × 52 weeks
-      - Tool costs: Monthly subscription × 12 months + setup costs
-      - Net benefit: Time savings - Tool costs
-      - Payback period: Setup costs ÷ monthly savings
-      - Risk factors: Adjust based on implementation complexity
-  - Use existing AI service and profile data + simple autonomy preference
-  - **Data source**: Add one autonomy question to existing profile or infer from company culture
+  - Use existing AI service and profile data
   - No new files, just enhance existing prompt
   - Files: `app/lib/llm/prompts/aiOpportunitiesPrompt.ts` (modify existing)
 
@@ -67,41 +56,14 @@
 - [ ] Implementation guidance feels practical and actionable
 - [ ] Blueprint elements are easy to understand
 - [ ] Cost and timeline estimates seem realistic
-- [ ] **Autonomy recommendations match user's comfort level and risk tolerance**
-- [ ] **ROI calculations feel realistic and help justify the investment**
 
 **Next Decision Point:**
 If MVP validates the concept → Build full implementation plan
 If MVP doesn't resonate → Pivot approach before major investment
 
-### **Sample Enhanced Output (Based on Autonomy Preference):**
-
-**Conservative Autonomy:**
+### **Sample Enhanced Output:**
 ```
 🎯 Customer Service Automation
-├── 🤖 Support Ticket Agent
-│   ├── What it does: Automatically categorize and route support tickets
-│   ├── 🧠 Agentic Blueprint:
-│   │   ├── Execution: Read ticket → Classify → Queue for human approval → Route
-│   │   ├── Memory: Ticket history, common issues
-│   │   ├── Tools: Help desk API, knowledge base search
-│   │   ├── Errors: Always escalate to humans immediately
-│   │   └── Oversight: Human approves every classification before routing
-│   ├── Implementation:
-│   │   ├── Tier: No-Code ($0-100/month, 1-2 days setup)
-│   │   ├── Skills: Business analyst level
-│   │   └── Tools: Workflow automation platforms
-│   ├── ROI Analysis:
-│   │   ├── Time Savings: 15 hrs/week × $25/hr × 52 weeks = $19,500/year
-│   │   ├── Tool Costs: $50/month × 12 = $600/year
-│   │   ├── Net Benefit: $19,500 - $600 = $18,900/year
-│   │   └── Payback: 2 weeks (setup time vs monthly savings)
-│   └── Risk: VERY LOW (human controls all decisions)
-```
-
-**Balanced Autonomy:**
-```
-🎯 Customer Service Automation  
 ├── 🤖 Support Ticket Agent
 │   ├── What it does: Automatically categorize and route support tickets
 │   ├── 🧠 Agentic Blueprint:
@@ -109,16 +71,12 @@ If MVP doesn't resonate → Pivot approach before major investment
 │   │   ├── Memory: Ticket history, common issues
 │   │   ├── Tools: Help desk API, knowledge base search
 │   │   ├── Errors: Escalate unclear cases to humans
-│   │   └── Oversight: Human review of classifications daily (batch review)
+│   │   └── Oversight: Human review of classifications weekly
 │   ├── Implementation:
 │   │   ├── Tier: No-Code ($0-100/month, 1-2 days setup)
 │   │   ├── Skills: Business analyst level
 │   │   └── Tools: Workflow automation platforms
-│   ├── ROI Analysis:
-│   │   ├── Time Savings: 20 hrs/week × $25/hr × 52 weeks = $26,000/year
-│   │   ├── Tool Costs: $50/month × 12 = $600/year
-│   │   ├── Net Benefit: $26,000 - $600 = $25,400/year
-│   │   └── Payback: 1 week (higher autonomy = faster savings)
+│   ├── ROI: 60% faster ticket resolution
 │   └── Risk: LOW (internal process, reversible)
 ```
 
