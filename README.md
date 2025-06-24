@@ -2,9 +2,11 @@
 
 **🎯 Purpose**: Help businesses understand and implement agentic AI with clear ROI, actionable insights, and step-by-step implementation roadmaps.
 
-## 📚 Comprehensive Agentic AI Knowledge Base
-
-This platform includes extensive agentic AI expertise through curated knowledge base documents:
+##This platform includes extensive agentic AI expertise through curated knowledge base documents:
+### 📚 Comprehensive Agentic AI Knowledge Base
+- **KB_LLM_MODEL_UPDATES_2025.md:** This document serves as a technical knowledge base, summarizing the latest 2025 API changes, model releases, and new features for the OpenAI, Anthropic, and Google Gemini platforms.
+- **KB_AI_AGENT_HANDBOOK.md:** This document is a comprehensive handbook that defines agentic AI and provides a strategic guide for its implementation within an enterprise. It covers the 2025 market landscape, governance frameworks, core architectural components, design patterns, and real-world case studies.
+- **KB_AGENTIC_WORKFLOW_MVP.md:** This document provides a high-level blueprint for implementing a minimum viable product (MVP) of an agentic AI workflow. It outlines the key components, defines the roles and collaborative processes of different AI agents, and specifies the critical points for human oversight and safety.
 
 
 ## 🚀 What This Platform Does

@@ -80,37 +80,260 @@ export class AgenticBlueprintService {
 
     // Import prompts and types
     const { 
-      AGENTIC_BLUEPRINT_SYSTEM_PROMPT, 
-      AGENTIC_BLUEPRINT_USER_PROMPT, 
+      buildAgenticBlueprintSystemPrompt,
+      buildAgenticBlueprintUserPrompt, 
       validateAgenticBlueprintResponse
     } = await import('../lib/llm/prompts/agenticBlueprintPrompt');
+    
+    type AgenticBlueprintPromptConfig = import('../lib/llm/prompts/agenticBlueprintPrompt').AgenticBlueprintPromptConfig;
     
     // Import the interface type
     type AgenticBlueprintResponse = import('../lib/llm/prompts/agenticBlueprintPrompt').AgenticBlueprintResponse;
 
-    // 🆕 Enhanced prompt with business context
-    const systemPrompt = AGENTIC_BLUEPRINT_SYSTEM_PROMPT;
-    const userPrompt = AGENTIC_BLUEPRINT_USER_PROMPT(profile, businessContext, agentCapabilityMapping, timelineRecommendation);
+    // 🆕 PHASE 3.4: Model-specific capability detection and optimization
+    const modelCapabilities = this.detectModelCapabilities(preferredProvider);
+    
+    // Configure prompt generation with industry intelligence and model optimizations
+    const promptConfig: AgenticBlueprintPromptConfig = {
+      industry: profile.industry as any,
+      includeIndustryContext: true,
+      enableChainOfThought: true,
+      modelProvider: modelCapabilities.provider,
+      enableAdaptiveThinking: modelCapabilities.supportsAdaptiveThinking,
+      enableExtendedThinking: modelCapabilities.supportsExtendedThinking,
+      enableStructuredOutputs: modelCapabilities.supportsStructuredOutputs,
+      businessContext: {
+        complexityScore: businessContext.implementationContext.complexityScore / 100,
+        riskLevel: businessContext.implementationContext.riskLevel,
+        implementationReadiness: this.mapChangeReadinessToLevel(businessContext.implementationContext.changeReadiness)
+      },
+      includeKPIProbability: true
+    };
+
+    // 🆕 Generate optimized prompts with model-specific features
+    const systemPrompt = buildAgenticBlueprintSystemPrompt(promptConfig);
+    const userPrompt = buildAgenticBlueprintUserPrompt(profile, promptConfig);
+
+    // 🔍 LOG REQUEST DETAILS FOR TROUBLESHOOTING
+    console.log('=== AI BLUEPRINT REQUEST DETAILS ===');
+    console.log('[Request] User ID:', userId);
+    console.log('[Request] Preferred Provider:', preferredProvider || 'auto-selected');
+    console.log('[Request] Model Capabilities:', modelCapabilities);
+    console.log('[Request] Prompt Config:', promptConfig);
+    console.log('[Request] System Prompt Length:', systemPrompt.length, 'characters');
+    console.log('[Request] User Prompt Length:', userPrompt.length, 'characters');
+    console.log('[Request] Business Context:', businessContext);
+
+    // 🆕 PHASE 3.5.6: Intelligent retry logic with prompt adjustments
+    let aiResponse: AgenticBlueprintResponse;
+    let lastError: Error | null = null;
+    const maxRetries = 3;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Request] Calling AI service (attempt ${attempt}/${maxRetries})...`);
+        
+        // Adjust prompts for retry attempts
+        let adjustedSystemPrompt = systemPrompt;
+        let adjustedUserPrompt = userPrompt;
+        
+        if (attempt > 1) {
+          console.log(`[Retry] Adjusting prompts for attempt ${attempt} due to validation failure`);
+          
+          // Add stronger KPI enforcement for retry attempts
+          const kpiRetryEnforcement = `
+🚨 RETRY ATTEMPT ${attempt}: The previous response failed validation. This is critical:
+
+ABSOLUTE REQUIREMENT: Generate EXACTLY 3, 4, OR 5 KPI improvements. NO EXCEPTIONS.
+- Previous attempt failed because it generated fewer than 3 KPI improvements
+- You MUST provide at least 3 distinct KPI objects in the kpiImprovements array
+- Each KPI must be unique and measurable
+- This is being validated programmatically - failure will result in another retry
+
+ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
+`;
+          
+          adjustedUserPrompt = kpiRetryEnforcement + adjustedUserPrompt;
+          
+          // For specific provider optimizations on retry
+          if (modelCapabilities.provider === 'gemini') {
+            adjustedSystemPrompt += `
+
+🔄 GEMINI RETRY MODE: You previously failed KPI validation. Use adaptive thinking to:
+1. Generate at least 3 distinct KPI improvements
+2. Verify each KPI is unique and measurable
+3. Double-check the array length before responding
+4. Use step-by-step validation of the kpiImprovements section`;
+          } else if (modelCapabilities.provider === 'claude') {
+            adjustedSystemPrompt += `
+
+🔄 CLAUDE RETRY MODE: Previous response validation failed. Use extended thinking to:
+1. Methodically generate each of the 3+ required KPI improvements
+2. Think through each KPI's business impact step-by-step
+3. Verify the complete response structure before finalizing
+4. Ensure kpiImprovements array contains minimum 3 objects`;
+          } else if (modelCapabilities.provider === 'openai') {
+            adjustedSystemPrompt += `
+
+🔄 OPENAI RETRY MODE: JSON validation failed on previous attempt. 
+1. Use structured output mode to enforce minimum 3 KPI improvements
+2. Validate kpiImprovements array length against schema requirements
+3. Ensure each KPI object is complete and properly formatted
+4. Apply built-in schema validation before responding`;
+          }
+        }
+        
+        aiResponse = await aiService.generateJson(
+          adjustedSystemPrompt,
+          adjustedUserPrompt,
+          userId,
+          credentialsRepo,
+          preferredProvider
+        );
+        
+        console.log(`[Request] AI service call completed (attempt ${attempt})`);
+        break; // Success - exit retry loop
+        
+      } catch (error: any) {
+        lastError = error;
+        console.error(`[Retry] Attempt ${attempt} failed:`, error.message);
+        
+        if (attempt === maxRetries) {
+          console.error('[Retry] All retry attempts exhausted, proceeding with error handling');
+          throw error;
+        }
+        
+        // Add delay before retry (exponential backoff)
+        const delayMs = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+        console.log(`[Retry] Waiting ${delayMs}ms before attempt ${attempt + 1}`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
 
     try {
-      const aiResponse: AgenticBlueprintResponse = await aiService.generateJson(
-        systemPrompt,
-        userPrompt,
-        userId,
-        credentialsRepo,
-        preferredProvider
-      );
+      // Ensure aiResponse was assigned during retry loop
+      if (!aiResponse!) {
+        throw new Error('Internal error: AI response was not assigned during retry attempts');
+      }
 
-      // Validate response structure
-      const warnings = validateAgenticBlueprintResponse(aiResponse);
-      if (warnings && warnings.length > 0) {
-        console.warn('AI blueprint response validation warnings:', warnings);
-        if (warnings.some((w: string) => w.includes('Digital team must have exactly 5') || w.includes('missing required fields'))) {
-          throw new Error('Invalid AI response structure: missing required fields or incorrect team size');
+      // 🔍 COMPREHENSIVE LOGGING FOR TROUBLESHOOTING
+      console.log('=== AI BLUEPRINT RESPONSE ANALYSIS ===');
+      console.log('[AgenticBlueprintService] Raw AI Response Type:', typeof aiResponse);
+      console.log('[AgenticBlueprintService] AI Response Keys:', aiResponse ? Object.keys(aiResponse) : 'NULL/UNDEFINED');
+      console.log('[AgenticBlueprintService] Full AI Response:', JSON.stringify(aiResponse, null, 2));
+      
+      // Individual field analysis
+      console.log('[Field Analysis] businessObjective:', {
+        exists: !!aiResponse?.businessObjective,
+        type: typeof aiResponse?.businessObjective,
+        length: aiResponse?.businessObjective?.length || 0,
+        value: aiResponse?.businessObjective
+      });
+      
+      console.log('[Field Analysis] digitalTeam:', {
+        exists: !!aiResponse?.digitalTeam,
+        isArray: Array.isArray(aiResponse?.digitalTeam),
+        length: aiResponse?.digitalTeam?.length || 0,
+        structure: aiResponse?.digitalTeam?.map((agent: any) => ({ role: agent?.role, name: agent?.name })) || 'INVALID'
+      });
+      
+      console.log('[Field Analysis] humanCheckpoints:', {
+        exists: !!aiResponse?.humanCheckpoints,
+        isArray: Array.isArray(aiResponse?.humanCheckpoints),
+        length: aiResponse?.humanCheckpoints?.length || 0
+      });
+      
+      console.log('[Field Analysis] agenticTimeline:', {
+        exists: !!aiResponse?.agenticTimeline,
+        hasPhases: !!aiResponse?.agenticTimeline?.phases,
+        phasesIsArray: Array.isArray(aiResponse?.agenticTimeline?.phases),
+        phasesLength: aiResponse?.agenticTimeline?.phases?.length || 0,
+        totalDuration: aiResponse?.agenticTimeline?.totalDurationWeeks
+      });
+      
+      console.log('[Field Analysis] kpiImprovements:', {
+        exists: !!aiResponse?.kpiImprovements,
+        isArray: Array.isArray(aiResponse?.kpiImprovements),
+        length: aiResponse?.kpiImprovements?.length || 0
+      });
+
+      // 🚨 STRICT VALIDATION - NO FALLBACKS
+      if (!aiResponse) {
+        throw new Error('AI provider returned null or undefined response. This indicates a fundamental API communication issue.');
+      }
+
+      if (typeof aiResponse !== 'object') {
+        throw new Error(`AI provider returned invalid response type: ${typeof aiResponse}. Expected JSON object.`);
+      }
+
+      // Validate required fields with specific error messages
+      const missingFields: string[] = [];
+      const invalidFields: string[] = [];
+
+      if (!aiResponse.businessObjective || typeof aiResponse.businessObjective !== 'string' || aiResponse.businessObjective.trim().length === 0) {
+        missingFields.push('businessObjective (must be non-empty string)');
+      }
+
+      if (!aiResponse.digitalTeam || !Array.isArray(aiResponse.digitalTeam)) {
+        missingFields.push('digitalTeam (must be array)');
+      } else if (aiResponse.digitalTeam.length !== 5) {
+        invalidFields.push(`digitalTeam has ${aiResponse.digitalTeam.length} agents, must have exactly 5`);
+      }
+
+      if (!aiResponse.humanCheckpoints || !Array.isArray(aiResponse.humanCheckpoints)) {
+        missingFields.push('humanCheckpoints (must be array)');
+      } else if (aiResponse.humanCheckpoints.length !== 4) {
+        invalidFields.push(`humanCheckpoints has ${aiResponse.humanCheckpoints.length} items, must have exactly 4`);
+      }
+
+      if (!aiResponse.agenticTimeline) {
+        missingFields.push('agenticTimeline (must be object)');
+      } else {
+        if (!aiResponse.agenticTimeline.phases || !Array.isArray(aiResponse.agenticTimeline.phases)) {
+          missingFields.push('agenticTimeline.phases (must be array)');
+        } else if (aiResponse.agenticTimeline.phases.length !== 3) {
+          invalidFields.push(`agenticTimeline.phases has ${aiResponse.agenticTimeline.phases.length} phases, must have exactly 3 (crawl, walk, run)`);
+        }
+        
+        if (!aiResponse.agenticTimeline.totalDurationWeeks || typeof aiResponse.agenticTimeline.totalDurationWeeks !== 'number') {
+          missingFields.push('agenticTimeline.totalDurationWeeks (must be number)');
         }
       }
 
-      // Transform AI response to AgenticBlueprint format
+      if (!aiResponse.kpiImprovements || !Array.isArray(aiResponse.kpiImprovements)) {
+        missingFields.push('kpiImprovements (must be array)');
+      } else if (aiResponse.kpiImprovements.length < 3) {
+        invalidFields.push(`kpiImprovements has ${aiResponse.kpiImprovements.length} items, must have at least 3`);
+      }
+
+      // 🚨 THROW DETAILED ERROR IF VALIDATION FAILS
+      if (missingFields.length > 0 || invalidFields.length > 0) {
+        const errorDetails = [
+          missingFields.length > 0 ? `Missing fields: ${missingFields.join(', ')}` : '',
+          invalidFields.length > 0 ? `Invalid fields: ${invalidFields.join(', ')}` : ''
+        ].filter(Boolean).join('. ');
+
+        console.error('=== AI RESPONSE VALIDATION FAILED ===');
+        console.error('Error Details:', errorDetails);
+        console.error('Provider:', preferredProvider || 'auto-selected');
+        console.error('Model Capabilities:', modelCapabilities);
+        console.error('Prompt Config:', promptConfig);
+        
+        throw new Error(`AI provider generated invalid response structure. ${errorDetails}. This may indicate prompt engineering issues or model limitations. Please try again or switch AI providers in admin settings.`);
+      }
+
+      // Additional validation warnings (log but don't fail)
+      const warnings = validateAgenticBlueprintResponse(aiResponse);
+      if (warnings && warnings.length > 0) {
+        console.warn('=== AI RESPONSE QUALITY WARNINGS ===');
+        warnings.forEach((warning: string, index: number) => {
+          console.warn(`Warning ${index + 1}: ${warning}`);
+        });
+      }
+
+      console.log('=== AI RESPONSE VALIDATION PASSED ===');
+
+      // Transform AI response to AgenticBlueprint format (no fallbacks)
       const blueprint: AgenticBlueprint = {
         id: this.generateBlueprintId(),
         profileId: profile.id,
@@ -124,15 +347,71 @@ export class AgenticBlueprintService {
         },
         kpiImprovements: aiResponse.kpiImprovements,
         aiModel: preferredProvider || 'auto-selected',
-        promptVersion: '2.0', // 🆕 Updated for enhanced context processing
+        promptVersion: '3.0', // 🆕 Phase 3: Advanced prompt engineering with model-specific optimizations
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
 
       return blueprint;
     } catch (error: any) {
-      console.error('Agentic blueprint generation failed:', error);
-      throw error;
+      console.error('=== AI BLUEPRINT GENERATION FAILED ===');
+      console.error('[Error] Full error object:', error);
+      console.error('[Error] Error message:', error.message);
+      console.error('[Error] Error stack:', error.stack);
+      console.error('[Error] Provider used:', preferredProvider || 'auto-selected');
+      console.error('[Error] Model capabilities:', modelCapabilities);
+      console.error('[Error] Prompt lengths - System:', systemPrompt?.length || 0, 'User:', userPrompt?.length || 0);
+      
+      // Provide specific troubleshooting guidance based on error type
+      if (error.message?.includes('API error')) {
+        console.error('[Troubleshooting] This is an AI provider API error. Check:');
+        console.error('  1. Provider credentials in admin settings');
+        console.error('  2. API key validity and billing status');
+        console.error('  3. Provider service status');
+        throw new Error(`AI provider API error: ${error.message}. Check your provider credentials and billing status in admin settings.`);
+      }
+      
+      if (error.message?.includes('not configured')) {
+        console.error('[Troubleshooting] No AI provider configured. Required steps:');
+        console.error('  1. Go to /admin');
+        console.error('  2. Add credentials for OpenAI, Google Gemini, or Anthropic Claude');
+        console.error('  3. Test connection');
+        console.error('  4. Set as default if needed');
+        throw new Error('No AI provider configured. Please configure OpenAI, Google Gemini, or Anthropic Claude in admin settings (/admin).');
+      }
+      
+      if (error.message?.includes('Failed to generate JSON')) {
+        console.error('[Troubleshooting] AI failed to generate valid JSON. Possible causes:');
+        console.error('  1. Model overloaded (try again)');
+        console.error('  2. Prompt too complex for model');
+        console.error('  3. Model context limit exceeded');
+        console.error('  4. Provider temporary issue');
+        throw new Error(`AI failed to generate valid response: ${error.message}. This may be temporary - try again or switch providers in admin settings.`);
+      }
+      
+      if (error.message?.includes('AI provider generated invalid response structure')) {
+        console.error('[Troubleshooting] AI response structure validation failed. This means:');
+        console.error('  1. The AI model could not follow the required output format');
+        console.error('  2. The prompt may need adjustment for this provider');
+        console.error('  3. Try switching to a different AI provider');
+        console.error('  4. The model may be having temporary issues');
+        throw new Error(`AI provider could not generate proper response structure: ${error.message}. Try switching AI providers in admin settings or try again later.`);
+      }
+      
+      if (error.message?.includes('Timeline structure invalid')) {
+        console.error('[Troubleshooting] Internal timeline processing error. This is likely a code bug.');
+        console.error('  This should be reported as it indicates validation logic is inconsistent.');
+        throw new Error(`Internal error in timeline processing: ${error.message}. Please report this issue.`);
+      }
+      
+      // Generic fallback error with troubleshooting steps
+      console.error('[Troubleshooting] Unhandled error type. General steps:');
+      console.error('  1. Check browser console for detailed logs');
+      console.error('  2. Verify AI provider is working in admin settings');
+      console.error('  3. Try switching AI providers');
+      console.error('  4. Check if profile has sufficient data');
+      
+      throw new Error(`Blueprint generation failed: ${error.message || 'Unknown error'}. Check browser console for detailed troubleshooting information.`);
     }
   }
 
@@ -450,13 +729,105 @@ export class AgenticBlueprintService {
   }
 
   /**
+   * 🆕 PHASE 3.4: Detect model capabilities for feature optimization
+   */
+  private static detectModelCapabilities(preferredProvider?: string): {
+    provider: 'openai' | 'claude' | 'gemini' | undefined;
+    supportsAdaptiveThinking: boolean;
+    supportsExtendedThinking: boolean;
+    supportsStructuredOutputs: boolean;
+  } {
+    const provider = this.normalizeProviderName(preferredProvider);
+    
+    switch (provider) {
+      case 'openai':
+        return {
+          provider: 'openai',
+          supportsAdaptiveThinking: false,
+          supportsExtendedThinking: false,
+          supportsStructuredOutputs: true // May 2025 feature
+        };
+      case 'claude':
+        return {
+          provider: 'claude',
+          supportsAdaptiveThinking: false,
+          supportsExtendedThinking: true, // Extended thinking mode
+          supportsStructuredOutputs: false
+        };
+      case 'gemini':
+        return {
+          provider: 'gemini',
+          supportsAdaptiveThinking: true, // Gemini 2.5 adaptive thinking
+          supportsExtendedThinking: false,
+          supportsStructuredOutputs: false
+        };
+      default:
+        return {
+          provider: undefined,
+          supportsAdaptiveThinking: false,
+          supportsExtendedThinking: false,
+          supportsStructuredOutputs: false
+        };
+    }
+  }
+
+  /**
+   * 🆕 Normalize provider name for capability detection
+   */
+  private static normalizeProviderName(provider?: string): 'openai' | 'claude' | 'gemini' | undefined {
+    if (!provider) return undefined;
+    
+    const lowerProvider = provider.toLowerCase();
+    if (lowerProvider.includes('openai') || lowerProvider.includes('gpt')) {
+      return 'openai';
+    }
+    if (lowerProvider.includes('claude') || lowerProvider.includes('anthropic')) {
+      return 'claude';
+    }
+    if (lowerProvider.includes('gemini') || lowerProvider.includes('google')) {
+      return 'gemini';
+    }
+    
+    return undefined;
+  }
+
+  /**
+   * 🆕 Map change readiness score to level
+   */
+  private static mapChangeReadinessToLevel(changeReadiness: number): 'low' | 'medium' | 'high' {
+    if (changeReadiness < 40) return 'low';
+    if (changeReadiness < 70) return 'medium';
+    return 'high';
+  }
+
+
+
+  /**
    * 🆕 Generate progressive trust levels for the timeline
    */
   private static generateProgressiveTrustLevels(timeline: any): any[] {
+    console.log('[generateProgressiveTrustLevels] Input timeline:', JSON.stringify(timeline, null, 2));
+    
     const trustLevels: any[] = [];
     let currentWeek = 1;
     
-    timeline.phases?.forEach((phase: any) => {
+    // Add safety check for timeline structure - this should NOT happen if validation passed
+    if (!timeline || !timeline.phases || !Array.isArray(timeline.phases)) {
+      console.error('[generateProgressiveTrustLevels] CRITICAL: Timeline structure invalid after validation passed!');
+      console.error('[generateProgressiveTrustLevels] Timeline:', timeline);
+      throw new Error('Internal error: Timeline structure is invalid after passing validation. This indicates a bug in the validation logic.');
+    }
+    
+    console.log('[generateProgressiveTrustLevels] Processing', timeline.phases.length, 'phases');
+    
+    timeline.phases.forEach((phase: any, index: number) => {
+      console.log(`[generateProgressiveTrustLevels] Phase ${index + 1}:`, {
+        phase: phase.phase,
+        name: phase.name,
+        durationWeeks: phase.durationWeeks,
+        hasRiskMitigations: !!phase.riskMitigations
+      });
+      
       const phaseWeeks = phase.durationWeeks || 8;
       const startTrust = phase.phase === 'crawl' ? 20 : phase.phase === 'walk' ? 50 : 80;
       const endTrust = phase.phase === 'crawl' ? 40 : phase.phase === 'walk' ? 75 : 95;
@@ -465,16 +836,20 @@ export class AgenticBlueprintService {
       const midWeek = currentWeek + Math.floor(phaseWeeks / 2);
       const midTrust = (startTrust + endTrust) / 2;
       
-      trustLevels.push({
+      const trustLevel = {
         week: midWeek,
         trustLevel: midTrust,
         autonomyDescription: `${phase.phase.charAt(0).toUpperCase() + phase.phase.slice(1)} phase autonomy`,
         safeguards: phase.riskMitigations || []
-      });
+      };
       
+      console.log(`[generateProgressiveTrustLevels] Generated trust level for phase ${phase.phase}:`, trustLevel);
+      
+      trustLevels.push(trustLevel);
       currentWeek += phaseWeeks;
     });
     
+    console.log('[generateProgressiveTrustLevels] Final trust levels:', trustLevels);
     return trustLevels;
   }
 

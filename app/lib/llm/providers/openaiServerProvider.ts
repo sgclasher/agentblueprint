@@ -38,26 +38,47 @@ export class OpenAIServerProvider {
     }
 
     try {
+      const requestBody = {
+        model: this.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: options.temperature || 0.7,
+        max_tokens: options.max_tokens || 4000,
+        response_format: { type: 'json_object' }
+      };
+      
+      console.log(`[OpenAI Provider] Making request to model: ${this.model}`);
+      console.log(`[OpenAI Provider] API Key present: ${!!this.apiKey}`);
+      
       const response = await fetch(`${this.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt }
-          ],
-          temperature: options.temperature || 0.7,
-          max_tokens: options.max_tokens || 4000,
-          response_format: { type: 'json_object' }
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        
+        // Provide more helpful error messages for common issues
+        if (response.status === 404) {
+          if (error.error?.code === 'model_not_found') {
+            throw new Error(`OpenAI API error: Model '${this.model}' not found. This usually means: 1) You need to add $5+ credits to your OpenAI account, 2) Generate a new API key after adding credits, or 3) Check if the model is allowed in your project settings. Visit https://platform.openai.com/account/billing to add credits.`);
+          }
+        }
+        
+        if (response.status === 401) {
+          throw new Error(`OpenAI API error: Invalid API key. Please generate a new API key at https://platform.openai.com/api-keys`);
+        }
+        
+        if (response.status === 429) {
+          throw new Error(`OpenAI API error: Rate limit or quota exceeded. Check your usage at https://platform.openai.com/account/usage`);
+        }
+        
         throw new Error(`OpenAI API error: ${response.status} - ${error.error?.message || 'Unknown error'}`);
       }
 

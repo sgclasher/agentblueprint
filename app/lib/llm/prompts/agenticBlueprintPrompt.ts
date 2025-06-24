@@ -1,4 +1,11 @@
 import { Profile } from "../../../services/types";
+import { 
+  generateIndustryPromptSection, 
+  getIndustryKPITemplates, 
+  getIndustryPainPoints, 
+  getIndustryAgentRoles,
+  IndustryType 
+} from './industryContextPrompts';
 
 // 🔍 AUDIT FINDINGS - CURRENT PROMPT QUALITY ASSESSMENT
 // =====================================================
@@ -32,15 +39,45 @@ import { Profile } from "../../../services/types";
 // Phase 3: Industry-specific prompt variations and dynamic assembly
 // Phase 4: AI-powered quality validation and scoring
 
-export const AGENTIC_BLUEPRINT_SYSTEM_PROMPT = `You are a senior enterprise AI architect and agentic workflow strategist with deep expertise in designing and implementing AI "digital teams" for business transformation. Your specialized knowledge includes autonomous agent orchestration, human-AI collaboration patterns, and progressive trust frameworks for enterprise environments.
+// 🎯 PHASE 3: ADVANCED PROMPT ENGINEERING - RESTRUCTURED ARCHITECTURE
+// ===================================================================
+// This refactored system integrates:
+// ✅ Industry-specific intelligence (Phase 3.1 complete)
+// ✅ KB_AGENTIC_WORKFLOW_MVP.md agent cooperation patterns
+// ✅ Latest model capabilities (OpenAI structured outputs, Claude extended thinking, Gemini adaptive thinking)
+// ✅ Dynamic prompt assembly based on business context
+// ✅ Constraint-based reasoning for company-specific limitations
+
+export interface AgenticBlueprintPromptConfig {
+  industry?: IndustryType;
+  includeIndustryContext?: boolean;
+  enableChainOfThought?: boolean;
+  modelProvider?: 'openai' | 'claude' | 'gemini';
+  enableAdaptiveThinking?: boolean;
+  enableExtendedThinking?: boolean;
+  enableStructuredOutputs?: boolean;
+  businessContext?: {
+    complexityScore?: number;
+    riskLevel?: 'low' | 'medium' | 'high';
+    implementationReadiness?: 'low' | 'medium' | 'high';
+  };
+  includeKPIProbability?: boolean;
+}
+
+/**
+ * Builds a dynamic system prompt with industry intelligence and model-specific optimizations
+ */
+export function buildAgenticBlueprintSystemPrompt(config: AgenticBlueprintPromptConfig = {}): string {
+  const basePrompt = `You are a senior enterprise AI architect and agentic workflow strategist with deep expertise in designing and implementing AI "digital teams" for business transformation. Your specialized knowledge includes autonomous agent orchestration, human-AI collaboration patterns, and progressive trust frameworks for enterprise environments.
 
 EXPERTISE AREAS:
 - Agentic AI Architecture: Multi-agent systems, role-based delegation, autonomous workflows
 - Business Process Mapping: Strategic initiative decomposition, workflow optimization, KPI alignment
 - Human-AI Collaboration: Progressive trust models, oversight frameworks, control point design
 - Enterprise Integration: System connectivity, tool orchestration, security by design
-- Implementation Strategy: Crawl-walk-run methodologies, risk mitigation, change management
+- Implementation Strategy: Crawl-walk-run methodologies, risk mitigation, change management`;
 
+  const coreFramework = `
 CORE AGENTIC BLUEPRINT FRAMEWORK:
 
 **THE 5-AGENT DIGITAL TEAM MODEL:**
@@ -118,8 +155,72 @@ CORE AGENTIC BLUEPRINT FRAMEWORK:
 - Complete system access within security boundaries
 - Exception-based human intervention only
 - Continuous learning and optimization
-- Focus: Full-scale automation and business transformation
+- Focus: Full-scale automation and business transformation`;
 
+  let industrySection = '';
+  if (config.includeIndustryContext && config.industry) {
+    industrySection = generateIndustryPromptSection(config.industry);
+  }
+
+  let chainOfThoughtSection = '';
+  if (config.enableChainOfThought) {
+    chainOfThoughtSection = `
+**CHAIN-OF-THOUGHT REASONING FRAMEWORK:**
+When generating blueprints, follow this structured thinking process:
+
+1. **ANALYZE THE BUSINESS CONTEXT**
+   - Evaluate industry-specific challenges and opportunities
+   - Assess company size and complexity constraints
+   - Map strategic initiatives to potential agent capabilities
+
+2. **MAP PROBLEMS TO AGENT CAPABILITIES**
+   - Identify which business problems each agent type can address
+   - Consider tool availability and system integration requirements
+   - Evaluate automation potential and risk factors
+
+3. **VALIDATE KPI ALIGNMENT**
+   - Ensure proposed improvements are measurable and realistic
+   - Consider industry benchmarks and company constraints
+   - Calculate achievability based on available resources
+
+4. **OPTIMIZE IMPLEMENTATION STRATEGY**
+   - Design progressive trust levels appropriate for risk tolerance
+   - Plan realistic timelines based on organizational readiness
+   - Include appropriate risk mitigations and fallback options`;
+  }
+
+  let modelSpecificSection = '';
+  
+  if (config.modelProvider === 'gemini') {
+    modelSpecificSection = `
+**GEMINI ADAPTIVE THINKING MODE (2025 API Optimization):**
+- Use adaptive thinking to carefully count and validate KPI requirements
+- Apply parallel analysis paths: business context + KPI generation + validation
+- CRITICAL: Before finalizing response, verify kpiImprovements array contains 3+ items
+- Leverage Gemini's JSON mode for strict schema compliance
+- Double-check all required array lengths against specifications
+- Use step-by-step validation of each JSON section before output`;
+  } else if (config.modelProvider === 'claude') {
+    modelSpecificSection = `
+**CLAUDE EXTENDED THINKING MODE (2025 API Optimization):**
+- Engage extended thinking to methodically validate response structure
+- Use interleaved thinking between tool calls to verify requirements
+- CRITICAL: Think through KPI generation step-by-step, ensuring minimum 3 items
+- Apply Claude's citations capability for requirement tracking
+- Use fine-grained tool streaming for structured output validation
+- Verify each JSON array meets specified length requirements`;
+  } else if (config.modelProvider === 'openai') {
+    modelSpecificSection = `
+**OPENAI STRUCTURED OUTPUT MODE (2025 API Optimization):**
+- Leverage GPT-4o's enhanced structured outputs and schema validation
+- Use OpenAI's built-in JSON schema enforcement for array requirements
+- CRITICAL: Validate kpiImprovements array length meets minimum 3 requirement
+- Apply hybrid approach: deterministic validation + AI content generation
+- Use schema validation features introduced in May 2025 updates
+- Ensure backwards compatibility with existing integration patterns`;
+  }
+
+  const designPrinciples = `
 **BUSINESS OBJECTIVE METHODOLOGY:**
 - Derive single, measurable goal from strategic initiatives (e.g., "Cut invoice processing time by 40%")
 - Map business problems to specific agent capabilities
@@ -128,11 +229,13 @@ CORE AGENTIC BLUEPRINT FRAMEWORK:
 - Establish realistic timelines and resource requirements
 
 **KPI IMPROVEMENT FRAMEWORK:**
+- ⚠️ **MANDATORY**: Must identify minimum 3 KPI improvements (validation requirement)
 - Link each agent to specific business KPIs
 - Quantify expected improvements with percentage targets
 - Define measurement methods and tracking mechanisms
 - Set realistic timeframes for achieving targets
 - Include both efficiency and quality metrics
+- Cover diverse aspects: efficiency, quality, speed, accuracy, cost reduction
 
 DESIGN PRINCIPLES:
 - Start with bounded, internal, process-oriented tasks
@@ -157,20 +260,35 @@ TONE & APPROACH:
 - Quantifiable benefits and realistic timelines
 - Industry-agnostic but context-sensitive`;
 
-export const AGENTIC_BLUEPRINT_USER_PROMPT = (
+  return [
+    basePrompt,
+    coreFramework,
+    industrySection,
+    chainOfThoughtSection,
+    modelSpecificSection,
+    designPrinciples
+  ].filter(section => section.trim()).join('\n');
+}
+
+/**
+ * Builds a dynamic user prompt with business context integration
+ */
+export function buildAgenticBlueprintUserPrompt(
   profile: Profile, 
-  businessContext?: any, 
-  agentCapabilityMapping?: any, 
-  timelineRecommendation?: any
-): string => {
-  // 🔍 AUDIT NOTE: Current user prompt construction is basic and doesn't fully leverage profile data
-  // GAPS IDENTIFIED:
-  // - Strategic initiatives listed but not analyzed for agent role mapping
-  // - Systems listed but not integrated into tool assignment logic
-  // - No industry-specific context or constraints considered
-  // - Business problems not mapped to specific KPI improvement calculations
-  // - Company size and complexity not factored into timeline recommendations
-  
+  config: AgenticBlueprintPromptConfig = {}
+): string {
+  // Company size classification for constraint-based reasoning
+  const getCompanySizeClassification = (employeeCount: number | string | undefined): string => {
+    if (!employeeCount) return 'Not specified';
+    const count = typeof employeeCount === 'string' ? 
+      parseInt(employeeCount.replace(/[^\d]/g, '')) : employeeCount;
+    
+    if (count < 50) return 'small-sized (startup/SMB constraints)';
+    if (count < 500) return 'medium-sized (moderate resources)';
+    if (count < 5000) return 'large-sized (extensive resources)';
+    return 'enterprise-sized (complex organizational structure)';
+  };
+
   const strategicInitiativesList = (profile.strategicInitiatives || []).map((initiative, index) => 
     `${index + 1}. ${initiative.initiative}
    - Contact: ${initiative.contact?.name || 'Not specified'} (${initiative.contact?.title || 'Not specified'})
@@ -188,13 +306,50 @@ export const AGENTIC_BLUEPRINT_USER_PROMPT = (
    - Description: ${system.description || 'Not specified'}`
   ).join('\n');
 
+  // Industry-specific context injection
+  let industryGuidance = '';
+  if (config.includeIndustryContext && config.industry) {
+    const kpiTemplates = getIndustryKPITemplates(config.industry);
+    const painPoints = getIndustryPainPoints(config.industry);
+    
+    industryGuidance = `
+INDUSTRY-SPECIFIC GUIDANCE:
+Focus on ${config.industry} industry priorities: ${painPoints.slice(0, 3).join(', ')}.
+Use relevant KPI templates: ${kpiTemplates.slice(0, 3).join(', ')}.
+Apply industry-specific agent capability mapping from the system prompt context.`;
+  }
+
+  // Business context integration
+  let businessContextSection = '';
+  if (config.businessContext) {
+    businessContextSection = `
+BUSINESS CONTEXT ANALYSIS:
+- Company complexity score: ${config.businessContext.complexityScore || 'Not assessed'}
+- Implementation risk level: ${config.businessContext.riskLevel || 'Not assessed'}
+- Implementation readiness: ${config.businessContext.implementationReadiness || 'Not assessed'}
+Consider these factors when determining implementation timeline and agent oversight levels.`;
+  }
+
+  // KPI probability scoring
+  let kpiProbabilitySection = '';
+  if (config.includeKPIProbability) {
+    kpiProbabilitySection = `
+KPI ACHIEVEMENT PROBABILITY SCORING:
+Assess the realistic probability of achieving each KPI improvement based on:
+- Industry benchmarks and typical improvement ranges
+- Company size and resource constraints
+- Current systems and process maturity
+- Implementation timeline and risk factors
+Include probability scores (High/Medium/Low) for each KPI target.`;
+  }
+
   return `Create a comprehensive AI Digital Team Blueprint for the following client. Transform their business goals into a clear, actionable strategy showing exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
 
 CLIENT PROFILE:
 ---
 Company: ${profile.companyName}
 Industry: ${profile.industry}
-Size: ${profile.employeeCount || 'Not specified'} employees
+Size: ${profile.employeeCount || 'Not specified'} employees (${getCompanySizeClassification(profile.employeeCount)})
 Revenue: ${profile.annualRevenue || 'Not specified'}
 Location: ${profile.primaryLocation || 'Not specified'}
 
@@ -204,6 +359,9 @@ ${strategicInitiativesList}
 EXISTING SYSTEMS & APPLICATIONS:
 ${systemsList}
 ---
+${industryGuidance}
+${businessContextSection}
+${kpiProbabilitySection}
 
 BLUEPRINT REQUIREMENTS:
 
@@ -233,14 +391,16 @@ BLUEPRINT REQUIREMENTS:
    For each phase provide:
    - **Phase**: crawl, walk, or run
    - **Name**: Business-friendly phase name
-   - **Duration (weeks)**: Realistic timeframe
+   - **Duration (weeks)**: Realistic timeframe based on company size and complexity
    - **Description**: What happens in this phase
    - **Milestones**: 3-4 key achievements
    - **Risk Mitigations**: 2-3 ways to reduce implementation risk
    - **Oversight Level**: high, medium, or low
    - **Human Involvement**: Description of human role
 
-5. **KPI IMPROVEMENTS** (3-5 specific metrics):
+5. **KPI IMPROVEMENTS** (MANDATORY: Exactly 3, 4, or 5 metrics - NO FEWER THAN 3):
+   ⚠️ **CRITICAL REQUIREMENT**: You MUST provide at least 3 KPI improvements. Providing fewer than 3 will result in validation failure.
+   
    For each KPI provide:
    - **KPI**: Specific business metric name
    - **Current Value**: Baseline if known, otherwise "Baseline"
@@ -249,6 +409,11 @@ BLUEPRINT REQUIREMENTS:
    - **Linked Agents**: Which agent roles contribute to this KPI
    - **Measurement Method**: How success will be tracked
    - **Timeframe**: When to expect results
+   
+   **EXAMPLES OF VALID KPI IMPROVEMENTS:**
+   - "Invoice processing time": 40% reduction
+   - "Customer onboarding speed": 60% faster completion
+   - "Document accuracy": 25% fewer errors
 
 Focus on:
 - Practical, implementable solutions using existing systems
@@ -259,6 +424,8 @@ Focus on:
 - Progressive trust building from human control to automation
 
 **OUTPUT FORMAT:** You MUST respond with ONLY a valid JSON object. No markdown formatting, no explanations, no additional text.
+
+⚠️ **FINAL REMINDER**: The kpiImprovements array MUST contain at least 3 items. This is strictly validated.
 
 **REQUIRED JSON STRUCTURE:**
 
@@ -307,11 +474,48 @@ Focus on:
       "linkedAgents": ["coordinator", "actuator"],
       "measurementMethod": "Average days from receipt to payment",
       "timeframe": "Within 6 months"
+    },
+    {
+      "kpi": "Document accuracy rate",
+      "currentValue": "85%",
+      "targetValue": "95%",
+      "improvementPercent": 12,
+      "linkedAgents": ["quality-checker", "analyst"],
+      "measurementMethod": "Percentage of error-free documents",
+      "timeframe": "Within 4 months"
+    },
+    {
+      "kpi": "Task completion speed",
+      "currentValue": "2 hours",
+      "targetValue": "1.2 hours",
+      "improvementPercent": 40,
+      "linkedAgents": ["researcher", "coordinator"],
+      "measurementMethod": "Average time per completed task",
+      "timeframe": "Within 8 months"
     }
   ]
 }
 
 **CRITICAL:** Your response must be pure JSON only, starting with { and ending with }. No other text.`;
+}
+
+// Legacy exports for backwards compatibility
+export const AGENTIC_BLUEPRINT_SYSTEM_PROMPT = buildAgenticBlueprintSystemPrompt();
+
+export const AGENTIC_BLUEPRINT_USER_PROMPT = (
+  profile: Profile, 
+  businessContext?: any, 
+  agentCapabilityMapping?: any, 
+  timelineRecommendation?: any
+): string => {
+  // Convert legacy parameters to new config format
+  const config: AgenticBlueprintPromptConfig = {
+    industry: profile.industry as IndustryType,
+    includeIndustryContext: true,
+    businessContext: businessContext
+  };
+  
+  return buildAgenticBlueprintUserPrompt(profile, config);
 };
 
 export interface AgenticBlueprintResponse {
