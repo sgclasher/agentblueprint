@@ -14,7 +14,7 @@ import styles from '../profiles/[id]/ProfileDetail.module.css';
 import { markdownService } from '../services/markdownService';
 
 // Import new tab components
-import AIOpportunitiesTab from './components/AIOpportunitiesTab';
+import AgenticWorkflowsTab from './components/AgenticWorkflowsTab';
 import SystemsTab from './components/SystemsTab';
 import AnalysisTab from './components/AnalysisTab';
 import ContactsTab from './components/ContactsTab';
@@ -658,7 +658,7 @@ export default function ProfilePage() {
           <AnalysisTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
         )}
         {activeTab === 'opportunities' && editableProfile && (
-          <AIOpportunitiesTab profile={editableProfile} isEditing={isEditing} />
+          <AgenticWorkflowsTab profile={editableProfile} isEditing={isEditing} />
         )}
         {activeTab === 'systems' && editableProfile && (
           <SystemsTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />

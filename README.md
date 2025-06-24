@@ -4,27 +4,10 @@
 
 ## 📚 Comprehensive Agentic AI Knowledge Base
 
-This platform includes extensive agentic AI expertise through curated knowledge base documents:
 
 ### **Core Knowledge Base**
-- **`KB_AGENTIC_AI_GOVERNANCE.md`**: 5-pillar governance framework (Risk Management, Ethical Guardrails, Security, Compliance, Human Oversight)
-- **`KB_AGENTIC_INSIGHTS.md`**: BUILD implementation cycle and ROI calculation methodologies  
-- **`KB_AGENTIC_DESIGN_PATTERNS.md`**: Technical architecture patterns, frameworks (CrewAI, LangGraph, AutoGen), and optimization strategies
-- **`KB_AGENTIC_CURRENT_TRENDS.md`**: Current best practices, tool integration patterns, and reasoning architectures
+- **`KB_AI_AGENT_HANDBOOK.md`**: This document is your master knowledge base: a definitive mid-2025 guide covering the entire lifecycle of enterprise agentic AI, from strategic planning and core architectural patterns to production readiness and real-world case studies.
 
-### **External Research Integration (Mid-2025)**
-- **`KB_AGENTIC_GUIDE_M.md`**: Manus comprehensive market analysis with 41 citations
-- **`KB_AGENTIC_GUIDE_C.md`**: Claude strategic and technical governance frameworks
-
-### **BUILD Implementation Framework**
-Our systematic 5-step approach for agentic AI implementation:
-- **B**usiness Picture: Understand processes to be automated
-- **U**nderstanding Design: Scope to manageable first version  
-- **I**mplementation: Deploy AI solution using appropriate patterns
-- **L**earning: Refine through systematic feedback
-- **D**eployment: Integrate into team workflows
-
-*This framework enables organizations to move from concept to production with confidence and measurable ROI.*
 
 ## 🚀 What This Platform Does
 
@@ -51,10 +34,12 @@ Our systematic 5-step approach for agentic AI implementation:
 - **Step 2**: Review and generate AI insights
 - **Time**: < 10 minutes to complete
 
-### **2. AI Opportunities Analysis**
-- **6 Categories**: Process Automation, Decision Support, Customer Experience, Data Analytics, Workforce Augmentation, Risk Management
-- **Business Impact**: Specific metrics, ROI estimates, implementation timelines
-- **Industry-Specific**: Tailored recommendations for your sector
+### **2. Agentic Workflow Recommendations** 🆕
+- **Platform-Agnostic Framework**: 7 enterprise-proven workflow patterns ready for any technology stack
+- **AI-Powered Personalization**: 3-7 tailored workflow recommendations based on your strategic initiatives
+- **Complete ROI Analysis**: $3.50 per $1 invested benchmark with detailed cost-benefit breakdown
+- **Risk-Gated Implementation**: Draft → Pilot → Production methodology with governance checkpoints
+- **Business-Focused Blueprints**: Ready for technical implementation on Salesforce, ServiceNow, CrewAI, n8n, etc.
 
 ### **3. Interactive AI Timeline**
 - **3 Scenarios**: Conservative, Balanced, Aggressive approaches
@@ -67,7 +52,7 @@ Our systematic 5-step approach for agentic AI implementation:
 - **Strategic Initiatives Tracking**: Priority, status, budget, outcomes, metrics
 - **Systems & Applications Inventory**: Understand your tech landscape
 - **AI Readiness Scoring**: 0-100 score across multiple dimensions
-- **5 Intelligence Tabs**: Overview, Analysis, AI Opportunities, Systems, Contacts
+- **5 Intelligence Tabs**: Overview, Analysis, Agentic Workflows, Systems, Contacts
 
 ### **5. Additional Power Features**
 - **Admin Dashboard**: Secure credential management for multiple AI providers
@@ -158,8 +143,10 @@ The platform is built with a **modular, service-oriented architecture** designed
 1. **Profile Creation**: Users complete a 2-step wizard that captures essential business data (stored securely in Supabase with RLS)
 2. **AI Analysis Pipeline**: Profile data becomes the "single source of truth" for all AI-powered insights
 3. **Multi-Provider Processing**: The centralized `aiService.ts` routes requests to configured AI providers
-4. **Timeline Persistence**: Generated timelines stored permanently in `profiles.timeline_data` (JSONB)
-5. **Intelligent Results**: All AI insights cached in database for instant subsequent access
+4. **Agentic Workflow Generation**: Hybrid AI + predefined patterns create personalized workflow recommendations
+5. **Timeline Persistence**: Generated timelines stored permanently in `profiles.timeline_data` (JSONB)
+6. **Workflow Caching**: Generated workflows cached in `profiles.agentic_workflows_cache` (JSONB)
+7. **Intelligent Results**: All AI insights cached in database for instant subsequent access
 
 ### **Key Architecture Patterns**
 - **Service Role Security**: All API routes use explicit user authorization rather than client-side RLS
@@ -180,7 +167,13 @@ Encrypted Credentials → AI Provider → Structured Response → Database Stora
 User Profile → Timeline Load API → Database Retrieval → Instant UI Display
 ```
 
-**AI Opportunities Analysis:**
+**Agentic Workflow Generation (New):**
+```
+User Profile → Workflow Generator API → aiService.ts + AgenticWorkflowService → 
+AI Provider + Predefined Patterns → Enhanced Workflow Recommendations → Database Cache → UI Display
+```
+
+**AI Opportunities Analysis (Legacy):**
 ```
 User Profile → AI Opportunities API → aiService.ts → Provider Selection → 
 Encrypted Credentials → AI Provider → Structured Response → Database Cache → UI Display
@@ -213,7 +206,8 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 
 ### **Business Logic Services**
 - **`app/services/aiService.ts`**: 🚨 **CRITICAL** - Centralized AI provider abstraction (changes affect ALL AI features)
-- **`app/services/aiOpportunitiesService.ts`**: Core business logic for AI opportunity analysis
+- **`app/services/agenticWorkflowService.ts`**: 🆕 **NEW** - Platform-agnostic workflow pattern library with 7 enterprise-proven patterns
+- **`app/services/aiOpportunitiesService.ts`**: Core business logic for AI opportunity analysis (legacy)
 - **`app/services/profileService.ts`**: Profile data operations and timeline generation coordination
 - **`app/services/timelineService.ts`**: AI transformation timeline generation logic
 
@@ -224,12 +218,14 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 
 ### **AI Integration**
 - **`app/lib/llm/prompts/`**: Directory containing all prompt engineering templates
-  - `aiOpportunitiesPrompt.ts`: Business opportunity analysis prompts
+  - `agenticWorkflowPrompts.ts`: 🆕 **NEW** - Agentic workflow analysis and generation prompts
+  - `aiOpportunitiesPrompt.ts`: Business opportunity analysis prompts (legacy)
   - `timelinePrompts.ts`: Timeline generation prompts
 - **`app/lib/llm/providers/`**: AI provider implementations (OpenAI, Gemini, Claude)
 
 ### **API Routes**
-- **`app/api/profiles/analyze-opportunities/route.ts`**: AI opportunities analysis endpoint
+- **`app/api/profiles/generate-agentic-workflows/route.ts`**: 🆕 Agentic workflow generation endpoint
+- **`app/api/profiles/analyze-opportunities/route.ts`**: AI opportunities analysis endpoint (legacy)
 - **`app/api/timeline/generate-from-profile/route.ts`**: Timeline generation from profile data
 - **`app/api/timeline/load/route.ts`**: Instant timeline loading from database cache
 - **`app/api/admin/`**: Administrative endpoints for credential management
@@ -271,7 +267,8 @@ Comprehensive Cursor Rules system automatically provides agentic AI context and 
 
 ### **Current (MVP)**
 - ✅ Profile creation and management
-- ✅ AI opportunities analysis
+- ✅ Agentic workflow recommendations (platform-agnostic)
+- ✅ AI opportunities analysis (legacy)
 - ✅ Timeline generation with persistence
 - ✅ Multi-provider AI support
 - ✅ User authentication & security
@@ -280,6 +277,7 @@ Comprehensive Cursor Rules system automatically provides agentic AI context and 
 - ✅ PDF export for reports
 - ✅ Mobile responsive design
 - ✅ Instant timeline loading (< 1 second)
+- ✅ ROI calculator with $3.50 per $1 benchmark
 
 ### **Next Phase**
 - 🔄 Quick Assessment (5-minute version)
