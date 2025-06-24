@@ -8,7 +8,7 @@ import ProfileWizard from '../profiles/components/ProfileWizard';
 import { Profile } from '../services/types';
 import { 
   User, Mail, Calendar, Shield, Settings, Database, LogOut, Edit, Save, X,
-  Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap, LucideIcon, TrendingUp, FileEdit, Info, BrainCircuit, Users as ContactsIcon, Code, FileText, Server, Brain, BarChart3, Users
+  Briefcase, Building2, BarChart, Store, GraduationCap, Home, Truck, Zap, LucideIcon, TrendingUp, FileEdit, Info, BrainCircuit, Users as ContactsIcon, Code, FileText, Server, Brain, BarChart3, Users, Workflow
 } from 'lucide-react';
 import styles from '../profiles/[id]/ProfileDetail.module.css';
 import { markdownService } from '../services/markdownService';
@@ -18,6 +18,7 @@ import AIOpportunitiesTab from './components/AIOpportunitiesTab';
 import SystemsTab from './components/SystemsTab';
 import AnalysisTab from './components/AnalysisTab';
 import ContactsTab from './components/ContactsTab';
+import AIBlueprintTab from './components/AIBlueprintTab';
 
 // Import custom hooks
 import { useStrategicInitiatives } from './hooks/useStrategicInitiatives';
@@ -645,6 +646,7 @@ export default function ProfilePage() {
           <button className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`} onClick={() => setActiveTab('overview')}><Info size={16}/> Overview</button>
           <button className={`${styles.tabButton} ${activeTab === 'analysis' ? styles.activeTab : ''}`} onClick={() => setActiveTab('analysis')}><BarChart3 size={16}/> Analysis</button>
           <button className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`} onClick={() => setActiveTab('opportunities')}><Brain size={16}/> AI Opportunities</button>
+          <button className={`${styles.tabButton} ${activeTab === 'blueprint' ? styles.activeTab : ''}`} onClick={() => setActiveTab('blueprint')}><Workflow size={16}/> AI Blueprint</button>
           <button className={`${styles.tabButton} ${activeTab === 'systems' ? styles.activeTab : ''}`} onClick={() => setActiveTab('systems')}><Server size={16}/> Systems</button>
           <button className={`${styles.tabButton} ${activeTab === 'contacts' ? styles.activeTab : ''}`} onClick={() => setActiveTab('contacts')}><Users size={16}/> Contacts</button>
         </div>
@@ -659,6 +661,9 @@ export default function ProfilePage() {
         )}
         {activeTab === 'opportunities' && editableProfile && (
           <AIOpportunitiesTab profile={editableProfile} isEditing={isEditing} />
+        )}
+        {activeTab === 'blueprint' && editableProfile && (
+          <AIBlueprintTab profile={editableProfile} isEditing={isEditing} />
         )}
         {activeTab === 'systems' && editableProfile && (
           <SystemsTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />

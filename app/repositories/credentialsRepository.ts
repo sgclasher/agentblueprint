@@ -60,7 +60,6 @@ export class CredentialsRepository {
     }
 
     try {
-      console.log('[CredentialsRepository.getDefaultProvider] Query params:', { userId, serviceType });
       const { data, error } = await supabase
         .from('external_service_credentials')
         .select('*')
@@ -69,7 +68,7 @@ export class CredentialsRepository {
         .eq('is_active', true)
         .eq('is_default', true)
         .single();
-      console.log('[CredentialsRepository.getDefaultProvider] Result:', data);
+      //console.log('[CredentialsRepository.getDefaultProvider] Result:', data);
 
       if (error) {
         if (error.code !== 'PGRST116') { // Not found is not an error

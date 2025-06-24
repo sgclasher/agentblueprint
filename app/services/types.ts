@@ -104,6 +104,80 @@ export interface SystemApplication {
     criticality?: 'High' | 'Medium' | 'Low';  // Business criticality
 }
 
+// 🆕 NEW: Agentic Blueprint Types
+export interface AgenticBlueprint {
+    id: string;
+    profileId: string;
+    userId: string;
+    businessObjective: string;          // "Cut invoice processing time by 40%"
+    digitalTeam: DigitalTeamMember[];   // Array of 5 agent roles
+    humanCheckpoints: HumanCheckpoint[];
+    agenticTimeline: AgenticTimeline;
+    kpiImprovements: KPIImprovement[];
+    
+    // Generation metadata
+    aiModel?: string;
+    promptVersion?: string;
+    qualityScore?: number;
+    userRating?: number;
+    
+    // Timestamps
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface DigitalTeamMember {
+    role: 'coordinator' | 'researcher' | 'analyst' | 'quality-checker' | 'actuator';
+    title: string;                      // "Project Manager", "Analyst", "Consultant", "Auditor", "Ops Specialist"
+    coreJob: string;                    // Description of main responsibility
+    toolsUsed: string[];                // ["Calendar", "Task tracker", "Internal search"]
+    oversightLevel: 'human-approval' | 'policy-checked' | 'full-autonomy';
+    oversightDescription: string;       // "Human approval required initially"
+    linkedKPIs: string[];               // KPIs this agent directly impacts
+}
+
+export interface HumanCheckpoint {
+    checkpoint: string;                 // "Kick-off Workshop", "Review Gates", "Exception Escalations"
+    description: string;                // What people do at this checkpoint
+    importance: string;                 // Why it matters
+    frequency: 'one-time' | 'periodic' | 'as-needed';
+    triggerConditions?: string[];       // When this checkpoint is activated
+}
+
+export interface AgenticTimeline {
+    phases: AgenticPhase[];
+    totalDurationWeeks: number;
+    progressiveTrust: ProgressiveTrustLevel[];
+}
+
+export interface AgenticPhase {
+    phase: 'crawl' | 'walk' | 'run';
+    name: string;                       // "Proof of Concept", "Pilot Deployment", "Full Autonomy"
+    durationWeeks: number;
+    description: string;
+    milestones: string[];
+    riskMitigations: string[];
+    oversightLevel: 'high' | 'medium' | 'low';
+    humanInvolvement: string;           // Description of human role in this phase
+}
+
+export interface ProgressiveTrustLevel {
+    week: number;
+    trustLevel: number;                 // 0-100 scale
+    autonomyDescription: string;
+    safeguards: string[];
+}
+
+export interface KPIImprovement {
+    kpi: string;                        // "Invoice processing time", "Customer satisfaction"
+    currentValue?: string;              // "5 days", "7.2/10"
+    targetValue: string;                // "3 days", "8.5/10"
+    improvementPercent: number;         // 40 (for 40% improvement)
+    linkedAgents: string[];             // Which agents contribute to this KPI
+    measurementMethod: string;          // How success will be tracked
+    timeframe: string;                  // "Within 6 months", "By Q4 2025"
+}
+
 // Archive complex interfaces for future use - these can be added back based on user feedback
 /*
 ARCHIVED FOR FUTURE ENTERPRISE FEATURES:
