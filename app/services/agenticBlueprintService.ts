@@ -90,8 +90,13 @@ export class AgenticBlueprintService {
     // Import the interface type
     type AgenticBlueprintResponse = import('../lib/llm/prompts/agenticBlueprintPrompt').AgenticBlueprintResponse;
 
-    // 🆕 PHASE 3.4: Model-specific capability detection and optimization
-    const modelCapabilities = this.detectModelCapabilities(preferredProvider);
+    // 🆕 PHASE 3.4: Determine actual provider and detect capabilities
+    console.log('[Provider Detection] Getting AI provider status to determine actual provider...');
+    const providerStatus = await aiService.getStatus(userId, credentialsRepo, preferredProvider);
+    const actualProvider = this.normalizeProviderName(providerStatus.provider);
+    console.log('[Provider Detection] Actual provider selected:', actualProvider, 'from status:', providerStatus.provider);
+    
+    const modelCapabilities = this.detectModelCapabilities(actualProvider);
     
     // Configure prompt generation with industry intelligence and model optimizations
     const promptConfig: AgenticBlueprintPromptConfig = {

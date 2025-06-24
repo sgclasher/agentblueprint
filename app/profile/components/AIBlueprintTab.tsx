@@ -33,10 +33,11 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
 
   // Auto-load cached blueprint on component mount
   useEffect(() => {
-    if (!hasAttemptedLoad && !isLoading) {
+    if (!hasAttemptedLoad && !isLoading && profile?.id) {
+      console.log('[AIBlueprint] Auto-loading cached blueprint for profile:', profile.id);
       loadCachedBlueprint();
     }
-  }, [hasAttemptedLoad, isLoading]);
+  }, [hasAttemptedLoad, isLoading, profile?.id]);
 
   // Load cached blueprint from server
   const loadCachedBlueprint = async () => {
@@ -277,7 +278,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
           <div className={styles.analysisCard} style={{ marginBottom: '2rem' }}>
             <h3>
               <Users size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-              Your AI Digital Team ({blueprint.digitalTeam.length} Specialists)
+              Your AI Digital Team ({blueprint.digitalTeam.length} Specialist Agents)
             </h3>
             <div style={{ display: 'grid', gap: '1.5rem' }}>
               {blueprint.digitalTeam.map((agent, index) => (
