@@ -79,6 +79,8 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
     setError(null);
 
     try {
+      console.log('[AIBlueprint] Starting blueprint generation, forceRegenerate:', forceRegenerate);
+      
       // Validate profile before making API call
       if (!profile) {
         throw new Error('Profile not found. Please create your profile first.');
@@ -95,6 +97,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
         throw new Error('Authentication required. Please sign in.');
       }
 
+      console.log('[AIBlueprint] Making API call to generate blueprint...');
       const response = await fetch('/api/profiles/generate-blueprint', {
         method: 'POST',
         headers: {
@@ -107,23 +110,30 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
         credentials: 'same-origin'
       });
 
+      console.log('[AIBlueprint] API response received, status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[AIBlueprint] API error:', errorData);
         throw new Error(errorData.error || `Request failed: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('[AIBlueprint] API result:', { success: result.success, hasBlueprint: !!result.blueprint, cached: result.cached });
 
       if (!result.success) {
         throw new Error(result.error || 'Blueprint generation failed');
       }
 
+      console.log('[AIBlueprint] Setting blueprint in state...');
       setBlueprint(result.blueprint);
       setIsCached(result.cached);
       setHasAttemptedLoad(true);
+      
+      console.log('[AIBlueprint] Blueprint generation completed successfully');
 
     } catch (error: any) {
-      console.error('Blueprint generation failed:', error);
+      console.error('[AIBlueprint] Blueprint generation failed:', error);
       setError(error.message || 'Failed to generate blueprint');
     } finally {
       setIsLoading(false);
@@ -204,7 +214,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
             )}
             <button 
               className="btn btn-primary"
-              onClick={() => generateBlueprint(false)}
+              onClick={() => generateBlueprint(blueprint ? true : false)}
               disabled={isLoading}
             >
               {isLoading ? (

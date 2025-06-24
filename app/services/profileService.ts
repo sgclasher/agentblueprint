@@ -85,7 +85,6 @@ export class ProfileService {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
-        console.log('ℹ️ [ProfileService] No active session, user not authenticated');
         return null;
       }
 
@@ -99,7 +98,6 @@ export class ProfileService {
       }
 
       // Call the profile fetch API route (server-side)
-      console.log(`🌐 [ProfileService] Fetching profile via API...`);
       
       // Add timeout to prevent infinite loading
       const controller = new AbortController();
@@ -116,12 +114,11 @@ export class ProfileService {
 
       if (!response.ok) {
         if (response.status === 401) {
-          console.log('ℹ️ [ProfileService] Authentication failed, user needs to sign in');
           return null;
         }
         
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        console.error('❌ [ProfileService] Profile fetch API error:', errorData);
+        console.error('[ProfileService] Profile fetch API error:', errorData);
         throw new Error(errorData.error || `Profile fetch failed: ${response.status}`);
       }
 
@@ -130,20 +127,12 @@ export class ProfileService {
       if (!result.success) {
         throw new Error(result.error || 'Profile fetch failed');
       }
-
-      console.log(`✅ [ProfileService] Profile fetched successfully via API`);
-      console.log(`📊 [ProfileService] API Response:`, { 
-        success: result.success, 
-        hasProfile: !!result.profile,
-        profileId: result.profile?.id,
-        profileCompany: result.profile?.companyName 
-      });
       
       // Return the profile from API response (null if no profile exists)
       return result.profile;
       
     } catch (error) {
-      console.error('❌ [ProfileService] Error in getCurrentUserProfile:', error);
+      console.error('[ProfileService] Error in getCurrentUserProfile:', error);
       return null;
     }
   }

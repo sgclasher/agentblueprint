@@ -40,65 +40,50 @@ const useAuthStore = create<AuthStore>((set, get) => {
     initialize: async () => {
       // Prevent multiple simultaneous initializations
       if (isInitializing) {
-        console.log('⚠️ [AuthStore] Initialization already in progress, skipping...');
         return;
       }
       
       isInitializing = true;
-      console.log('🚀 [AuthStore] Starting initialization...');
       
       try {
         set({ isLoading: true });
       
-      console.log('🔍 [AuthStore] Getting session...');
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
-        console.error('❌ [AuthStore] Error getting session:', error);
+        console.error('[AuthStore] Error getting session:', error);
         set({ user: null, session: null, profile: null, isAuthenticated: false, isLoading: false });
         return;
       }
       
-      console.log('✅ [AuthStore] Session retrieved, authenticated:', !!session);
-      
       // Fetch user profile if authenticated
       let userProfile: Profile | null = null;
       if (session?.user) {
-        console.log('👤 [AuthStore] Fetching user profile...');
         try {
           userProfile = await ProfileService.getCurrentUserProfile();
-          console.log('✅ [AuthStore] Profile fetched:', !!userProfile);
         } catch (error) {
-          console.error('❌ [AuthStore] Profile fetch failed during init:', error);
+          console.error('[AuthStore] Profile fetch failed during init:', error);
           // Don't throw - continue with null profile, user can create one
         }
       }
 
-      console.log('🔧 [AuthStore] Setting initial state...');
       set({
         user: session?.user ?? null,
         session,
         profile: userProfile,
         isAuthenticated: !!session,
-        isLoading: false, // ← This should stop the loading spinner
+        isLoading: false,
       });
-      
-      console.log('✅ [AuthStore] Initial state set, isLoading: false');
 
       // Set up auth state change listener
-      console.log('🔧 [AuthStore] Setting up auth state change listener...');
       supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log(`🔄 [AuthStore] Auth state changed: ${event}`);
-        
         // Fetch user profile if authenticated
         let userProfile: Profile | null = null;
         if (session?.user) {
-          console.log('👤 [AuthStore] Fetching profile after auth state change...');
           try {
             userProfile = await ProfileService.getCurrentUserProfile();
-            console.log('✅ [AuthStore] Profile fetched after auth change:', !!userProfile);
           } catch (error) {
-            console.error('❌ [AuthStore] Profile fetch failed after auth change:', error);
+            console.error('[AuthStore] Profile fetch failed after auth change:', error);
             // Don't throw - continue with null profile
           }
         }
@@ -110,13 +95,10 @@ const useAuthStore = create<AuthStore>((set, get) => {
           isAuthenticated: !!session,
           isLoading: false,
         });
-        
-        console.log('✅ [AuthStore] Auth state updated');
       });
       
-      console.log('✅ [AuthStore] Initialization completed successfully');
     } catch (error) {
-      console.error('💥 [AuthStore] Error initializing auth:', error);
+      console.error('[AuthStore] Error initializing auth:', error);
       set({ user: null, session: null, profile: null, isAuthenticated: false, isLoading: false });
     } finally {
       isInitializing = false; // Reset the guard

@@ -1,5 +1,37 @@
 import { Profile } from "../../../services/types";
 
+// 🔍 AUDIT FINDINGS - CURRENT PROMPT QUALITY ASSESSMENT
+// =====================================================
+// Based on KB_AGENTIC_WORKFLOW_MVP.md standards and quality test results:
+//
+// ✅ STRENGTHS:
+// - Comprehensive 5-agent team model (coordinator, researcher, analyst, quality-checker, actuator)
+// - Progressive trust framework (crawl-walk-run) properly defined
+// - Human oversight checkpoints align with KB standards
+// - Structured JSON output format ensures consistency
+//
+// ❌ CRITICAL GAPS IDENTIFIED:
+// 1. **Business Context Utilization** (Business Specificity Score: 10/25)
+//    - Generic agent descriptions not tailored to industry
+//    - Profile systems referenced but not deeply integrated into agent roles
+//    - Business problems mentioned but not mapped to specific agent capabilities
+//    - Industry terminology missing from agent job descriptions
+//
+// 2. **KPI Alignment Issues** (Calculated alignment < 0.8)
+//    - KPI improvements not directly derived from strategic initiative problems
+//    - Improvement percentages not based on business context or industry benchmarks
+//    - Agent-to-KPI linkage too generic, not considering actual business workflows
+//
+// 3. **Implementation Specificity**
+//    - Timelines generic (24 weeks) regardless of business size or complexity
+//    - Risk mitigations not tailored to industry-specific challenges
+//    - Tool assignments don't leverage full profile system inventory
+//
+// 🎯 IMPROVEMENT PRIORITIES:
+// Phase 2: Enhanced business context processing
+// Phase 3: Industry-specific prompt variations and dynamic assembly
+// Phase 4: AI-powered quality validation and scoring
+
 export const AGENTIC_BLUEPRINT_SYSTEM_PROMPT = `You are a senior enterprise AI architect and agentic workflow strategist with deep expertise in designing and implementing AI "digital teams" for business transformation. Your specialized knowledge includes autonomous agent orchestration, human-AI collaboration patterns, and progressive trust frameworks for enterprise environments.
 
 EXPERTISE AREAS:
@@ -125,7 +157,20 @@ TONE & APPROACH:
 - Quantifiable benefits and realistic timelines
 - Industry-agnostic but context-sensitive`;
 
-export const AGENTIC_BLUEPRINT_USER_PROMPT = (profile: Profile): string => {
+export const AGENTIC_BLUEPRINT_USER_PROMPT = (
+  profile: Profile, 
+  businessContext?: any, 
+  agentCapabilityMapping?: any, 
+  timelineRecommendation?: any
+): string => {
+  // 🔍 AUDIT NOTE: Current user prompt construction is basic and doesn't fully leverage profile data
+  // GAPS IDENTIFIED:
+  // - Strategic initiatives listed but not analyzed for agent role mapping
+  // - Systems listed but not integrated into tool assignment logic
+  // - No industry-specific context or constraints considered
+  // - Business problems not mapped to specific KPI improvement calculations
+  // - Company size and complexity not factored into timeline recommendations
+  
   const strategicInitiativesList = (profile.strategicInitiatives || []).map((initiative, index) => 
     `${index + 1}. ${initiative.initiative}
    - Contact: ${initiative.contact?.name || 'Not specified'} (${initiative.contact?.title || 'Not specified'})

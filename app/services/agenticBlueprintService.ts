@@ -8,6 +8,31 @@ import { Profile, AgenticBlueprint, DigitalTeamMember, HumanCheckpoint, AgenticT
  * and which KPIs will improve. Uses the vendor-neutral framework to create clear,
  * actionable strategies for business transformation through agentic AI.
  */
+
+// 🆕 Enhanced Business Context Processing for Quality Improvement
+interface BusinessContext {
+  industrySpecific: {
+    terminology: string[];
+    commonTools: string[];
+    typicalKPIs: string[];
+    regulatoryRequirements: string[];
+    riskFactors: string[];
+  };
+  companySpecific: {
+    systemsInventory: string[];
+    businessProblems: string[];
+    existingMetrics: string[];
+    priorityInitiatives: string[];
+    organizationalConstraints: string[];
+  };
+  implementationContext: {
+    complexityScore: number;
+    timelineMultiplier: number;
+    riskLevel: 'low' | 'medium' | 'high';
+    changeReadiness: number;
+  };
+}
+
 export class AgenticBlueprintService {
   
   /**
@@ -33,6 +58,18 @@ export class AgenticBlueprintService {
       throw new Error('Profile must have at least one strategic initiative to generate a blueprint');
     }
 
+    // 🆕 PHASE 2 ENHANCEMENT: Extract rich business context before AI generation
+    const businessContext = this.extractBusinessContext(profile);
+    
+    // 🆕 Generate industry-specific constraints and priorities
+    const industryConstraints = this.generateIndustryConstraints(profile.industry, businessContext);
+    
+    // 🆕 Map strategic initiatives to agent capabilities
+    const agentCapabilityMapping = this.mapInitiativesToAgentCapabilities(profile.strategicInitiatives || []);
+    
+    // 🆕 Calculate realistic timeline based on business context
+    const timelineRecommendation = this.calculateTimelineRecommendation(businessContext);
+
     // Check if AI service is configured
     const { aiService } = await import('./aiService');
     const isConfigured = await aiService.isConfigured(userId, credentialsRepo, preferredProvider);
@@ -51,9 +88,9 @@ export class AgenticBlueprintService {
     // Import the interface type
     type AgenticBlueprintResponse = import('../lib/llm/prompts/agenticBlueprintPrompt').AgenticBlueprintResponse;
 
-    // Generate AI blueprint
+    // 🆕 Enhanced prompt with business context
     const systemPrompt = AGENTIC_BLUEPRINT_SYSTEM_PROMPT;
-    const userPrompt = AGENTIC_BLUEPRINT_USER_PROMPT(profile);
+    const userPrompt = AGENTIC_BLUEPRINT_USER_PROMPT(profile, businessContext, agentCapabilityMapping, timelineRecommendation);
 
     try {
       const aiResponse: AgenticBlueprintResponse = await aiService.generateJson(
@@ -81,10 +118,13 @@ export class AgenticBlueprintService {
         businessObjective: aiResponse.businessObjective,
         digitalTeam: aiResponse.digitalTeam,
         humanCheckpoints: aiResponse.humanCheckpoints,
-        agenticTimeline: aiResponse.agenticTimeline,
+        agenticTimeline: {
+          ...aiResponse.agenticTimeline,
+          progressiveTrust: this.generateProgressiveTrustLevels(aiResponse.agenticTimeline)
+        },
         kpiImprovements: aiResponse.kpiImprovements,
         aiModel: preferredProvider || 'auto-selected',
-        promptVersion: '1.0',
+        promptVersion: '2.0', // 🆕 Updated for enhanced context processing
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -94,6 +134,348 @@ export class AgenticBlueprintService {
       console.error('Agentic blueprint generation failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * 🆕 Extract comprehensive business context from profile
+   */
+  private static extractBusinessContext(profile: Profile): BusinessContext {
+    try {
+      const industrySpecific = this.getIndustrySpecificContext(profile.industry);
+      const companySpecific = this.getCompanySpecificContext(profile);
+      const implementationContext = this.calculateImplementationContext(profile);
+
+      return {
+        industrySpecific,
+        companySpecific,
+        implementationContext
+      };
+    } catch (error) {
+      console.error('[AgenticBlueprint] Error extracting business context:', error);
+      // Return safe defaults if context extraction fails
+      return {
+        industrySpecific: {
+          terminology: ['business process', 'operational efficiency'],
+          commonTools: ['Business applications', 'Data analytics'],
+          typicalKPIs: ['Operational efficiency', 'Cost reduction'],
+          regulatoryRequirements: ['Industry standards'],
+          riskFactors: ['Operational risk']
+        },
+        companySpecific: {
+          systemsInventory: [],
+          businessProblems: [],
+          existingMetrics: [],
+          priorityInitiatives: [],
+          organizationalConstraints: []
+        },
+        implementationContext: {
+          complexityScore: 50,
+          timelineMultiplier: 1.0,
+          riskLevel: 'medium',
+          changeReadiness: 50
+        }
+      };
+    }
+  }
+
+  /**
+   * 🆕 Get industry-specific context for AI prompt enhancement
+   */
+  private static getIndustrySpecificContext(industry: string): BusinessContext['industrySpecific'] {
+    const industryMap: Record<string, BusinessContext['industrySpecific']> = {
+      'Manufacturing': {
+        terminology: ['production planning', 'lean manufacturing', 'quality control', 'supply chain', 'throughput', 'OEE'],
+        commonTools: ['ERP systems', 'MES platforms', 'WMS solutions', 'Quality management systems', 'Production planning tools'],
+        typicalKPIs: ['Overall Equipment Effectiveness', 'First Pass Yield', 'Cycle Time', 'Inventory Turnover', 'Schedule Adherence'],
+        regulatoryRequirements: ['ISO 9001', 'FDA compliance', 'OSHA safety standards', 'Environmental regulations'],
+        riskFactors: ['Supply chain disruption', 'Equipment downtime', 'Quality control failures', 'Safety incidents']
+      },
+      'Technology': {
+        terminology: ['deployment', 'scalability', 'DevOps', 'API integration', 'cloud architecture', 'microservices'],
+        commonTools: ['CI/CD pipelines', 'Cloud platforms', 'Monitoring tools', 'API gateways', 'Container orchestration'],
+        typicalKPIs: ['System uptime', 'Deployment frequency', 'Lead time', 'Mean time to recovery', 'Customer acquisition cost'],
+        regulatoryRequirements: ['SOC 2', 'GDPR compliance', 'Data privacy laws', 'Security frameworks'],
+        riskFactors: ['Security breaches', 'System outages', 'Data loss', 'Compliance violations']
+      },
+      'Healthcare': {
+        terminology: ['patient care', 'clinical workflow', 'EHR integration', 'care coordination', 'clinical decision support'],
+        commonTools: ['Electronic Health Records', 'PACS systems', 'Clinical decision support', 'Revenue cycle management'],
+        typicalKPIs: ['Patient satisfaction', 'Clinical quality metrics', 'Length of stay', 'Readmission rates', 'Provider efficiency'],
+        regulatoryRequirements: ['HIPAA', 'Joint Commission', 'CMS regulations', 'Clinical quality measures'],
+        riskFactors: ['Patient safety', 'Privacy breaches', 'Regulatory non-compliance', 'Medical errors']
+      },
+      'Financial Services': {
+        terminology: ['risk management', 'compliance', 'customer onboarding', 'fraud detection', 'regulatory reporting'],
+        commonTools: ['Core banking systems', 'Risk management platforms', 'CRM systems', 'Trading platforms'],
+        typicalKPIs: ['Customer acquisition cost', 'Loan processing time', 'Risk-adjusted returns', 'Compliance metrics'],
+        regulatoryRequirements: ['SOX', 'Basel III', 'GDPR', 'PCI DSS', 'Anti-money laundering'],
+        riskFactors: ['Regulatory penalties', 'Fraud losses', 'Market volatility', 'Cyber attacks']
+      }
+    };
+
+    return industryMap[industry] || {
+      terminology: ['business process', 'operational efficiency', 'performance optimization'],
+      commonTools: ['Business applications', 'Data analytics', 'Process automation'],
+      typicalKPIs: ['Operational efficiency', 'Cost reduction', 'Process improvement'],
+      regulatoryRequirements: ['Industry standards', 'Data protection'],
+      riskFactors: ['Operational risk', 'Compliance risk', 'Technology risk']
+    };
+  }
+
+  /**
+   * 🆕 Extract company-specific context from profile
+   */
+  private static getCompanySpecificContext(profile: Profile): BusinessContext['companySpecific'] {
+    const systemsInventory = (profile.systemsAndApplications || []).map(sys => sys.name);
+    const businessProblems = (profile.strategicInitiatives || []).flatMap(init => init.businessProblems || []);
+    const existingMetrics = (profile.strategicInitiatives || []).flatMap(init => init.successMetrics || []);
+    const priorityInitiatives = (profile.strategicInitiatives || [])
+      .filter(init => init.priority === 'High')
+      .map(init => init.initiative);
+
+    // Generate organizational constraints based on company size
+    const organizationalConstraints = this.generateOrganizationalConstraints(profile);
+
+    return {
+      systemsInventory,
+      businessProblems,
+      existingMetrics,
+      priorityInitiatives,
+      organizationalConstraints
+    };
+  }
+
+  /**
+   * 🆕 Calculate implementation context for timeline and complexity assessment
+   */
+  private static calculateImplementationContext(profile: Profile): BusinessContext['implementationContext'] {
+    let complexityScore = 0;
+    let timelineMultiplier = 1.0;
+    let riskLevel: 'low' | 'medium' | 'high' = 'low';
+    let changeReadiness = 50; // Default moderate readiness
+
+    // Factor in company size
+    const employeeCount = this.parseEmployeeCount(profile.employeeCount);
+    if (employeeCount > 1000) {
+      complexityScore += 30;
+      timelineMultiplier *= 1.5;
+      riskLevel = 'high';
+    } else if (employeeCount > 250) {
+      complexityScore += 15;
+      timelineMultiplier *= 1.2;
+      riskLevel = 'medium';
+    }
+
+    // Factor in number of systems
+    const systemCount = (profile.systemsAndApplications || []).length;
+    complexityScore += systemCount * 5;
+    timelineMultiplier *= (1 + systemCount * 0.1);
+
+    // Factor in number of high-priority initiatives
+    const highPriorityCount = (profile.strategicInitiatives || [])
+      .filter(init => init.priority === 'High').length;
+    complexityScore += highPriorityCount * 10;
+
+    // Industry-specific risk adjustment
+    if (['Healthcare', 'Financial Services'].includes(profile.industry)) {
+      riskLevel = riskLevel === 'low' ? 'medium' : 'high';
+      changeReadiness -= 15; // More conservative in regulated industries
+    }
+
+    return {
+      complexityScore: Math.min(complexityScore, 100),
+      timelineMultiplier: Math.min(timelineMultiplier, 2.0),
+      riskLevel,
+      changeReadiness: Math.max(20, Math.min(changeReadiness, 100))
+    };
+  }
+
+  /**
+   * 🆕 Generate organizational constraints based on company characteristics
+   */
+  private static generateOrganizationalConstraints(profile: Profile): string[] {
+    const constraints: string[] = [];
+    const employeeCount = this.parseEmployeeCount(profile.employeeCount);
+
+    // Size-based constraints
+    if (employeeCount < 50) {
+      constraints.push('Limited IT resources for implementation');
+      constraints.push('Need for simple, low-maintenance solutions');
+    } else if (employeeCount > 1000) {
+      constraints.push('Complex approval processes required');
+      constraints.push('Multiple stakeholder alignment needed');
+      constraints.push('Enterprise security and compliance requirements');
+    }
+
+    // Industry-specific constraints
+    if (['Healthcare', 'Financial Services'].includes(profile.industry)) {
+      constraints.push('Strict regulatory compliance requirements');
+      constraints.push('Extensive documentation and audit trails needed');
+    }
+
+    // System complexity constraints
+    const systemCount = (profile.systemsAndApplications || []).length;
+    if (systemCount > 5) {
+      constraints.push('Complex system integration requirements');
+      constraints.push('Data consistency across multiple platforms');
+    }
+
+    return constraints;
+  }
+
+  /**
+   * 🆕 Map strategic initiatives to agent capabilities
+   */
+  private static mapInitiativesToAgentCapabilities(initiatives: Profile['strategicInitiatives']): Record<string, string[]> {
+    const mapping: Record<string, string[]> = {
+      coordinator: [],
+      researcher: [],
+      analyst: [],
+      'quality-checker': [],
+      actuator: []
+    };
+
+    (initiatives || []).forEach(initiative => {
+      const problems = initiative.businessProblems || [];
+      
+      problems.forEach(problem => {
+        const lowerProblem = problem.toLowerCase();
+        
+        // Map problems to appropriate agent roles
+        if (lowerProblem.includes('planning') || lowerProblem.includes('scheduling') || lowerProblem.includes('coordination')) {
+          mapping.coordinator.push(problem);
+        }
+        if (lowerProblem.includes('data') || lowerProblem.includes('information') || lowerProblem.includes('search')) {
+          mapping.researcher.push(problem);
+        }
+        if (lowerProblem.includes('analysis') || lowerProblem.includes('insights') || lowerProblem.includes('reporting')) {
+          mapping.analyst.push(problem);
+        }
+        if (lowerProblem.includes('quality') || lowerProblem.includes('compliance') || lowerProblem.includes('error')) {
+          mapping['quality-checker'].push(problem);
+        }
+        if (lowerProblem.includes('process') || lowerProblem.includes('execution') || lowerProblem.includes('automation')) {
+          mapping.actuator.push(problem);
+        }
+      });
+    });
+
+    return mapping;
+  }
+
+  /**
+   * 🆕 Calculate timeline recommendation based on business context
+   */
+  private static calculateTimelineRecommendation(context: BusinessContext): {
+    totalWeeks: number;
+    crawlWeeks: number;
+    walkWeeks: number;
+    runWeeks: number;
+    rationale: string;
+  } {
+    const baseWeeks = 24;
+    const adjustedWeeks = Math.round(baseWeeks * context.implementationContext.timelineMultiplier);
+    
+    // Distribute phases based on risk level
+    let crawlRatio = 0.33;
+    let walkRatio = 0.42;
+    let runRatio = 0.25;
+
+    if (context.implementationContext.riskLevel === 'high') {
+      crawlRatio = 0.42;
+      walkRatio = 0.33;
+      runRatio = 0.25;
+    } else if (context.implementationContext.riskLevel === 'low') {
+      crawlRatio = 0.25;
+      walkRatio = 0.42;
+      runRatio = 0.33;
+    }
+
+    const crawlWeeks = Math.round(adjustedWeeks * crawlRatio);
+    const walkWeeks = Math.round(adjustedWeeks * walkRatio);
+    const runWeeks = adjustedWeeks - crawlWeeks - walkWeeks;
+
+    const rationale = `Timeline adjusted for ${context.implementationContext.riskLevel} risk level and complexity score of ${context.implementationContext.complexityScore}`;
+
+    return {
+      totalWeeks: adjustedWeeks,
+      crawlWeeks,
+      walkWeeks,
+      runWeeks,
+      rationale
+    };
+  }
+
+  /**
+   * 🆕 Generate industry-specific constraints for AI prompt
+   */
+  private static generateIndustryConstraints(industry: string, context: BusinessContext): string[] {
+    const constraints: string[] = [];
+    
+    // Add regulatory constraints
+    constraints.push(...context.industrySpecific.regulatoryRequirements.map(req => 
+      `Must comply with ${req} regulations`
+    ));
+    
+    // Add risk-based constraints
+    constraints.push(...context.industrySpecific.riskFactors.map(risk => 
+      `Must mitigate ${risk.toLowerCase()}`
+    ));
+    
+    // Add organizational constraints
+    constraints.push(...context.companySpecific.organizationalConstraints);
+    
+    return constraints;
+  }
+
+  /**
+   * 🆕 Helper to parse employee count from string or number
+   */
+  private static parseEmployeeCount(employeeCount?: string | number): number {
+    if (!employeeCount) return 100; // Default assumption
+    
+    // Handle if it's already a number
+    if (typeof employeeCount === 'number') {
+      return employeeCount;
+    }
+    
+    // Handle if it's a string
+    if (typeof employeeCount === 'string') {
+      const number = parseInt(employeeCount.replace(/[^0-9]/g, ''));
+      return isNaN(number) ? 100 : number;
+    }
+    
+    // Fallback for any other type
+    return 100;
+  }
+
+  /**
+   * 🆕 Generate progressive trust levels for the timeline
+   */
+  private static generateProgressiveTrustLevels(timeline: any): any[] {
+    const trustLevels: any[] = [];
+    let currentWeek = 1;
+    
+    timeline.phases?.forEach((phase: any) => {
+      const phaseWeeks = phase.durationWeeks || 8;
+      const startTrust = phase.phase === 'crawl' ? 20 : phase.phase === 'walk' ? 50 : 80;
+      const endTrust = phase.phase === 'crawl' ? 40 : phase.phase === 'walk' ? 75 : 95;
+      
+      // Generate trust level for middle of phase
+      const midWeek = currentWeek + Math.floor(phaseWeeks / 2);
+      const midTrust = (startTrust + endTrust) / 2;
+      
+      trustLevels.push({
+        week: midWeek,
+        trustLevel: midTrust,
+        autonomyDescription: `${phase.phase.charAt(0).toUpperCase() + phase.phase.slice(1)} phase autonomy`,
+        safeguards: phase.riskMitigations || []
+      });
+      
+      currentWeek += phaseWeeks;
+    });
+    
+    return trustLevels;
   }
 
   /**
