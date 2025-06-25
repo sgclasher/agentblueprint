@@ -31,6 +31,12 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+  const [selectedInitiative, setSelectedInitiative] = useState<string>('auto');
+
+  // Reset initiative selection when profile changes
+  useEffect(() => {
+    setSelectedInitiative('auto');
+  }, [profile?.id]);
 
   // Auto-load cached blueprint on component mount
   useEffect(() => {
@@ -100,15 +106,21 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
       }
 
       console.log('[AIBlueprint] Making API call to generate blueprint...');
+      
+      // Prepare request body with optional initiative selection
+      const requestBody: any = { forceRegenerate };
+      
+      if (selectedInitiative !== 'auto') {
+        requestBody.selectedInitiativeIndex = parseInt(selectedInitiative);
+      }
+      
       const response = await fetch('/api/profiles/generate-blueprint', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          forceRegenerate
-        }),
+        body: JSON.stringify(requestBody),
         credentials: 'same-origin'
       });
 
@@ -178,11 +190,70 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
     <div className={styles.tabContent}>
       {/* Header with Generation Button */}
       <div className={styles.analysisCard} style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0 }}>
-            <Workflow size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-            Agent Digital Team Blueprint
-          </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ margin: '0 0 1rem 0' }}>
+              <Workflow size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+              Agent Digital Team Blueprint
+            </h3>
+            
+            {/* Strategic Initiative Selector */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label 
+                htmlFor="initiative-selector" 
+                style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: 'var(--font-weight-medium)', 
+                  color: 'var(--text-muted)', 
+                  marginBottom: '0.5rem' 
+                }}
+              >
+                Strategic Initiative Focus:
+              </label>
+              <select 
+                id="initiative-selector"
+                aria-label="Select Strategic Initiative"
+                value={selectedInitiative} 
+                onChange={(e) => setSelectedInitiative(e.target.value)}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: 'var(--border-radius)',
+                  border: '1px solid var(--border-primary)',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.9rem',
+                  minWidth: '240px'
+                }}
+                disabled={isLoading}
+              >
+                <option value="auto">
+                  Auto ({profile?.strategicInitiatives?.filter(i => i.priority === 'High').length ? 'All High Priority' : 'All Initiatives'})
+                </option>
+                {profile?.strategicInitiatives?.map((initiative, index) => (
+                  <option key={index} value={index.toString()}>
+                    {initiative.initiative} ({initiative.priority})
+                  </option>
+                ))}
+              </select>
+              
+              {/* Initiative Context Indicator */}
+              {selectedInitiative !== 'auto' && profile?.strategicInitiatives && (
+                <div style={{ 
+                  marginTop: '0.5rem', 
+                  padding: '0.5rem 0.75rem', 
+                  backgroundColor: 'rgba(59, 130, 246, 0.05)', 
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  borderRadius: 'var(--border-radius)', 
+                  fontSize: '0.8rem',
+                  color: 'var(--accent-blue)'
+                }}>
+                  <Target size={14} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                  Blueprint will focus on: <strong>{profile.strategicInitiatives[parseInt(selectedInitiative)]?.initiative}</strong>
+                </div>
+              )}
+            </div>
+          </div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {blueprint && (
               <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
@@ -246,10 +317,10 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
         {!blueprint && !isLoading && (
           <div style={{ margin: 0, color: 'var(--text-muted)' }}>
             <p style={{ marginBottom: '1rem' }}>
-              Transform your business goals into a clear, actionable AI "digital team" blueprint. See exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
+              Transform your business goals into a clear, actionable AI &ldquo;digital team&rdquo; blueprint. See exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
             </p>
             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              Click "Generate Blueprint" to create{hasAttemptedLoad ? ' a' : ' your first'} AI digital team strategy.
+              Click &ldquo;Generate Blueprint&rdquo; to create{hasAttemptedLoad ? ' a' : ' your first'} AI digital team strategy.
             </p>
           </div>
         )}

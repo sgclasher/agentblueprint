@@ -39,11 +39,11 @@ interface ProfileTabProps {
 // in the same way if needed, but are omitted here for brevity.
 
 const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updateProfile }) => {
-    if (!profile) return null;
-
-    // Use custom hooks for form management
+    // Use custom hooks for form management (must be called unconditionally)
     const strategicInitiatives = useStrategicInitiatives(profile, updateProfile);
     const systemsManagement = useSystemsManagement(profile, updateProfile);
+    
+    if (!profile) return null;
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         updateProfile(e.target.name, e.target.value);

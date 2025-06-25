@@ -42,13 +42,15 @@ export class AgenticBlueprintService {
    * @param userId - User ID for authentication
    * @param credentialsRepo - Credentials repository
    * @param preferredProvider - AI provider preference
+   * @param selectedInitiativeIndex - Optional index of specific initiative to focus on
    * @returns AI-generated agentic blueprint
    */
   static async generateBlueprint(
     profile: Profile, 
     userId: string, 
     credentialsRepo: any, 
-    preferredProvider?: string
+    preferredProvider?: string,
+    selectedInitiativeIndex?: number
   ): Promise<AgenticBlueprint> {
     if (!profile) {
       throw new Error('Profile is required for blueprint generation');
@@ -59,26 +61,70 @@ export class AgenticBlueprintService {
       throw new Error('Profile must have at least one strategic initiative to generate a blueprint');
     }
 
+    // 🆕 PHASE 2.2: Strategic Initiative Filtering
+    let focusedProfile = profile;
+    let blueprintFocusContext = '';
+    
+    if (selectedInitiativeIndex !== undefined && selectedInitiativeIndex >= 0) {
+      console.log(`[Initiative Focus] Generating blueprint focused on initiative index: ${selectedInitiativeIndex}`);
+      
+      // Validate initiative index
+      if (selectedInitiativeIndex >= profile.strategicInitiatives.length) {
+        throw new Error(`Invalid initiative index: ${selectedInitiativeIndex}. Profile has ${profile.strategicInitiatives.length} initiatives.`);
+      }
+      
+      const selectedInitiative = profile.strategicInitiatives[selectedInitiativeIndex];
+      
+      // Create focused profile with only the selected initiative
+      focusedProfile = {
+        ...profile,
+        strategicInitiatives: [selectedInitiative]
+      };
+      
+      // Add context for blueprint generation
+      blueprintFocusContext = `
+🎯 INITIATIVE FOCUS MODE: This blueprint should be specifically designed for the following strategic initiative:
+- Initiative: "${selectedInitiative.initiative}"
+- Priority: ${selectedInitiative.priority || 'Medium'}
+- Business Problems: ${selectedInitiative.businessProblems?.join(', ') || 'Not specified'}
+- Contact: ${selectedInitiative.contact?.name || 'Not specified'} (${selectedInitiative.contact?.title || 'Not specified'})
+
+The AI digital team should be tailored specifically to address this initiative's goals and challenges.
+Agents should use tools and processes that directly relate to this initiative's business problems.
+KPI improvements should be measurable outcomes directly tied to this initiative's success.
+`;
+      
+      console.log(`[Initiative Focus] Focused on: "${selectedInitiative.initiative}" (Priority: ${selectedInitiative.priority})`);
+      console.log(`[Initiative Focus] Business problems: ${selectedInitiative.businessProblems?.length || 0} identified`);
+    } else {
+      console.log('[Initiative Focus] Using all strategic initiatives (Auto mode)');
+      blueprintFocusContext = `
+🎯 COMPREHENSIVE MODE: This blueprint should synthesize all strategic initiatives into a cohesive AI digital team strategy.
+Consider all initiatives but prioritize High priority initiatives for primary focus.
+Create agents that can support multiple initiatives where there are synergies.
+`;
+    }
+
     // 🆕 PHASE 2 ENHANCEMENT: Extract rich business context before AI generation
-    const businessContext = this.extractBusinessContext(profile);
+    const businessContext = this.extractBusinessContext(focusedProfile);
     
     // 🆕 Generate industry-specific constraints and priorities
-    const industryConstraints = this.generateIndustryConstraints(profile.industry, businessContext);
+    const industryConstraints = this.generateIndustryConstraints(focusedProfile.industry, businessContext);
     
     // 🆕 Map strategic initiatives to agent capabilities
-    const agentCapabilityMapping = this.mapInitiativesToAgentCapabilities(profile.strategicInitiatives || []);
+    const agentCapabilityMapping = this.mapInitiativesToAgentCapabilities(focusedProfile.strategicInitiatives!);
     
     // 🆕 Calculate realistic timeline based on business context
     const timelineRecommendation = this.calculateTimelineRecommendation(businessContext);
     
     // 🆕 PHASE 1.4: Calculate ROI projection from process metrics
     let roiProjection: ROIProjection | undefined;
-    const hasProcessMetrics = profile.strategicInitiatives.some(init => init.processMetrics || init.investmentContext);
+    const hasProcessMetrics = focusedProfile.strategicInitiatives!.some(init => init.processMetrics || init.investmentContext);
     
     if (hasProcessMetrics) {
       console.log('[ROI Calculation] Process metrics detected, calculating ROI projection...');
       // Use the highest priority initiative with process metrics for primary ROI calculation
-      const primaryInitiative = profile.strategicInitiatives
+      const primaryInitiative = focusedProfile.strategicInitiatives!
         .filter(init => init.processMetrics || init.investmentContext)
         .sort((a, b) => {
           const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
@@ -90,13 +136,13 @@ export class AgenticBlueprintService {
           roiProjection = ROICalculationService.calculateROIFromProcessMetrics(
             primaryInitiative.processMetrics,
             primaryInitiative.investmentContext,
-            profile.industry
+            focusedProfile.industry
           );
           
           // Validate ROI projection
           const validation = ROICalculationService.validateROIProjection(
             { roiPercentage: roiProjection.roiPercentage, paybackMonths: roiProjection.paybackMonths },
-            profile.industry
+            focusedProfile.industry
           );
           
           if (!validation.isValid) {
@@ -154,7 +200,7 @@ export class AgenticBlueprintService {
     
     // Configure prompt generation with industry intelligence and model optimizations
     const promptConfig: AgenticBlueprintPromptConfig = {
-      industry: profile.industry as any,
+      industry: focusedProfile.industry as any,
       includeIndustryContext: true,
       enableChainOfThought: true,
       modelProvider: modelCapabilities.provider,
@@ -167,12 +213,13 @@ export class AgenticBlueprintService {
         implementationReadiness: this.mapChangeReadinessToLevel(businessContext.implementationContext.changeReadiness)
       },
       includeKPIProbability: true,
-      includeROIProjection: !!roiProjection  // 🆕 Enable ROI in prompt if we have process metrics
+      includeROIProjection: !!roiProjection,  // 🆕 Enable ROI in prompt if we have process metrics
+      blueprintFocusContext: blueprintFocusContext  // 🆕 PHASE 2.2: Initiative focus context
     };
 
     // 🆕 Generate optimized prompts with model-specific features
     const systemPrompt = buildAgenticBlueprintSystemPrompt(promptConfig);
-    const userPrompt = buildAgenticBlueprintUserPrompt(profile, promptConfig);
+    const userPrompt = buildAgenticBlueprintUserPrompt(focusedProfile, promptConfig);
 
     // 🔍 LOG REQUEST DETAILS FOR TROUBLESHOOTING
     console.log('=== AI BLUEPRINT REQUEST DETAILS ===');

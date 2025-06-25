@@ -1,5 +1,85 @@
 # AI Business Advisory Platform - Development Instructions
 
+## 🎯 Current Task
+
+### **Phase 2: Strategic Initiative Selection & Opportunity Integration Implementation**
+
+**Objective**: Implement strategic initiative selection UI and integrate AI Opportunities with AI Blueprint generation for focused, initiative-specific blueprints.
+
+**Implementation Plan**:
+
+#### **Step 2.1: Add Strategic Initiative Selector UI** (1.5 hours)
+- [x] **2.1a: Create Initiative Selector Component** ✅ **COMPLETE**
+  - Primary files: `app/profile/components/AIBlueprintTab.tsx`
+  - ✅ Add dropdown selector with "Auto (All High Priority)" and individual initiative options
+  - ✅ Implement state management for selected initiative
+  - ✅ Add visual indicators showing which initiative is being used
+  - ✅ Tests written and passing in `app/__tests__/features/strategic-initiative-selection.test.tsx`
+
+- [ ] **2.1b: Update Blueprint Tab Layout**
+  - Primary files: `app/profile/components/AIBlueprintTab.tsx`
+  - Integrate selector into existing UI without disrupting current functionality
+  - Add loading states and user feedback
+  - Ensure mobile responsiveness
+
+#### **Step 2.2: Enhance Blueprint API for Initiative Context** (1 hour)
+- [x] **2.2a: Update API Route Interface** ✅ **COMPLETE**
+  - Primary files: `app/api/profiles/generate-blueprint/route.ts`
+  - ✅ Add optional `selectedInitiativeIndex` parameter to request interface
+  - ✅ Implement server-side validation for initiative selection
+  - ✅ Maintain backward compatibility with current API calls
+
+- [x] **2.2b: Add Initiative Filtering Logic** ✅ **COMPLETE**
+  - Primary files: `app/services/agenticBlueprintService.ts`
+  - ✅ Create initiative filtering function in `generateBlueprint()` method
+  - ✅ Update blueprint generation to use selected initiative context via `focusedProfile`
+  - ✅ Preserve auto-selection behavior as default (when `selectedInitiativeIndex` is undefined)
+  - ✅ Add `blueprintFocusContext` to prompt configuration interface and generation
+
+#### **Step 2.3: Create Initiative-Focused Prompts** (1 hour)
+- [ ] **2.3a: Enhance Prompt Engineering**
+  - Primary files: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
+  - Add prompt variations for single-initiative focus
+  - Include initiative-specific business problems and metrics in context
+  - Maintain synthesis capability for multiple initiatives
+
+- [ ] **2.3b: Cross-Provider Testing**
+  - Primary files: `app/__tests__/features/agentic-blueprint-quality.test.ts`
+  - Write tests for focused vs. synthesized blueprints
+  - Validate effectiveness across OpenAI, Claude, and Gemini
+  - Ensure quality consistency
+
+#### **Step 2.4: Opportunity-to-Blueprint Integration** (30 min)
+- [ ] **2.4a: Add Generate Blueprint Button**
+  - Primary files: `app/profile/components/AIOpportunitiesTab.tsx`
+  - Add "Generate Blueprint from Opportunity" button
+  - Link opportunities to their source strategic initiatives
+  - Implement seamless navigation to blueprint tab
+
+- [ ] **2.4b: Cross-Tab Communication**
+  - Primary files: `app/profile/page.tsx`
+  - Create mechanism for passing initiative context between tabs
+  - Update tab state management to support initiative pre-selection
+  - Ensure smooth user workflow
+
+#### **Step 2.5: Testing & Validation** (30 min)
+- [ ] **2.5a: Write Integration Tests**
+  - Primary files: `app/__tests__/features/strategic-initiative-selection.test.ts`
+  - Test initiative selection workflow
+  - Validate API request/response with initiative context
+  - Test cross-tab navigation functionality
+
+- [ ] **2.5b: User Experience Testing**
+  - Primary files: Manual testing checklist
+  - Test complete workflow: select initiative → generate blueprint → view ROI
+  - Validate opportunity-to-blueprint navigation
+  - Ensure accessibility and mobile compatibility
+
+**Target Timeline**: 4 hours total  
+**Expected Outcome**: Users can generate focused AI blueprints from specific strategic initiatives and navigate seamlessly from AI Opportunities to Blueprint generation.
+
+---
+
 ## 🎯 Current Priority
 
 ### **Executive-Grade AI Blueprint Enhancement & Strategic Integration**

@@ -63,6 +63,7 @@ export interface AgenticBlueprintPromptConfig {
   };
   includeKPIProbability?: boolean;
   includeROIProjection?: boolean;
+  blueprintFocusContext?: string;  // 🆕 PHASE 2.2: Initiative focus context
 }
 
 /**
@@ -392,8 +393,14 @@ Assess the realistic probability of achieving each KPI improvement based on:
 Include probability scores (High/Medium/Low) for each KPI target.`;
   }
 
-  return `Create a comprehensive AI Digital Team Blueprint for the following client. Transform their business goals into a clear, actionable strategy showing exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
+  // Strategic initiative focus context
+  let focusContextSection = '';
+  if (config.blueprintFocusContext) {
+    focusContextSection = config.blueprintFocusContext;
+  }
 
+  return `Create a comprehensive AI Digital Team Blueprint for the following client. Transform their business goals into a clear, actionable strategy showing exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
+${focusContextSection}
 CLIENT PROFILE:
 ---
 Company: ${profile.companyName}

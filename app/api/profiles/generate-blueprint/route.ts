@@ -18,7 +18,7 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { preferredProvider, forceRegenerate = false } = await request.json();
+    const { preferredProvider, forceRegenerate = false, selectedInitiativeIndex } = await request.json();
 
     // Verify authentication and get user
     const user = await getUser(request);
@@ -97,7 +97,8 @@ export async function POST(request: NextRequest) {
       profile,
       user.id,
       CredentialsRepository,
-      preferredProvider
+      preferredProvider,
+      selectedInitiativeIndex
     );
 
     console.log('✅ [AI Blueprint] Blueprint generated successfully');
