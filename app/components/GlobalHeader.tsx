@@ -41,7 +41,7 @@ export default function GlobalHeader() {
       description: 'Platform overview and quick actions'
     },
     {
-      name: 'Profile',
+      name: 'Business Profile',
       href: '/profile',
       icon: User,
       description: 'Manage your business profile'

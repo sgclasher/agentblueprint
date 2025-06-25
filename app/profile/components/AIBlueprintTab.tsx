@@ -167,8 +167,8 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
       <div className={styles.tabContent}>
         <div className={styles.editModeMessage}>
           <Workflow size={48} style={{ marginBottom: '1rem', color: 'var(--accent-blue)' }} />
-          <h4>AI Digital Team Blueprint</h4>
-          <p>Your AI Digital Team Blueprint is automatically generated based on your strategic initiatives and business goals. This tab is not directly editable - instead, update your information in the Analysis tab, then return here to generate your custom blueprint.</p>
+          <h4>Agent Digital Team Blueprint</h4>
+          <p>Your Agent Digital Team Blueprint is automatically generated based on your strategic initiatives and business goals. This tab is not directly editable - instead, update your information in the Initiatives tab, then return here to generate your custom blueprint.</p>
         </div>
       </div>
     );
@@ -181,7 +181,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h3 style={{ margin: 0 }}>
             <Workflow size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-            AI Digital Team Blueprint
+            Agent Digital Team Blueprint
           </h3>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             {blueprint && (

@@ -192,7 +192,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
         <div className={styles.editModeMessage}>
           <Brain size={48} style={{ marginBottom: '1rem', color: 'var(--accent-blue)' }} />
           <h4>AI Opportunities Analysis</h4>
-          <p>AI opportunities analysis is automatically generated based on your strategic initiatives and systems data. This tab is not directly editable - instead, update your information in the Analysis and Systems tabs, then return here to generate fresh insights.</p>
+                      <p>AI opportunities analysis is automatically generated based on your strategic initiatives and systems data. This tab is not directly editable - instead, update your information in the Initiatives and Systems tabs, then return here to generate fresh insights.</p>
         </div>
       </div>
     );

@@ -54,22 +54,30 @@
   - Integrate BlueprintExecutiveSummary component into AI Blueprint tab
   - ROI data now displays automatically when available in blueprint
 
-### **Phase 2: Optional Strategic Integration** (2-3 hours)
+### **Phase 2: Strategic Initiative Selection & Opportunity Integration** (3-4 hours)
 
-- [ ] **Step 2.1: Create Opportunity-to-Blueprint Workflow** (1 hour)
+- [ ] **Step 2.1: Add Strategic Initiative Selector UI** (1.5 hours)
+  - Add initiative selector dropdown in `app/profile/components/AIBlueprintTab.tsx`
+  - Include "Auto (All High Priority)" and individual initiative options
+  - Create state management for selected initiative
+  - Add UI indicators showing which initiative was used for ROI calculations
+
+- [ ] **Step 2.2: Enhance Blueprint API for Initiative Context** (1 hour)
+  - Update `app/api/profiles/generate-blueprint/route.ts` to accept specific initiative ID
+  - Modify request interface to include optional `selectedInitiativeId` parameter
+  - Add server-side validation and initiative filtering logic
+  - Support both auto-selection (current behavior) and manual selection
+
+- [ ] **Step 2.3: Create Initiative-Focused Prompts** (1 hour)
+  - Add prompt variations in `agenticBlueprintPrompt.ts` for single-initiative focus
+  - Include initiative-specific business problems and metrics in context
+  - Maintain synthesis capability when multiple initiatives are selected
+  - Test effectiveness across providers for focused vs. synthesized blueprints
+
+- [ ] **Step 2.4: Opportunity-to-Blueprint Integration** (30 min)
   - Add "Generate Blueprint" button in `app/profile/components/AIOpportunitiesTab.tsx`
-  - Create state management for selected opportunity
-  - Implement UI flow for blueprint generation from opportunity
-
-- [ ] **Step 2.2: Enhance Blueprint API for Opportunity Context** (1 hour)
-  - Update `app/api/profiles/generate-blueprint/route.ts` to accept opportunity context
-  - Modify request interface to include optional opportunity data
-  - Add server-side validation
-
-- [ ] **Step 2.3: Create Opportunity-Informed Prompts** (1 hour)
-  - Add prompt variations in `agenticBlueprintPrompt.ts` for opportunity context
-  - Include opportunity-specific objectives and constraints
-  - Test prompt effectiveness across providers
+  - Link specific opportunities to their source strategic initiatives
+  - Implement seamless navigation from opportunity analysis to blueprint generation
 
 ### **Phase 3: Smart Defaults & Industry Intelligence** (1-2 hours)
 
@@ -95,7 +103,7 @@
   - Implement API endpoint for PDF generation
   - Test PDF generation across different blueprints
 
-**Total Estimated Time**: 11-17 hours (MVP: 7-11 hours for Phases 1-2)
+**Total Estimated Time**: 12-18 hours (MVP: 8-12 hours for Phases 1-2)
 
 ---
 
@@ -107,11 +115,12 @@
 - Create executive summary section with professional financial metrics
 - Link KPI improvements to ROI calculations for clear business value connection
 
-### **Phase 2: Optional Strategic Integration**
+### **Phase 2: Strategic Initiative Selection & Opportunity Integration**
+- Add Strategic Initiative selector UI with "Auto" and individual initiative options  
+- Enhance blueprint generation API to accept specific initiative context
+- Create initiative-focused prompt variations for targeted blueprints
+- Display traceability showing which initiative was used for ROI calculations
 - Add "Generate Blueprint from Opportunity" workflow in AI Opportunities tab
-- Enhance blueprint generation API to accept opportunity context
-- Create opportunity-informed prompt variations for targeted blueprints
-- Display source opportunities for traceability from analysis to implementation
 
 ### **Phase 3: Smart Defaults & Industry Intelligence**
 - Add industry-specific ROI benchmarks for realistic projections
@@ -137,7 +146,7 @@ interface ROIProjection {
 }
 ```
 
-**Timeline**: 11-17 hours across 4 phases (MVP: 7-11 hours for Phases 1-2)
+**Timeline**: 12-18 hours across 4 phases (MVP: 8-12 hours for Phases 1-2)
 
 ---
 
@@ -168,13 +177,13 @@ interface ROIProjection {
 ### **Core Files & Architecture**
 
 **Key Application Files**:
-- `app/profile/page.tsx` - Main profile interface with 6-tab business intelligence dashboard
+- `app/profile/page.tsx` - Main business profile interface with 6-tab business intelligence dashboard (Overview, Initiatives, AI Opportunities, Agent Blueprint, Systems, Contacts)
 - `app/profiles/components/ProfileWizard.tsx` - 2-step onboarding wizard
 - `app/admin/page.tsx` - AI provider credential management
 
 **Business Logic**:
 - `app/services/aiService.ts` - **CRITICAL** - Centralized AI provider abstraction
-- `app/services/agenticBlueprintService.ts` - AI Blueprint generation logic
+- `app/services/agenticBlueprintService.ts` - Agent Blueprint generation logic (5-agent digital teams)
 - `app/services/aiOpportunitiesService.ts` - AI opportunity analysis
 - `app/services/profileService.ts` - Profile data operations and timeline coordination
 
@@ -217,9 +226,9 @@ const result = await aiService.generateJson(
 - **KB_AI_AGENT_HANDBOOK.md** - Agentic AI strategic implementation guide
 - **KB_AGENTIC_WORKFLOW_MVP.md** - MVP blueprint for agentic AI workflows
 
-### **Critical Database Migration** (AI Blueprint Support)
+### **Critical Database Migration** (Agent Blueprint Support)
 
-**BEFORE TESTING AI Blueprints**, run in Supabase SQL Editor:
+**BEFORE TESTING Agent Blueprints**, run in Supabase SQL Editor:
 ```sql
 -- Add agentic_blueprint_cache column to profiles table
 ALTER TABLE profiles 
@@ -232,8 +241,8 @@ WHERE agentic_blueprint_cache IS NOT NULL;
 ```
 
 ### **Platform Status**
-- **AI Blueprint System**: Production-ready with cross-provider support (OpenAI, Claude, Gemini)
-- **Profile Management**: 6-tab business intelligence interface with ROI data collection
+- **Agent Blueprint System**: Production-ready with cross-provider support (OpenAI, Claude, Gemini)
+- **Business Profile Management**: 6-tab business intelligence interface with ROI data collection
 - **AI Timeline**: Multi-scenario generation with permanent caching
 - **AI Opportunities**: Strategic recommendations with readiness scoring
 
@@ -243,3 +252,8 @@ WHERE agentic_blueprint_cache IS NOT NULL;
 
 **Last Updated**: January 2025  
 **Status**: Production-ready MVP with comprehensive AI advisory capabilities
+
+**Recent Updates**:
+- ✅ **UI/UX Enhancement**: Updated interface naming for clarity ("Analysis" → "Initiatives", "AI Blueprint" → "Agent Blueprint", "Profile" → "Business Profile")
+- ✅ **Phase 1 ROI Enhancement**: Executive-ready financial business case generation
+- ✅ **Cross-Provider Support**: OpenAI, Claude, Gemini with provider-specific optimizations

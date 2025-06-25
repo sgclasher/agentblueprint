@@ -732,9 +732,9 @@ export default function ProfilePage() {
       <div className={styles.tabBar}>
         <div className={styles.tabNavigation}>
           <button className={`${styles.tabButton} ${activeTab === 'overview' ? styles.activeTab : ''}`} onClick={() => setActiveTab('overview')}><Info size={16}/> Overview</button>
-          <button className={`${styles.tabButton} ${activeTab === 'analysis' ? styles.activeTab : ''}`} onClick={() => setActiveTab('analysis')}><BarChart3 size={16}/> Analysis</button>
+          <button className={`${styles.tabButton} ${activeTab === 'analysis' ? styles.activeTab : ''}`} onClick={() => setActiveTab('analysis')}><BarChart3 size={16}/> Initiatives</button>
           <button className={`${styles.tabButton} ${activeTab === 'opportunities' ? styles.activeTab : ''}`} onClick={() => setActiveTab('opportunities')}><Brain size={16}/> AI Opportunities</button>
-          <button className={`${styles.tabButton} ${activeTab === 'blueprint' ? styles.activeTab : ''}`} onClick={() => setActiveTab('blueprint')}><Workflow size={16}/> AI Blueprint</button>
+                      <button className={`${styles.tabButton} ${activeTab === 'blueprint' ? styles.activeTab : ''}`} onClick={() => setActiveTab('blueprint')}><Workflow size={16}/> Agent Blueprint</button>
           <button className={`${styles.tabButton} ${activeTab === 'systems' ? styles.activeTab : ''}`} onClick={() => setActiveTab('systems')}><Server size={16}/> Systems</button>
           <button className={`${styles.tabButton} ${activeTab === 'contacts' ? styles.activeTab : ''}`} onClick={() => setActiveTab('contacts')}><Users size={16}/> Contacts</button>
         </div>

@@ -69,7 +69,7 @@ const ContactsTab: FC<ContactsTabProps> = ({ profile, isEditing }) => {
         <div className={styles.editModeMessage}>
           <Users size={48} style={{ marginBottom: '1rem', color: 'var(--accent-blue)' }} />
           <h4>Business Contacts</h4>
-          <p>Business contacts are automatically extracted from your strategic initiatives. This tab is not directly editable - instead, update contact information in the Analysis tab within each strategic initiative.</p>
+          <p>Business contacts are automatically extracted from your strategic initiatives. This tab is not directly editable - instead, update contact information in the Initiatives tab within each strategic initiative.</p>
         </div>
       </div>
     );
