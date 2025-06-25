@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, FC } from 'react';
 import { Profile, AgenticBlueprint } from '../../services/types';
+import BlueprintExecutiveSummary from './BlueprintExecutiveSummary';
 import { 
   Users, 
   Target, 
@@ -273,6 +274,11 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
               {blueprint.businessObjective}
             </p>
           </div>
+
+          {/* ROI Executive Summary */}
+          {blueprint.roiProjection && (
+            <BlueprintExecutiveSummary roiProjection={blueprint.roiProjection} />
+          )}
 
           {/* Digital Team */}
           <div className={styles.analysisCard} style={{ marginBottom: '2rem' }}>

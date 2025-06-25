@@ -16,6 +16,89 @@
 - ❌ No optional connection between strategic analysis (opportunities) and tactical implementation (blueprints)
 - ❌ Blueprint presentation not executive-ready for investment decisions
 
+## 📋 Current Task - AI Blueprint ROI Enhancement Implementation Plan
+
+### **Phase 1: Enhanced ROI Business Case Integration** ✅ **COMPLETE** (7-9 hours)
+
+- [x] **Step 1.1: Define ROI Projection Data Structures** (30 min) ✅
+  - Create `roiProjection` interface in `app/services/types.ts`
+  - Add fields for process savings, labor reallocation, risk avoidance, investment costs, ROI percentage, payback period
+  - Update `AgenticBlueprint` interface to include optional `roiProjection` field
+
+- [x] **Step 1.2: Create ROI Calculation Service** (2 hours) ✅
+  - Create `app/services/roiCalculationService.ts`
+  - Implement calculation methods using process metrics from strategic initiatives
+  - Add industry-specific scaling factors and confidence level calculations
+  - Write comprehensive unit tests in `app/__tests__/features/roi-calculation.test.ts`
+
+- [x] **Step 1.3: Enhance Blueprint Generation Prompts** (1.5 hours) ✅
+  - Update `app/lib/llm/prompts/agenticBlueprintPrompt.ts` to request ROI data
+  - Add ROI calculation instructions to system prompt
+  - Include process metrics context in user prompt
+  - Test with all three providers (OpenAI, Claude, Gemini)
+
+- [x] **Step 1.4: Update Blueprint Generation Service** (1.5 hours) ✅
+  - Modify `app/services/agenticBlueprintService.ts` to integrate ROI calculations
+  - Add validation for ROI projections (ensure reasonable percentages/payback)
+  - Update caching logic to include ROI data
+  - Write integration tests
+
+- [x] **Step 1.5: Create Executive Summary Component** (2 hours) ✅
+  - Create `app/profile/components/BlueprintExecutiveSummary.tsx`
+  - Design professional financial metrics display
+  - Include charts for ROI visualization
+  - Add confidence level indicators
+
+- [x] **Step 1.6: Update AI Blueprint Tab UI** (1.5 hours) ✅
+  - Modify `app/profile/components/AIBlueprintTab.tsx` to display executive summary
+  - Integrate BlueprintExecutiveSummary component into AI Blueprint tab
+  - ROI data now displays automatically when available in blueprint
+
+### **Phase 2: Optional Strategic Integration** (2-3 hours)
+
+- [ ] **Step 2.1: Create Opportunity-to-Blueprint Workflow** (1 hour)
+  - Add "Generate Blueprint" button in `app/profile/components/AIOpportunitiesTab.tsx`
+  - Create state management for selected opportunity
+  - Implement UI flow for blueprint generation from opportunity
+
+- [ ] **Step 2.2: Enhance Blueprint API for Opportunity Context** (1 hour)
+  - Update `app/api/profiles/generate-blueprint/route.ts` to accept opportunity context
+  - Modify request interface to include optional opportunity data
+  - Add server-side validation
+
+- [ ] **Step 2.3: Create Opportunity-Informed Prompts** (1 hour)
+  - Add prompt variations in `agenticBlueprintPrompt.ts` for opportunity context
+  - Include opportunity-specific objectives and constraints
+  - Test prompt effectiveness across providers
+
+### **Phase 3: Smart Defaults & Industry Intelligence** (1-2 hours)
+
+- [ ] **Step 3.1: Add Industry ROI Benchmarks** (1 hour)
+  - Create `app/lib/industryBenchmarks.ts` with ROI data by industry
+  - Include typical payback periods and success rates
+  - Add validation rules for realistic projections
+
+- [ ] **Step 3.2: Implement ROI Validation Logic** (1 hour)
+  - Add validation in `roiCalculationService.ts` for defensible percentages
+  - Create warning system for unrealistic projections
+  - Add industry-specific thresholds
+
+### **Phase 4: Executive Presentation & Export** (Optional, 2-3 hours)
+
+- [ ] **Step 4.1: Create PDF Export Template** (1.5 hours)
+  - Design professional business case PDF template
+  - Include executive summary, ROI projections, implementation roadmap
+  - Use existing PDF infrastructure from timeline export
+
+- [ ] **Step 4.2: Add Export Functionality** (1.5 hours)
+  - Add export button to AI Blueprint tab
+  - Implement API endpoint for PDF generation
+  - Test PDF generation across different blueprints
+
+**Total Estimated Time**: 11-17 hours (MVP: 7-11 hours for Phases 1-2)
+
+---
+
 ## 📋 Implementation Plan
 
 ### **Phase 1: Enhanced ROI Business Case Integration** (Priority)

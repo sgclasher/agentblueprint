@@ -45,8 +45,12 @@ export default function AgenticWorkflowPage() {
           'Content-Type': 'application/json'
         }
       });
-      const credentialsData = await response.json();
 
+      if (!response.ok) {
+        throw new Error('Failed to check credentials');
+      }
+
+      const credentialsData = await response.json();
       const hasCreds = credentialsData.hasCredentials && !!credentialsData.instanceUrl && !!credentialsData.username;
       setHasServiceNowCredentials(hasCreds);
 
@@ -80,28 +84,9 @@ export default function AgenticWorkflowPage() {
         return;
       }
 
-      try {
-        const response = await fetch('/api/servicenow/get-credentials', {
-          headers: { 'Authorization': `Bearer ${session?.access_token}` }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to check credentials');
-        }
-
-        const credentialsData = await response.json();
-        const hasCreds = credentialsData.hasCredentials && !!credentialsData.instanceUrl && !!credentialsData.username;
-        setHasServiceNowCredentials(hasCreds);
-
-        if (hasCreds) {
-          await connectAndFetchData();
-        }
-      } catch (err: any) {
-        console.error("Initialization error:", err);
-        setError(err.message || "Failed to initialize workflow visualizer");
-      } finally {
-        setPageStatus('ready');
-      }
+      // Single credentials check and data fetch
+      await connectAndFetchData();
+      setPageStatus('ready');
     };
 
     initialize();

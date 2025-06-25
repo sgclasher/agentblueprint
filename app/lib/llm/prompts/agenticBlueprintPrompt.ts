@@ -62,6 +62,7 @@ export interface AgenticBlueprintPromptConfig {
     implementationReadiness?: 'low' | 'medium' | 'high';
   };
   includeKPIProbability?: boolean;
+  includeROIProjection?: boolean;
 }
 
 /**
@@ -237,6 +238,26 @@ When generating blueprints, follow this structured thinking process:
 - Include both efficiency and quality metrics
 - Cover diverse aspects: efficiency, quality, speed, accuracy, cost reduction
 
+${config.includeROIProjection ? `
+**ROI BUSINESS CASE FRAMEWORK:**
+- Calculate realistic financial impact based on process metrics and KPI improvements
+- Consider current process costs, labor intensity, and operational inefficiencies
+- Estimate investment requirements including implementation and ongoing costs
+- Project annual value creation through efficiency gains and risk reduction
+- Apply industry-specific benchmarks for credibility
+- Include risk adjustments and confidence levels
+- Generate executive-ready financial justification
+- Use conservative assumptions to ensure defensibility
+
+ROI CALCULATION METHODOLOGY:
+1. **Process Cost Savings**: Based on cycle time reduction, volume processed, and current cost levels
+2. **Labor Reallocation**: FTE capacity freed for higher-value work (30-50% of total savings)
+3. **Risk Avoidance**: Compliance improvements, error reduction, quality gains (10-20% of value)
+4. **Revenue Enablement**: Optional - new capabilities enabled by AI (if applicable)
+5. **Investment Requirements**: Implementation costs scaled by complexity and readiness
+6. **Payback Analysis**: Months to break even based on annual value vs total investment
+` : ''}
+
 DESIGN PRINCIPLES:
 - Start with bounded, internal, process-oriented tasks
 - Augment human capabilities rather than replace jobs
@@ -251,6 +272,7 @@ OUTPUT REQUIREMENTS:
 - Define clear human oversight and control mechanisms
 - Provide realistic implementation timeline with risk mitigation
 - Link agent activities to measurable KPI improvements
+${config.includeROIProjection ? '- Include comprehensive ROI projection and business case' : ''}
 - Use business-friendly language without technical jargon
 
 TONE & APPROACH:
@@ -289,15 +311,42 @@ export function buildAgenticBlueprintUserPrompt(
     return 'enterprise-sized (complex organizational structure)';
   };
 
-  const strategicInitiativesList = (profile.strategicInitiatives || []).map((initiative, index) => 
-    `${index + 1}. ${initiative.initiative}
+  const strategicInitiativesList = (profile.strategicInitiatives || []).map((initiative, index) => {
+    // Include process metrics and investment context if available
+    let processMetricsSection = '';
+    if (initiative.processMetrics) {
+      const pm = initiative.processMetrics;
+      processMetricsSection = `
+   - Process Metrics:
+     • Current Cycle Time: ${pm.currentCycleTime || 'Not specified'}
+     • Current Volume: ${pm.currentVolume || 'Not specified'}
+     • Current Error Rate: ${pm.currentErrorRate || 'Not specified'}
+     • Current Cost Level: ${pm.currentCost || 'Not specified'}
+     • Labor Intensity: ${pm.laborIntensity || 'Not specified'}
+     • Process Complexity: ${pm.processComplexity || 'Not specified'}`;
+    }
+    
+    let investmentContextSection = '';
+    if (initiative.investmentContext) {
+      const ic = initiative.investmentContext;
+      investmentContextSection = `
+   - Investment Context:
+     • Budget Range: ${ic.budgetRange || 'Not specified'}
+     • Timeframe: ${ic.timeframePreference || 'Not specified'}
+     • Implementation Readiness: ${ic.implementationReadiness || 'Not specified'}
+     • Risk Tolerance: ${ic.riskTolerance || 'Not specified'}
+     • Success Definition: ${ic.successDefinition || 'Not specified'}
+     • Stakeholder Buy-in: ${ic.stakeholderBuyIn || 'Not specified'}`;
+    }
+    
+    return `${index + 1}. ${initiative.initiative}
    - Contact: ${initiative.contact?.name || 'Not specified'} (${initiative.contact?.title || 'Not specified'})
    - Priority: ${initiative.priority || 'Not specified'}
    - Status: ${initiative.status || 'Not specified'}
    - Business Problems: ${(initiative.businessProblems || []).length > 0 ? initiative.businessProblems.join('; ') : 'None specified'}
    - Expected Outcomes: ${(initiative.expectedOutcomes && initiative.expectedOutcomes.length > 0) ? initiative.expectedOutcomes.join('; ') : 'None specified'}
-   - Success Metrics: ${(initiative.successMetrics && initiative.successMetrics.length > 0) ? initiative.successMetrics.join('; ') : 'None specified'}`
-  ).join('\n');
+   - Success Metrics: ${(initiative.successMetrics && initiative.successMetrics.length > 0) ? initiative.successMetrics.join('; ') : 'None specified'}${processMetricsSection}${investmentContextSection}`;
+  }).join('\n');
 
   const systemsList = (profile.systemsAndApplications || []).map((system, index) => 
     `${index + 1}. ${system.name} (${system.category})
@@ -415,6 +464,24 @@ BLUEPRINT REQUIREMENTS:
    - "Customer onboarding speed": 60% faster completion
    - "Document accuracy": 25% fewer errors
 
+${config.includeROIProjection ? `
+6. **ROI PROJECTION** (Executive Business Case):
+   Provide a comprehensive financial analysis including:
+   - **Process Cost Savings**: Annual efficiency gains in dollars
+   - **Labor Reallocation**: FTE capacity redeployment
+   - **Risk Avoidance**: Compliance and quality improvement value
+   - **Total Investment**: Implementation cost estimate
+   - **Annual Value**: Total yearly benefit
+   - **ROI Percentage**: Return on investment calculation
+   - **Payback Months**: Time to break even
+   - **Key Assumptions**: List of 3-4 critical assumptions
+   - **Confidence Level**: High, Medium, or Low
+   - **Executive Summary**: 2-3 sentence business case
+   - **Recommended Action**: Clear next step recommendation
+   
+   Base calculations on the process metrics and investment context provided in the strategic initiatives.
+` : ''}
+
 Focus on:
 - Practical, implementable solutions using existing systems
 - Clear business language without technical jargon
@@ -422,6 +489,7 @@ Focus on:
 - Strong human oversight and control mechanisms
 - Measurable KPI improvements linked to business goals
 - Progressive trust building from human control to automation
+${config.includeROIProjection ? '- Defensible ROI projections based on process metrics' : ''}
 
 **OUTPUT FORMAT:** You MUST respond with ONLY a valid JSON object. No markdown formatting, no explanations, no additional text.
 
@@ -493,7 +561,30 @@ Focus on:
       "measurementMethod": "Average time per completed task",
       "timeframe": "Within 8 months"
     }
-  ]
+  ]${config.includeROIProjection ? `,
+  "roiProjection": {
+    "processCostSavings": "$450K annual efficiency gains",
+    "laborReallocation": "$320K FTE capacity redeployment",
+    "riskAvoidance": "$150K compliance risk reduction",
+    "totalInvestment": "$280K implementation cost",
+    "ongoingCosts": "$50K annual maintenance",
+    "annualValue": "$920K total annual value",
+    "roiPercentage": 229,
+    "paybackMonths": 11,
+    "keyAssumptions": [
+      "40% cycle time improvement achievable",
+      "2 FTEs can be redeployed to higher-value work",
+      "AI model accuracy will meet 95% threshold"
+    ],
+    "confidenceLevel": "High",
+    "confidenceFactors": [
+      "Strong technical foundation",
+      "Executive sponsorship secured",
+      "Industry benchmarks support projections"
+    ],
+    "executiveSummary": "This AI implementation will deliver 229% ROI with an 11-month payback period. The $280K investment will generate $920K in annual value through process automation and efficiency gains.",
+    "recommendedAction": "Proceed with Phase 1 pilot"
+  }` : ''}
 }
 
 **CRITICAL:** Your response must be pure JSON only, starting with { and ending with }. No other text.`;
@@ -557,6 +648,21 @@ export interface AgenticBlueprintResponse {
     measurementMethod: string;
     timeframe: string;
   }>;
+  roiProjection?: {
+    processCostSavings: string;
+    laborReallocation: string;
+    riskAvoidance: string;
+    totalInvestment: string;
+    ongoingCosts: string;
+    annualValue: string;
+    roiPercentage: number;
+    paybackMonths: number;
+    keyAssumptions: string[];
+    confidenceLevel: 'High' | 'Medium' | 'Low';
+    confidenceFactors: string[];
+    executiveSummary: string;
+    recommendedAction: string;
+  };
 }
 
 export const validateAgenticBlueprintResponse = (response: AgenticBlueprintResponse): string[] => {

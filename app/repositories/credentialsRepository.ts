@@ -32,7 +32,6 @@ export class CredentialsRepository {
         query = query.eq('service_type', serviceType);
       }
 
-      console.log('[CredentialsRepository.getCredentials] Query params:', { userId, serviceType });
       const { data, error } = await query;
       // console.log('[CredentialsRepository.getCredentials] Result:', data);
 

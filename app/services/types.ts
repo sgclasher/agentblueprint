@@ -124,6 +124,38 @@ export interface SystemApplication {
     criticality?: 'High' | 'Medium' | 'Low';  // Business criticality
 }
 
+// 🆕 NEW: ROI Projection for Executive Business Case
+export interface ROIProjection {
+    // Financial Impact
+    processCostSavings: string;         // "$450K annual efficiency gains"
+    laborReallocation: string;          // "$320K FTE capacity redeployment"
+    riskAvoidance: string;              // "$150K compliance risk reduction"
+    revenueEnablement?: string;         // "$200K new revenue opportunities" (optional)
+    
+    // Investment Requirements
+    totalInvestment: string;            // "$280K implementation cost"
+    ongoingCosts: string;               // "$50K annual maintenance"
+    
+    // ROI Metrics
+    annualValue: string;                // "$920K total annual value"
+    roiPercentage: number;              // 229 (for 229% ROI)
+    paybackMonths: number;              // 11 (months to break even)
+    threeYearValue?: string;            // "$2.5M cumulative value" (optional)
+    
+    // Assumptions & Confidence
+    keyAssumptions: string[];           // ["40% cycle time improvement", "2 FTEs redeployed", "Zero downtime migration"]
+    confidenceLevel: 'High' | 'Medium' | 'Low';
+    confidenceFactors: string[];        // ["Industry benchmarks", "Pilot results", "Vendor guarantees"]
+    
+    // Risk Adjustments
+    riskFactors?: string[];             // ["Integration complexity", "Change management", "Data quality"]
+    contingencyPercentage?: number;     // 15 (for 15% contingency)
+    
+    // Executive Summary
+    executiveSummary: string;           // 2-3 sentence business case summary
+    recommendedAction: string;          // "Proceed with Phase 1 pilot"
+}
+
 // 🆕 NEW: Agentic Blueprint Types
 export interface AgenticBlueprint {
     id: string;
@@ -134,6 +166,9 @@ export interface AgenticBlueprint {
     humanCheckpoints: HumanCheckpoint[];
     agenticTimeline: AgenticTimeline;
     kpiImprovements: KPIImprovement[];
+    
+    // 🆕 ROI Business Case
+    roiProjection?: ROIProjection;      // Optional ROI projection for executive presentation
     
     // Generation metadata
     aiModel?: string;

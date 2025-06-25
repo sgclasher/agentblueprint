@@ -25,7 +25,6 @@ export const getServerUser = async (request: NextRequest | null): Promise<User |
     }
 
     const authHeader = request.headers.get('authorization');
-    console.log('🔑 getServerUser: Auth header check:', { hasHeader: !!authHeader, startsWithBearer: authHeader?.startsWith('Bearer ') });
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       console.log('❌ getServerUser: Missing or invalid auth header');
@@ -33,7 +32,6 @@ export const getServerUser = async (request: NextRequest | null): Promise<User |
     }
 
     const token = authHeader.substring(7);
-    console.log('🎫 getServerUser: Token extracted:', { tokenLength: token.length, tokenPrefix: token.substring(0, 10) + '...' });
 
     const serverClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
@@ -53,7 +51,6 @@ export const getServerUser = async (request: NextRequest | null): Promise<User |
       return null;
     }
 
-    console.log('✅ getServerUser: User authenticated:', { userId: user?.id, email: user?.email });
     return user;
   } catch (error) {
     console.error('💥 getServerUser: Exception in server authentication:', error);

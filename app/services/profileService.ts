@@ -132,8 +132,6 @@ export class ProfileService {
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
-
-      // Call the profile fetch API route (server-side)
       
       // Add timeout to prevent infinite loading
       const controller = new AbortController();

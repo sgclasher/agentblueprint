@@ -30,8 +30,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetProfile
         { status: 401 }
       );
     }
-    
-    console.log(`🔐 Profile fetch authorized for user ${user.id}`);
+  
 
     // Fetch profile using service role client directly (same as debug endpoint)
     const { data: profile, error } = await supabase
@@ -39,14 +38,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetProfile
       .select('*')
       .eq('user_id', user.id)
       .single();
-    
-    console.log(`📊 [API] Profile lookup result:`, {
-      userId: user.id,
-      foundProfile: !!profile,
-      profileId: profile?.id,
-      profileCompany: profile?.profile_data?.companyName,
-      error: error?.code
-    });
     
     if (error) {
       // Handle not found error (PGRST116)
@@ -62,8 +53,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<GetProfile
       console.error(`❌ Profile fetch error:`, error);
       throw error;
     }
-
-    console.log(`✅ Profile retrieved successfully for user ${user.id}`);
     
     // Transform profile to match expected format
     const transformedProfile = {

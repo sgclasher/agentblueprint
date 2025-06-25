@@ -1,4 +1,5 @@
-import { Profile, AgenticBlueprint, DigitalTeamMember, HumanCheckpoint, AgenticTimeline, KPIImprovement } from './types';
+import { Profile, AgenticBlueprint, DigitalTeamMember, HumanCheckpoint, AgenticTimeline, KPIImprovement, ROIProjection } from './types';
+import { ROICalculationService } from './roiCalculationService';
 
 /**
  * Agentic Blueprint Service
@@ -69,6 +70,59 @@ export class AgenticBlueprintService {
     
     // 🆕 Calculate realistic timeline based on business context
     const timelineRecommendation = this.calculateTimelineRecommendation(businessContext);
+    
+    // 🆕 PHASE 1.4: Calculate ROI projection from process metrics
+    let roiProjection: ROIProjection | undefined;
+    const hasProcessMetrics = profile.strategicInitiatives.some(init => init.processMetrics || init.investmentContext);
+    
+    if (hasProcessMetrics) {
+      console.log('[ROI Calculation] Process metrics detected, calculating ROI projection...');
+      // Use the highest priority initiative with process metrics for primary ROI calculation
+      const primaryInitiative = profile.strategicInitiatives
+        .filter(init => init.processMetrics || init.investmentContext)
+        .sort((a, b) => {
+          const priorityOrder = { 'High': 3, 'Medium': 2, 'Low': 1 };
+          return (priorityOrder[b.priority || 'Medium'] || 2) - (priorityOrder[a.priority || 'Medium'] || 2);
+        })[0];
+      
+      if (primaryInitiative) {
+        try {
+          roiProjection = ROICalculationService.calculateROIFromProcessMetrics(
+            primaryInitiative.processMetrics,
+            primaryInitiative.investmentContext,
+            profile.industry
+          );
+          
+          // Validate ROI projection
+          const validation = ROICalculationService.validateROIProjection(
+            { roiPercentage: roiProjection.roiPercentage, paybackMonths: roiProjection.paybackMonths },
+            profile.industry
+          );
+          
+          if (!validation.isValid) {
+            console.warn('[ROI Validation] Warnings:', validation.warnings);
+            // Add warnings to confidence factors
+            roiProjection.confidenceFactors = [
+              ...roiProjection.confidenceFactors,
+              ...validation.warnings.map(w => `⚠️ ${w}`)
+            ];
+            // Adjust confidence level if needed
+            if (validation.warnings.length > 1) {
+              roiProjection.confidenceLevel = 'Low';
+            }
+          }
+          
+          console.log('[ROI Calculation] ROI projection generated:', {
+            roi: roiProjection.roiPercentage,
+            payback: roiProjection.paybackMonths,
+            confidence: roiProjection.confidenceLevel
+          });
+        } catch (error) {
+          console.error('[ROI Calculation] Failed to calculate ROI:', error);
+          // Continue without ROI projection if calculation fails
+        }
+      }
+    }
 
     // Check if AI service is configured
     const { aiService } = await import('./aiService');
@@ -112,7 +166,8 @@ export class AgenticBlueprintService {
         riskLevel: businessContext.implementationContext.riskLevel,
         implementationReadiness: this.mapChangeReadinessToLevel(businessContext.implementationContext.changeReadiness)
       },
-      includeKPIProbability: true
+      includeKPIProbability: true,
+      includeROIProjection: !!roiProjection  // 🆕 Enable ROI in prompt if we have process metrics
     };
 
     // 🆕 Generate optimized prompts with model-specific features
@@ -261,6 +316,14 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
         isArray: Array.isArray(aiResponse?.kpiImprovements),
         length: aiResponse?.kpiImprovements?.length || 0
       });
+      
+      // 🆕 PHASE 1.4: Log ROI projection analysis
+      console.log('[Field Analysis] roiProjection:', {
+        exists: !!aiResponse?.roiProjection,
+        hasRequiredFields: !!(aiResponse?.roiProjection?.roiPercentage && aiResponse?.roiProjection?.paybackMonths),
+        roiPercentage: aiResponse?.roiProjection?.roiPercentage,
+        paybackMonths: aiResponse?.roiProjection?.paybackMonths
+      });
 
       // 🚨 STRICT VALIDATION - NO FALLBACKS
       if (!aiResponse) {
@@ -351,11 +414,28 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
           progressiveTrust: this.generateProgressiveTrustLevels(aiResponse.agenticTimeline)
         },
         kpiImprovements: aiResponse.kpiImprovements,
+        roiProjection: aiResponse.roiProjection || roiProjection,  // 🆕 Use AI-generated ROI or fallback to calculated
         aiModel: preferredProvider || 'auto-selected',
-        promptVersion: '3.0', // 🆕 Phase 3: Advanced prompt engineering with model-specific optimizations
+        promptVersion: '3.1', // 🆕 Phase 1.4: ROI-enhanced prompt version
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      
+      // 🆕 If we calculated ROI but AI didn't generate one, use our calculation
+      if (roiProjection && !aiResponse.roiProjection) {
+        console.log('[ROI Integration] Using calculated ROI projection as AI did not provide one');
+        blueprint.roiProjection = roiProjection;
+      }
+      
+      // 🆕 Log quality score with ROI consideration
+      const qualityScore = this.calculateBlueprintQualityScore(blueprint, profile);
+      blueprint.qualityScore = qualityScore;
+      console.log('[Quality Score] Blueprint quality assessment:', {
+        score: qualityScore,
+        hasROI: !!blueprint.roiProjection,
+        kpiCount: blueprint.kpiImprovements.length,
+        businessSpecificity: blueprint.businessObjective.length > 50 ? 'Good' : 'Needs improvement'
+      });
 
       return blueprint;
     } catch (error: any) {
@@ -1096,5 +1176,47 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
         }
       ]
     }));
+  }
+
+  /**
+   * Calculate blueprint quality score
+   * @param blueprint - Generated blueprint
+   * @param profile - Original profile data
+   * @returns Quality score
+   */
+  private static calculateBlueprintQualityScore(blueprint: AgenticBlueprint, profile: Profile): number {
+    let score = 0;
+
+    // Check business objective clarity (20 points)
+    if (blueprint.businessObjective && blueprint.businessObjective.length > 50) {
+      score += 20;
+    }
+
+    // Check digital team completeness (25 points)
+    if (blueprint.digitalTeam.length === 5) {
+      score += 15;
+    }
+
+    // Check human oversight design (20 points)
+    if (blueprint.humanCheckpoints.length === 4) {
+      score += 20;
+    }
+
+    // Check timeline structure (20 points)
+    if (blueprint.agenticTimeline.phases.length === 3) {
+      score += 15;
+    }
+
+    // Check KPI alignment (15 points)
+    if (blueprint.kpiImprovements.length >= 3) {
+      score += 10;
+    }
+
+    // Check ROI projection (10 points)
+    if (blueprint.roiProjection) {
+      score += 10;
+    }
+
+    return score;
   }
 } 
