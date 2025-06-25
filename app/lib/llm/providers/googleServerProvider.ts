@@ -229,13 +229,64 @@ export class GoogleServerProvider {
   }
 
   /**
-   * Fetches available models for Google Gemini (returns curated list since API requires auth)
+   * Fetches available models for Google Gemini using the actual Google API
    * @returns {Promise<Array>} Array of available models with standardized format
    */
   static async fetchAvailableModels() {
     try {
-      // Updated model list with correct names from official API documentation
-      const geminiModels = [
+      // Get API key from environment - we'll use the system key for model listing
+      const apiKey = process.env.GOOGLE_API_KEY;
+      if (!apiKey) {
+        throw new Error('Google API key not configured');
+      }
+
+      console.log('[Gemini Provider] Fetching models from actual Google API...');
+      
+      // Call the actual Google Gemini models endpoint
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Google API error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Gemini Provider] Fetched ${data.models?.length || 0} models from Google API`);
+      
+      // Filter and format models - only include generateContent models
+      const geminiModels = data.models
+        .filter((model: any) => {
+          const id = model.name.replace('models/', '');
+          // Include only text generation models and exclude embedding models
+          return model.supportedGenerationMethods?.includes('generateContent') && 
+                 id.includes('gemini') && 
+                 !id.includes('embed') &&
+                 !id.includes('vision') &&
+                 !id.includes('text-') && 
+                 !id.includes('aqa');
+        })
+        .map((model: any) => ({
+          id: model.name.replace('models/', ''),
+          name: this.formatGeminiModelName(model.name.replace('models/', '')),
+          description: this.getGeminiModelDescription(model.name.replace('models/', '')),
+          created: null,
+        }))
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+      console.log('[Gemini Provider] Filtered models:', geminiModels.map((m: any) => m.id));
+      return geminiModels;
+
+    } catch (error: any) {
+      console.error('Failed to fetch Gemini models from API:', error);
+      
+      // Fallback to curated list if API call fails
+      console.log('[Gemini Provider] Falling back to curated model list');
+      return [
         {
           id: 'gemini-1.5-flash',
           name: 'Gemini 1.5 Flash (Recommended & Stable)',
@@ -260,27 +311,39 @@ export class GoogleServerProvider {
           description: 'Our most intelligent model with enhanced reasoning - Preview version',
           created: null,
         },
-        {
-          id: 'gemini-2.5-flash-preview-05-20',
-          name: 'Gemini 2.5 Flash Preview (Latest)',
-          description: 'Fast and intelligent model with 2.5 generation improvements - Preview version',
-          created: null,
-        },
-        {
-          id: 'gemini-1.5-flash-8b',
-          name: 'Gemini 1.5 Flash 8B (Efficient)',
-          description: 'Optimized for speed and efficiency with lower costs',
-          created: null,
-        },
       ];
-
-      // Simulate slight delay as if fetching from API
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      return geminiModels;
-    } catch (error: any) {
-      console.error('Failed to fetch Gemini models:', error);
-      throw new Error(`Failed to fetch Gemini models: ${error.message}`);
     }
+  }
+
+  /**
+   * Format Gemini model ID into a user-friendly name
+   */
+  private static formatGeminiModelName(modelId: string): string {
+    const nameMap: { [key: string]: string } = {
+      'gemini-1.5-flash': 'Gemini 1.5 Flash (Recommended & Stable)',
+      'gemini-1.5-pro': 'Gemini 1.5 Pro (Stable)',
+      'gemini-2.0-flash': 'Gemini 2.0 Flash (Stable)',
+      'gemini-2.5-pro-preview-06-05': 'Gemini 2.5 Pro Preview (Latest)',
+      'gemini-2.5-flash-preview-05-20': 'Gemini 2.5 Flash Preview (Latest)',
+      'gemini-1.5-flash-8b': 'Gemini 1.5 Flash 8B (Efficient)',
+    };
+    
+    return nameMap[modelId] || modelId;
+  }
+
+  /**
+   * Get description for a Gemini model
+   */
+  private static getGeminiModelDescription(modelId: string): string {
+    const descMap: { [key: string]: string } = {
+      'gemini-1.5-flash': 'Fast and versatile model for most use cases with proven reliability',
+      'gemini-1.5-pro': 'Advanced reasoning and complex task handling, reliable for production use',
+      'gemini-2.0-flash': 'Next generation features, speed, and enhanced performance',
+      'gemini-2.5-pro-preview-06-05': 'Our most intelligent model with enhanced reasoning - Preview version',
+      'gemini-2.5-flash-preview-05-20': 'Fast and intelligent model with 2.5 generation improvements - Preview version',
+      'gemini-1.5-flash-8b': 'Optimized for speed and efficiency with lower costs',
+    };
+    
+    return descMap[modelId] || `Google Gemini model: ${modelId}`;
   }
 } 

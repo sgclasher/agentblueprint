@@ -55,11 +55,13 @@ export default function AddServiceForm({
             options: [
               { value: 'gpt-4o', label: 'GPT-4o (Recommended)' },
               { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Cost-Effective)' },
-              { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Legacy)' },
               { value: 'gpt-4.1', label: 'GPT-4.1 (Latest - 1M Context)' },
+              { value: 'o3', label: 'o3 (Cost-Effective Reasoning)' },
+              { value: 'o3-pro', label: 'o3-pro (Advanced Reasoning Pro)' },
               { value: 'o1', label: 'o1 (Advanced Reasoning)' },
               { value: 'o1-preview', label: 'o1 Preview (Reasoning Beta)' },
               { value: 'o1-mini', label: 'o1 Mini (Fast Reasoning)' },
+              { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Legacy)' },
               { value: 'gpt-4', label: 'GPT-4 (Classic)' }
             ]
           },

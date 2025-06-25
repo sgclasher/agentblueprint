@@ -79,6 +79,198 @@ EXPERTISE AREAS:
 - Enterprise Integration: System connectivity, tool orchestration, security by design
 - Implementation Strategy: Crawl-walk-run methodologies, risk mitigation, change management`;
 
+  // 🎓 AGENTIC AI EDUCATION - FROM KB_AI_AGENT_HANDBOOK.md
+  const agenticEducationSection = `
+**AGENTIC AI FUNDAMENTALS (2025 Knowledge Base):**
+
+**Understanding Agentic vs. Generative AI:**
+- Agentic AI: Proactive problem-solver and workflow automator with goal-oriented behavior
+- Generative AI: Reactive content creator that responds to prompts
+- Key Distinction: Agents can autonomously break down goals, select tools, and orchestrate multi-step processes
+- Agentic Systems: Perceive environment → Reason → Plan → Take autonomous actions → Achieve complex, long-term goals
+
+**Core Agentic Capabilities:**
+1. **Goal-Oriented Behavior**: Pursue specific, complex objectives with minimal human supervision
+2. **Multi-Step Reasoning**: Break large problems into manageable steps and formulate coherent action plans
+3. **Action-Driven Operation**: Interact with environment through tools and APIs, not just generate content
+4. **Adaptability**: Learn from outcomes, adapt to changing conditions, improve performance over time
+5. **Autonomous Coordination**: Collaborate with other agents through structured communication protocols
+
+**Multi-Agent System Patterns:**
+- **Manager-Worker Pattern**: Coordinator delegates tasks to specialized worker agents
+- **Semantic Routing**: Router agent directs queries to most appropriate specialist agents
+- **Capability-Based Delegation**: Orchestrator assigns tasks based on declared agent capabilities
+- **Agent-to-Agent (A2A) Protocol**: Secure communication for goal negotiation and state sharing
+- **Model Context Protocol (MCP)**: Standardized context sharing across agent systems
+
+**Progressive Trust Framework (Enterprise Standard):**
+- **CRAWL**: Human approval for all actions, read-only access, proof of concept
+- **WALK**: Policy-checked autonomy, limited write access, automated quality gates
+- **RUN**: Full autonomy within boundaries, exception-based intervention, continuous optimization
+
+**Risk-Gated Iteration Model:**
+1. Identify MVP → Pilot in Sandbox → Deploy with HITL → Measure → Expand
+2. Start with bounded, internal, process-oriented tasks
+3. Augment human capabilities rather than replace jobs
+4. Approach customer-facing autonomy with extreme caution
+5. Maintain clear audit trails and explainability
+
+**Memory Architectures Beyond Vector Stores:**
+- **Structured Retrieval**: SQL/JSON queries for precise, factual data
+- **Episodic Memory**: Chronological history of past interactions for continuity
+- **Knowledge Graphs**: Symbolic memory for sophisticated logical reasoning
+- **Structured RAG**: Combining vector search with structured data sources
+
+**Real-World Success Patterns (2024-2025):**
+- **Bounded Internal Tasks**: Honeywell (+187 FTE productivity gain), Precina ($80K/year savings)
+- **Process-Oriented Automation**: Structured data integration with clear ROI
+- **Industry-Specific Workflows**: Manufacturing, healthcare, technology adaptation patterns
+- **Human-AI Collaboration**: Clear handoff points and progressive autonomy models`;
+
+  // 🎯 WORKFLOW SPECIFICITY PATTERNS - FROM KB_EXAMPLE_AGENTIC_SOLUTION.md
+  const workflowSpecificityPatterns = `
+**WORKFLOW SPECIFICITY TEMPLATE (Based on RFx Excellence Pattern):**
+
+**AGENT NAMING CONVENTION:**
+- ❌ AVOID: Generic titles like "Process Analyst", "Data Processor", "Task Manager"
+- ✅ USE: Industry-specific specialist titles that reflect actual business roles
+- Pattern: [Industry Context] + [Functional Specialty] + [Specific Action]
+- Examples: "Vendor Evaluation Specialist", "Production Planning Coordinator", "Clinical Documentation Specialist"
+
+**PHASE-BY-PHASE WORKFLOW STRUCTURE:**
+Each business process should follow this detailed pattern:
+
+**PHASE TEMPLATE:**
+- **Trigger**: Specific business event that initiates the workflow
+- **Flow**: Step-by-step process with agent coordination and handoffs  
+- **Outcome**: Measurable result that advances the business objective
+- **Tools**: Specific systems and APIs used in this phase
+- **Handoff Contract**: Clear deliverable passed to next phase/agent
+
+**AGENT COOPERATION PATTERN (Manager-Worker Model):**
+1. **Phase Manager (Coordinator)**: Orchestrates the phase, manages handoffs
+2. **Specialist Workers**: Execute specific tasks with domain expertise
+3. **Quality Gates**: Validation points before work advances
+4. **Escalation Paths**: Clear human intervention triggers
+
+**SPECIFICITY REQUIREMENTS FOR EACH AGENT:**
+1. **Core Job Description**: Must include:
+   - Specific business processes they handle
+   - Exact types of decisions they make
+   - Industry-specific terminology and context
+   - Concrete workflow steps they execute
+
+2. **Tool Integration**: Must specify:
+   - Exact systems they read from and write to
+   - Specific APIs or interfaces they use
+   - Data formats and transformation requirements
+   - Integration points with existing business systems
+
+3. **Success Metrics**: Must define:
+   - Specific KPIs this agent directly impacts
+   - Measurable improvements they deliver
+   - Timeframes for achieving results
+   - Quality thresholds and error handling
+
+**TRIGGER → FLOW → OUTCOME PATTERN:**
+- **Trigger**: "When [specific business event] occurs..."
+- **Flow**: "Agent [X] performs [detailed steps] using [specific tools] to [specific action]"
+- **Outcome**: "[Measurable result] is achieved, enabling [next business process]"
+
+**INDUSTRY-SPECIFIC ADAPTATION FRAMEWORK:**
+- Manufacturing: Production planning, quality control, supply chain optimization
+- Healthcare: Patient workflows, clinical documentation, compliance automation
+- Technology: DevOps automation, customer onboarding, technical support
+- Financial Services: Risk assessment, compliance monitoring, customer service
+- Professional Services: Project management, resource allocation, client deliverables
+
+**QUALITY VALIDATION CHECKLIST:**
+For each agent description, verify:
+✅ Uses industry-specific terminology throughout
+✅ References actual business systems and processes
+✅ Includes specific workflow steps (not high-level descriptions)
+✅ Defines concrete deliverables and handoff points
+✅ Links directly to measurable business KPIs
+✅ Specifies realistic automation boundaries and human oversight`;
+
+  // 🎯 DYNAMIC AGENT ROLE SPECIFICATION SYSTEM
+  const dynamicAgentRoleSystem = `
+**DYNAMIC AGENT ROLE GENERATION FRAMEWORK:**
+
+**BUSINESS PROBLEM → AGENT CAPABILITY MAPPING:**
+
+**1. PROBLEM CLASSIFICATION PATTERNS:**
+- **Process Optimization**: Cycle time, resource utilization, workflow efficiency
+  → **Specialists**: Process Engineers, Workflow Coordinators, Resource Optimizers
+- **Data Management**: Collection, validation, analysis, reporting
+  → **Specialists**: Data Validators, Analytics Coordinators, Report Generators
+- **Quality Control**: Error detection, compliance, standardization
+  → **Specialists**: Quality Auditors, Compliance Monitors, Standards Enforcers
+- **Customer Experience**: Onboarding, support, satisfaction, retention
+  → **Specialists**: Customer Journey Coordinators, Experience Analysts, Retention Specialists
+- **Operational Efficiency**: Cost reduction, automation, integration
+  → **Specialists**: Operations Coordinators, Integration Specialists, Cost Analyzers
+- **Risk Management**: Compliance, security, governance, mitigation
+  → **Specialists**: Risk Assessors, Compliance Coordinators, Governance Monitors
+
+**2. INDUSTRY-SPECIFIC ROLE ADAPTATION PATTERNS:**
+- **Manufacturing**: [Problem] + "Production", "Manufacturing", "Quality", "Supply Chain"
+  - Example: "Production Planning Coordinator", "Quality Control Specialist", "Supply Chain Optimizer"
+- **Healthcare**: [Problem] + "Clinical", "Patient", "Medical", "Care"
+  - Example: "Clinical Documentation Specialist", "Patient Flow Coordinator", "Care Quality Auditor"
+- **Technology**: [Problem] + "DevOps", "System", "Platform", "Technical"
+  - Example: "DevOps Automation Specialist", "System Integration Coordinator", "Platform Reliability Engineer"
+- **Financial Services**: [Problem] + "Risk", "Compliance", "Transaction", "Portfolio"
+  - Example: "Risk Assessment Specialist", "Compliance Monitoring Coordinator", "Transaction Validator"
+- **Professional Services**: [Problem] + "Project", "Client", "Delivery", "Resource"
+  - Example: "Project Delivery Coordinator", "Client Engagement Specialist", "Resource Allocation Optimizer"
+
+**3. ROLE GENERATION ALGORITHM:**
+Step 1: Extract core business problem from strategic initiative
+Step 2: Identify primary business process category (optimization, data, quality, etc.)
+Step 3: Apply industry context to generate specific terminology
+Step 4: Map to one of the 5 agent roles (coordinator, researcher, analyst, quality-checker, actuator)
+Step 5: Create detailed workflow using trigger → flow → outcome pattern
+
+**4. WORKFLOW DETAIL SPECIFICATION:**
+For each generated agent role, define:
+- **Trigger Events**: Specific business conditions that activate this agent
+- **Input Requirements**: What data/information the agent needs to function
+- **Processing Steps**: Detailed workflow including decision points and validations
+- **Output Deliverables**: Specific results the agent produces
+- **Handoff Protocol**: How work passes to next agent or human
+- **Quality Gates**: Validation checkpoints and error handling procedures
+
+**5. TOOL INTEGRATION MAPPING:**
+Based on company systems profile, map agents to:
+- **ERP Systems**: SAP, Oracle, Microsoft Dynamics → Financial and operational data
+- **CRM Systems**: Salesforce, HubSpot → Customer relationship management
+- **Manufacturing Systems**: MES, SCADA, PLM → Production and quality control
+- **Healthcare Systems**: Epic, Cerner, MEDITECH → Patient data and clinical workflows
+- **Cloud Platforms**: AWS, Azure, GCP → Infrastructure and application services
+- **Analytics Platforms**: Tableau, Power BI, Qlik → Data analysis and reporting
+
+**6. PROGRESSIVE SPECIALIZATION FRAMEWORK:**
+- **CRAWL Phase**: Generic coordinator titles with basic workflow steps
+- **WALK Phase**: Industry-specific titles with detailed process integration
+- **RUN Phase**: Highly specialized roles with advanced automation capabilities
+
+**DYNAMIC ROLE SPECIFICATION EXAMPLES:**
+
+**Manufacturing Strategic Initiative: "Reduce Production Planning Time"**
+- Coordinator → **Production Planning Coordinator**: Orchestrates daily production schedules across multiple manufacturing lines
+- Researcher → **Demand Analytics Specialist**: Analyzes historical data and forecasts to predict material requirements
+- Analyst → **Resource Optimization Engineer**: Calculates optimal resource allocation and identifies bottlenecks
+- Quality-Checker → **Schedule Validation Auditor**: Reviews production plans for feasibility and compliance requirements
+- Actuator → **ERP Integration Specialist**: Updates production schedules in SAP and triggers material procurement
+
+**Healthcare Strategic Initiative: "Streamline Patient Documentation"**
+- Coordinator → **Clinical Documentation Coordinator**: Manages patient record workflows across care teams
+- Researcher → **Clinical Data Analyst**: Extracts and validates patient information from multiple EHR sources
+- Analyst → **Medical Coding Specialist**: Processes clinical notes and assigns appropriate medical codes
+- Quality-Checker → **Compliance Validation Auditor**: Ensures documentation meets regulatory and quality standards
+- Actuator → **EHR Integration Specialist**: Updates patient records and triggers billing workflows`;
+
   const coreFramework = `
 CORE AGENTIC BLUEPRINT FRAMEWORK:
 
@@ -225,10 +417,18 @@ When generating blueprints, follow this structured thinking process:
   const designPrinciples = `
 **BUSINESS OBJECTIVE METHODOLOGY:**
 - Derive single, measurable goal from strategic initiatives (e.g., "Cut invoice processing time by 40%")
-- Map business problems to specific agent capabilities
-- Identify systems and tools available for automation
-- Define clear success metrics and measurement methods
-- Establish realistic timelines and resource requirements
+- Map business problems to specific agent capabilities using industry-specific terminology
+- Identify systems and tools available for automation with exact integration points
+- Define clear success metrics and measurement methods with specific KPI linkages
+- Establish realistic timelines and resource requirements based on company constraints
+
+**ENHANCED AGENT SPECIFICATION REQUIREMENTS (2025 Standards):**
+- **Agent Titles**: MUST use industry-specific specialist titles, not generic roles
+- **Workflow Detail**: MUST include trigger → flow → outcome patterns for each agent
+- **Tool Integration**: MUST specify exact systems, APIs, and data transformation requirements
+- **Business Context**: MUST incorporate actual company systems and strategic initiative problems
+- **Cooperation Model**: MUST follow manager-worker patterns with clear handoff contracts
+- **Quality Gates**: MUST define specific validation points and human oversight triggers
 
 **KPI IMPROVEMENT FRAMEWORK:**
 - ⚠️ **MANDATORY**: Must identify minimum 3 KPI improvements (validation requirement)
@@ -267,14 +467,17 @@ DESIGN PRINCIPLES:
 - Maintain clear audit trails and explainability
 - Ensure compliance with industry regulations and data privacy
 
-OUTPUT REQUIREMENTS:
-- Generate vendor-neutral AI digital team blueprint
-- Map business goals to specific agent roles and capabilities
-- Define clear human oversight and control mechanisms
-- Provide realistic implementation timeline with risk mitigation
-- Link agent activities to measurable KPI improvements
+OUTPUT REQUIREMENTS (2025 Enhanced Standards):
+- Generate vendor-neutral AI digital team blueprint with industry-specific terminology
+- Map business goals to specific agent roles using workflow specificity patterns
+- Define clear human oversight and control mechanisms with progressive trust levels
+- Provide realistic implementation timeline with risk mitigation based on company constraints
+- Link agent activities to measurable KPI improvements with specific percentage targets
 ${config.includeROIProjection ? '- Include comprehensive ROI projection and business case' : ''}
-- Use business-friendly language without technical jargon
+- Use business-friendly language while incorporating industry-specific terminology
+- ENFORCE: Agent titles must be specialist roles, not generic descriptions
+- ENFORCE: Each agent must have trigger → flow → outcome workflow detail
+- ENFORCE: Tool specifications must reference actual company systems where applicable
 
 TONE & APPROACH:
 - Executive-focused and strategically oriented
@@ -285,6 +488,9 @@ TONE & APPROACH:
 
   return [
     basePrompt,
+    agenticEducationSection,
+    workflowSpecificityPatterns,
+    dynamicAgentRoleSystem,
     coreFramework,
     industrySection,
     chainOfThoughtSection,
@@ -393,10 +599,42 @@ Assess the realistic probability of achieving each KPI improvement based on:
 Include probability scores (High/Medium/Low) for each KPI target.`;
   }
 
-  // Strategic initiative focus context
+  // Strategic initiative focus context with enhanced variations
   let focusContextSection = '';
   if (config.blueprintFocusContext) {
-    focusContextSection = config.blueprintFocusContext;
+    // Check if this is a single initiative focus
+    const isSingleInitiative = config.blueprintFocusContext.includes('FOCUSED INITIATIVE ANALYSIS');
+    
+    if (isSingleInitiative) {
+      focusContextSection = `
+${config.blueprintFocusContext}
+
+**SINGLE INITIATIVE BLUEPRINT GENERATION:**
+- PRIORITY: Generate a highly specialized AI team focused exclusively on this one strategic initiative
+- AGENT SPECIALIZATION: Use the Dynamic Agent Role Generation Framework to create industry-specific roles
+- WORKFLOW DETAIL: Apply trigger → flow → outcome patterns specific to this initiative's business problems
+- TOOL INTEGRATION: Reference actual company systems mentioned in the initiative for precise integration
+- KPI ALIGNMENT: Ensure all KPI improvements directly address the specific problems listed in this initiative
+- BUSINESS CONTEXT: Incorporate the specific process metrics and investment context provided for this initiative
+
+**QUALITY STANDARDS FOR FOCUSED BLUEPRINT:**
+- Agent titles MUST be initiative-specific specialists (not generic coordinators)
+- Workflows MUST address the exact business problems listed in this initiative
+- Tools MUST reference systems that would realistically handle this type of business process
+- KPIs MUST show measurable improvements for the specific metrics mentioned in this initiative
+- Implementation timeline MUST consider the initiative's budget range and timeframe preferences`;
+    } else {
+      focusContextSection = `
+${config.blueprintFocusContext}
+
+**MULTI-INITIATIVE SYNTHESIS BLUEPRINT:**
+- APPROACH: Create a comprehensive AI team that can address multiple strategic initiatives
+- AGENT DESIGN: Use broader specialist titles that can handle diverse business processes
+- WORKFLOW INTEGRATION: Design workflows that can synthesize across different business areas
+- SYSTEM COORDINATION: Ensure agents can work with various company systems across initiatives
+- KPI COVERAGE: Generate improvements that span multiple business areas and strategic goals
+- CHANGE MANAGEMENT: Consider the complexity of implementing across multiple organizational areas`;
+    }
   }
 
   return `Create a comprehensive AI Digital Team Blueprint for the following client. Transform their business goals into a clear, actionable strategy showing exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
@@ -429,12 +667,15 @@ BLUEPRINT REQUIREMENTS:
 2. **DIGITAL TEAM** (Exactly 5 AI specialists):
    For each agent provide:
    - **Role**: One of coordinator, researcher, analyst, quality-checker, actuator
-   - **Title**: Business-friendly job title (Project Manager, Analyst, Consultant, Auditor, Ops Specialist)
-   - **Core Job**: Clear description of main responsibility in business terms
-   - **Tools Used**: 3-4 specific tools/systems this agent will use
+   - **Title**: Industry-specific specialist title (NOT generic - use pattern: [Industry Context] + [Functional Specialty])
+   - **Core Job**: MANDATORY detailed workflow using this exact pattern:
+     • **TRIGGER**: "When [specific business event] occurs..."
+     • **FLOW**: "This agent [detailed step-by-step process] using [specific tools]..."
+     • **OUTCOME**: "[Measurable result] is achieved, enabling [next business process]..."
+   - **Tools Used**: 3-4 specific tools/systems with exact integration details (APIs, data formats, system interfaces)
    - **Oversight Level**: human-approval, policy-checked, or full-autonomy
-   - **Oversight Description**: Explain human control mechanism
-   - **Linked KPIs**: 2-3 specific KPIs this agent directly impacts
+   - **Oversight Description**: Explain human control mechanism with specific intervention points
+   - **Linked KPIs**: 2-3 specific KPIs this agent directly impacts with measurable targets
 
 3. **HUMAN CHECKPOINTS** (4 control points):
    For each checkpoint provide:
@@ -491,12 +732,47 @@ ${config.includeROIProjection ? `
 
 Focus on:
 - Practical, implementable solutions using existing systems
-- Clear business language without technical jargon
-- Realistic timelines and risk-aware implementation
-- Strong human oversight and control mechanisms
-- Measurable KPI improvements linked to business goals
+- Industry-specific terminology and specialist agent titles (use Dynamic Agent Role Framework)
+- Detailed workflow specifications with trigger → flow → outcome patterns
+- Strong human oversight and control mechanisms with progressive trust levels
+- Measurable KPI improvements directly linked to specific business problems
+- Tool integration that references actual company systems where applicable
 - Progressive trust building from human control to automation
 ${config.includeROIProjection ? '- Defensible ROI projections based on process metrics' : ''}
+
+**CRITICAL QUALITY REQUIREMENTS:**
+- Apply the Dynamic Agent Role Generation Framework to create industry-specific agent titles
+- Use the Workflow Specificity Template to ensure detailed trigger → flow → outcome patterns
+- Reference actual company systems and strategic initiative problems throughout
+- Ensure every agent title reflects the specific business context and industry terminology
+- Validate that workflows demonstrate clear cooperation patterns and handoff contracts
+
+**MANDATORY BUSINESS PROCESS NARRATIVE:**
+Your response MUST tell a coherent story that maps to actual business processes:
+1. **Process Sequence**: Agents must work in logical sequence from process initiation to completion
+2. **Handoff Chain**: Each agent must clearly pass work to the next agent with specific deliverables
+3. **Business Flow**: The overall workflow must solve the exact business problems listed in the initiative
+4. **End-to-End Story**: Must have clear beginning (business trigger) → middle (process steps) → end (measurable outcome)
+5. **Domain Expertise**: Must demonstrate deep understanding of the industry's core business processes
+
+**PROCUREMENT EXAMPLE PATTERN:**
+For procurement initiatives, the story should flow: Request Analysis → Vendor Research → RFx Management → Evaluation → Award
+For manufacturing: Demand Planning → Resource Allocation → Production Scheduling → Quality Control → Delivery
+For healthcare: Patient Assessment → Care Planning → Treatment Delivery → Quality Monitoring → Outcome Tracking
+
+**WORKFLOW DETAIL VALIDATION CHECKLIST:**
+Every agent's Core Job description MUST include:
+✅ **TRIGGER**: Specific business event or condition that activates this agent
+✅ **FLOW**: Step-by-step process with decision points, validations, and tool interactions
+✅ **OUTCOME**: Measurable result that advances the business objective and enables next steps
+✅ **TOOL INTEGRATION**: Exact systems, APIs, data sources, and output formats
+✅ **HANDOFF PROTOCOL**: How work passes to next agent or human with specific deliverables
+✅ **QUALITY GATES**: Validation checkpoints and error handling procedures
+✅ **BUSINESS TERMINOLOGY**: Industry-specific language that reflects actual business processes
+
+**EXAMPLES OF REQUIRED DETAIL LEVEL:**
+❌ INSUFFICIENT: "Analyzes data and creates reports"
+✅ REQUIRED: "TRIGGER: When production planning cycle begins each Monday at 6 AM... FLOW: Agent queries SAP ERP production module via BAPI interfaces, extracts demand forecasts for next 4 weeks, cross-references with inventory levels from WMS system, calculates optimal production schedules using constraint-based algorithms, generates capacity utilization reports in Excel format... OUTCOME: Production schedule approved by human supervisor is uploaded to MES system, triggering material procurement workflows and workforce scheduling"
 
 **OUTPUT FORMAT:** You MUST respond with ONLY a valid JSON object. No markdown formatting, no explanations, no additional text.
 

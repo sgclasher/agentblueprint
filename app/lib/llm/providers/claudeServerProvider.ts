@@ -93,14 +93,60 @@ Please provide the output in a single, valid JSON object, starting with { and en
   }
 
   /**
-   * Fetches available models for Anthropic Claude (returns curated list since API requires auth)
+   * Fetches available models for Anthropic Claude using the actual Anthropic API
    * @returns {Promise<Array>} Array of available models with standardized format
    */
   static async fetchAvailableModels() {
     try {
-      // Anthropic API requires API key to list models, so we return a curated list
-      // This list is based on the official Anthropic documentation
-      const claudeModels = [
+      // Get API key from environment - we'll use the system key for model listing
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        throw new Error('Anthropic API key not configured');
+      }
+
+      console.log('[Claude Provider] Fetching models from actual Anthropic API...');
+      
+      // Call the actual Anthropic models endpoint
+      const response = await fetch('https://api.anthropic.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Anthropic API error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[Claude Provider] Fetched ${data.data?.length || 0} models from Anthropic API`);
+      
+      // Filter and format models
+      const claudeModels = data.data
+        .filter((model: any) => {
+          const id = model.id.toLowerCase();
+          // Include Claude models and exclude any non-chat models
+          return id.includes('claude') && !id.includes('embed');
+        })
+        .map((model: any) => ({
+          id: model.id,
+          name: this.formatClaudeModelName(model.id),
+          description: this.getClaudeModelDescription(model.id),
+          created: model.created,
+        }))
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+      console.log('[Claude Provider] Filtered models:', claudeModels.map((m: any) => m.id));
+      return claudeModels;
+
+    } catch (error: any) {
+      console.error('Failed to fetch Claude models from API:', error);
+      
+      // Fallback to curated list if API call fails
+      console.log('[Claude Provider] Falling back to curated model list');
+      return [
         {
           id: 'claude-3-5-sonnet-20241022',
           name: 'Claude 3.5 Sonnet (Recommended)',
@@ -111,12 +157,6 @@ Please provide the output in a single, valid JSON object, starting with { and en
           id: 'claude-3-5-haiku-20241022',
           name: 'Claude 3.5 Haiku (Fast)',
           description: 'Fastest model for quick tasks and high-volume use cases',
-          created: null,
-        },
-        {
-          id: 'claude-3-opus-20240229',
-          name: 'Claude 3 Opus (Advanced)',
-          description: 'Most intelligent model for complex reasoning tasks',
           created: null,
         },
         {
@@ -131,21 +171,39 @@ Please provide the output in a single, valid JSON object, starting with { and en
           description: 'Most intelligent Claude model for the most complex tasks',
           created: null,
         },
-        {
-          id: 'claude-3-7-sonnet-20250219',
-          name: 'Claude 3.7 Sonnet (Hybrid Reasoning)',
-          description: 'Hybrid model combining fast response with advanced reasoning',
-          created: null,
-        },
       ];
-
-      // Simulate slight delay as if fetching from API
-      await new Promise(resolve => setTimeout(resolve, 150));
-
-      return claudeModels;
-    } catch (error: any) {
-      console.error('Failed to fetch Claude models:', error);
-      throw new Error(`Failed to fetch Claude models: ${error.message}`);
     }
+  }
+
+  /**
+   * Format Claude model ID into a user-friendly name
+   */
+  private static formatClaudeModelName(modelId: string): string {
+    const nameMap: { [key: string]: string } = {
+      'claude-3-5-sonnet-20241022': 'Claude 3.5 Sonnet (Recommended)',
+      'claude-3-5-haiku-20241022': 'Claude 3.5 Haiku (Fast)',
+      'claude-3-opus-20240229': 'Claude 3 Opus (Advanced)',
+      'claude-sonnet-4-20250514': 'Claude Sonnet 4 (Latest - May 2025)',
+      'claude-opus-4-20250514': 'Claude Opus 4 (Most Intelligent)',
+      'claude-3-7-sonnet-20250219': 'Claude 3.7 Sonnet (Hybrid Reasoning)',
+    };
+    
+    return nameMap[modelId] || modelId;
+  }
+
+  /**
+   * Get description for a Claude model
+   */
+  private static getClaudeModelDescription(modelId: string): string {
+    const descMap: { [key: string]: string } = {
+      'claude-3-5-sonnet-20241022': 'Best balance of intelligence, speed, and cost',
+      'claude-3-5-haiku-20241022': 'Fastest model for quick tasks and high-volume use cases',
+      'claude-3-opus-20240229': 'Most intelligent model for complex reasoning tasks',
+      'claude-sonnet-4-20250514': 'Latest high-performance model with enhanced capabilities',
+      'claude-opus-4-20250514': 'Most intelligent Claude model for the most complex tasks',
+      'claude-3-7-sonnet-20250219': 'Hybrid model combining fast response with advanced reasoning',
+    };
+    
+    return descMap[modelId] || `Anthropic Claude model: ${modelId}`;
   }
 } 

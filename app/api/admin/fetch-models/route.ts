@@ -19,6 +19,8 @@ const FALLBACK_MODELS = {
     { id: 'gpt-4o', name: 'GPT-4o (Recommended)', description: 'Most capable GPT-4 model' },
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini (Cost-Effective)', description: 'Faster and cheaper' },
     { id: 'gpt-4.1', name: 'GPT-4.1 (Latest)', description: '1M context window' },
+    { id: 'o3', name: 'o3 (Cost-Effective Reasoning)', description: 'Cost-effective reasoning model' },
+    { id: 'o3-pro', name: 'o3-pro (Advanced Reasoning Pro)', description: 'Professional reasoning model' },
     { id: 'o1', name: 'o1 (Reasoning)', description: 'Advanced reasoning model' },
   ],
   gemini: [

@@ -113,14 +113,63 @@ export class OpenAIServerProvider {
   }
 
   /**
-   * Fetches available models for OpenAI (returns curated list since API requires auth)
+   * Fetches available models for OpenAI using the actual OpenAI API
    * @returns {Promise<Array>} Array of available models with standardized format
    */
   static async fetchAvailableModels() {
     try {
-      // OpenAI API requires API key to list models, so we return a curated list
-      // This list is based on the official OpenAI documentation and pricing page
-      const openaiModels = [
+      // Get API key from environment - we'll use the system key for model listing
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        throw new Error('OpenAI API key not configured');
+      }
+
+      console.log('[OpenAI Provider] Fetching models from actual OpenAI API...');
+      
+      // Call the actual OpenAI models endpoint
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status} - ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`[OpenAI Provider] Fetched ${data.data?.length || 0} models from OpenAI API`);
+      
+      // Filter to only chat/completion models and sort by name
+      const chatModels = data.data
+        .filter((model: any) => {
+          const id = model.id.toLowerCase();
+          // Include GPT, o1, o3 models and exclude embeddings, tts, etc.
+          return (
+            id.includes('gpt') || 
+            id.startsWith('o1') || 
+            id.startsWith('o3')
+          ) && !id.includes('embed') && !id.includes('tts');
+        })
+        .map((model: any) => ({
+          id: model.id,
+          name: this.formatModelName(model.id),
+          description: this.getModelDescription(model.id),
+          created: model.created,
+        }))
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+      console.log('[OpenAI Provider] Filtered models:', chatModels.map((m: any) => m.id));
+      return chatModels;
+
+    } catch (error: any) {
+      console.error('Failed to fetch OpenAI models from API:', error);
+      
+      // Fallback to curated list if API call fails
+      console.log('[OpenAI Provider] Falling back to curated model list');
+      return [
         {
           id: 'gpt-4o',
           name: 'GPT-4o (Recommended)',
@@ -134,50 +183,57 @@ export class OpenAIServerProvider {
           created: null,
         },
         {
-          id: 'gpt-4.1',
-          name: 'GPT-4.1 (Latest - 1M Context)',
-          description: 'Latest GPT model with 1 million token context window',
+          id: 'o3',
+          name: 'o3 (Cost-Effective Reasoning)',
+          description: 'Cost-effective reasoning model with improved performance',
           created: null,
         },
         {
-          id: 'o1',
-          name: 'o1 (Advanced Reasoning)',
-          description: 'Advanced reasoning model for complex problem-solving',
-          created: null,
-        },
-        {
-          id: 'o1-preview',
-          name: 'o1 Preview (Reasoning Beta)',
-          description: 'Preview version of the o1 reasoning model',
-          created: null,
-        },
-        {
-          id: 'o1-mini',
-          name: 'o1 Mini (Fast Reasoning)',
-          description: 'Smaller, faster version of the o1 reasoning model',
-          created: null,
-        },
-        {
-          id: 'gpt-4-turbo',
-          name: 'GPT-4 Turbo (Legacy)',
-          description: 'High-performance GPT-4 model with improved speed',
-          created: null,
-        },
-        {
-          id: 'gpt-4',
-          name: 'GPT-4 (Classic)',
-          description: 'Original GPT-4 model with excellent reasoning capabilities',
+          id: 'o3-pro',
+          name: 'o3-pro (Advanced Reasoning Pro)',
+          description: 'Professional version of o3 with enhanced reasoning capabilities',
           created: null,
         },
       ];
-
-      // Simulate slight delay as if fetching from API
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      return openaiModels;
-    } catch (error: any) {
-      console.error('Failed to fetch OpenAI models:', error);
-      throw new Error(`Failed to fetch OpenAI models: ${error.message}`);
     }
+  }
+
+  /**
+   * Format model ID into a user-friendly name
+   */
+  private static formatModelName(modelId: string): string {
+    const nameMap: { [key: string]: string } = {
+      'gpt-4o': 'GPT-4o (Recommended)',
+      'gpt-4o-mini': 'GPT-4o Mini (Cost-Effective)',
+      'gpt-4-turbo': 'GPT-4 Turbo',
+      'gpt-4': 'GPT-4 (Classic)',
+      'gpt-3.5-turbo': 'GPT-3.5 Turbo',
+      'o1': 'o1 (Advanced Reasoning)',
+      'o1-preview': 'o1 Preview (Beta)',
+      'o1-mini': 'o1 Mini (Fast Reasoning)',
+      'o3': 'o3 (Cost-Effective Reasoning)',
+      'o3-pro': 'o3-pro (Advanced Reasoning Pro)',
+    };
+    
+    return nameMap[modelId] || modelId;
+  }
+
+  /**
+   * Get description for a model
+   */
+  private static getModelDescription(modelId: string): string {
+    const descMap: { [key: string]: string } = {
+      'gpt-4o': 'Most capable GPT-4 model with multimodal capabilities',
+      'gpt-4o-mini': 'Faster and more cost-effective version of GPT-4o',
+      'gpt-4-turbo': 'High-performance GPT-4 model with improved speed',
+      'gpt-4': 'Original GPT-4 model with excellent reasoning capabilities',
+      'o1': 'Advanced reasoning model for complex problem-solving',
+      'o1-preview': 'Preview version of the o1 reasoning model',
+      'o1-mini': 'Smaller, faster version of the o1 reasoning model',
+      'o3': 'Cost-effective reasoning model with improved performance',
+      'o3-pro': 'Professional version of o3 with enhanced reasoning capabilities',
+    };
+    
+    return descMap[modelId] || `OpenAI model: ${modelId}`;
   }
 } 
