@@ -16,11 +16,12 @@
   - ✅ Add visual indicators showing which initiative is being used
   - ✅ Tests written and passing in `app/__tests__/features/strategic-initiative-selection.test.tsx`
 
-- [ ] **2.1b: Update Blueprint Tab Layout**
+- [x] **2.1b: Update Blueprint Tab Layout** ✅ **COMPLETE**
   - Primary files: `app/profile/components/AIBlueprintTab.tsx`
-  - Integrate selector into existing UI without disrupting current functionality
-  - Add loading states and user feedback
-  - Ensure mobile responsiveness
+  - ✅ Integrate selector into existing UI without disrupting current functionality
+  - ✅ Add loading states and user feedback (selector disabled during generation)
+  - ✅ Ensure mobile responsiveness (professional dropdown styling)
+  - ✅ Added initiative context indicator showing focused initiative when selected
 
 #### **Step 2.2: Enhance Blueprint API for Initiative Context** (1 hour)
 - [x] **2.2a: Update API Route Interface** ✅ **COMPLETE**
@@ -36,18 +37,29 @@
   - ✅ Preserve auto-selection behavior as default (when `selectedInitiativeIndex` is undefined)
   - ✅ Add `blueprintFocusContext` to prompt configuration interface and generation
 
-#### **Step 2.3: Create Initiative-Focused Prompts** (1 hour)
-- [ ] **2.3a: Enhance Prompt Engineering**
+#### **Step 2.3: Create Initiative-Focused Prompts** (2-3 hours) 🎯 **ENHANCED APPROACH**
+- [ ] **2.3a: Integrate Agentic AI Knowledge Base Education**
   - Primary files: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
-  - Add prompt variations for single-initiative focus
+  - ✅ **Reference Documents**: `KB_AI_AGENT_HANDBOOK.md` (agentic AI concepts), `KB_EXAMPLE_AGENTIC_SOLUTION.md` (quality benchmark)
+  - **Objective**: Transform generic "Process Analyst" outputs into specific "Vendor Evaluation Specialist" with detailed workflows
+  - **Quality Target**: Match specificity level of RFx workflow example (trigger → flow → outcome patterns)
+  - Inject agentic AI education from KB handbook into system prompt
+  - Use RFx example as template for industry-specific agent design patterns
+
+- [ ] **2.3b: Enhanced Prompt Engineering for Initiative Focus**
+  - Primary files: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
+  - Add prompt variations for single-initiative focus using KB examples
+  - Map strategic initiative problems to specific agent capabilities (procurement → RFx specialists)
   - Include initiative-specific business problems and metrics in context
+  - Generate industry-specific workflows instead of generic digital teams
   - Maintain synthesis capability for multiple initiatives
 
-- [ ] **2.3b: Cross-Provider Testing**
+- [ ] **2.3c: Cross-Provider Testing with Quality Benchmarks**
   - Primary files: `app/__tests__/features/agentic-blueprint-quality.test.ts`
-  - Write tests for focused vs. synthesized blueprints
+  - Write tests for focused vs. synthesized blueprints using KB quality standards
   - Validate effectiveness across OpenAI, Claude, and Gemini
-  - Ensure quality consistency
+  - Ensure output matches KB example specificity (agent names, tools, workflows)
+  - Test transformation: generic → industry-specific agent roles
 
 #### **Step 2.4: Opportunity-to-Blueprint Integration** (30 min)
 - [ ] **2.4a: Add Generate Blueprint Button**
@@ -75,8 +87,15 @@
   - Validate opportunity-to-blueprint navigation
   - Ensure accessibility and mobile compatibility
 
-**Target Timeline**: 4 hours total  
-**Expected Outcome**: Users can generate focused AI blueprints from specific strategic initiatives and navigate seamlessly from AI Opportunities to Blueprint generation.
+**Target Timeline**: 4-5 hours total  
+**Expected Outcome**: Users can generate highly specific, industry-focused AI blueprints from strategic initiatives with professional-grade workflow detail.
+
+**🎯 ENHANCED QUALITY APPROACH**:
+Based on user feedback that current outputs are "rather generic", Step 2.3 has been enhanced to use knowledge base documents for dramatic quality improvement:
+- **Education Source**: `KB_AI_AGENT_HANDBOOK.md` - Comprehensive agentic AI concepts for LLM education
+- **Quality Benchmark**: `KB_EXAMPLE_AGENTIC_SOLUTION.md` - RFx workflow example showing target specificity level
+- **Transformation Goal**: Generic "Process Analyst" → Specific "Vendor Evaluation Specialist" with detailed tools and workflows
+- **Industry Focus**: Map business problems to industry-specific agent capabilities and detailed implementation patterns
 
 ---
 
@@ -231,6 +250,18 @@ interface ROIProjection {
 ---
 
 ## 📚 Recently Completed
+
+### **Phase 2 Steps 2.1 & 2.2: Strategic Initiative Selection Infrastructure** ✅ **COMPLETE**
+
+**Accomplished**: Complete UI and API infrastructure for strategic initiative-focused blueprint generation
+- **Initiative Selector UI**: Professional dropdown with "Auto" and individual initiative options  
+- **State Management**: Initiative selection persists, resets on profile change, disabled during loading
+- **API Enhancement**: Server-side handling of `selectedInitiativeIndex` parameter with backward compatibility
+- **Service Layer**: Initiative filtering logic creating `focusedProfile` for targeted blueprint generation
+- **Prompt Integration**: `blueprintFocusContext` system for AI guidance on initiative-focused vs comprehensive blueprints
+- **Testing**: 7 comprehensive tests covering UI functionality, API integration, and edge cases
+
+**Impact**: Foundation complete for generating highly specific, industry-focused AI blueprints. Ready for Step 2.3 prompt enhancement to address generic output quality.
 
 ### **Phase 1 ROI Enhancement: Process Baseline Metrics & Investment Context** ✅ **COMPLETE**
 
