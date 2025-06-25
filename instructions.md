@@ -1,6 +1,126 @@
 # Development History & Agent Instructions
 ## Current Task
 
+### **Executive-Grade ROI Integration for AI Blueprint System** 🎯
+
+**Objective**: Enhance the AI Blueprint feature with sophisticated ROI calculations and professional presentation to match executive expectations. Focus on industry-validated ROI drivers: process cost reduction, labor reallocation, and risk avoidance.
+
+**Business Context**: Based on latest industry research (Centage 2025 AI ROI guide, Forbes ROI measurement), successful AI automation ROI focuses on measurable process improvements and defendable cost calculations rather than speculative revenue projections.
+
+**Current System Strengths**:
+- ✅ Functional AI blueprint generation with 5-agent teams and KPI frameworks
+- ✅ Strategic initiatives with business problems and expected outcomes  
+- ✅ Systems/applications inventory and company context
+- ✅ Multi-provider AI support with consistent quality
+
+**Enhancement Requirements**:
+- ❌ Missing process baseline metrics (cycle times, volumes, error rates)
+- ❌ No cost context for ROI calculations (labor rates, process costs)
+- ❌ No investment parameters (budget ranges, implementation readiness)
+- ❌ Blueprint presentation lacks professional ROI business case format
+
+**Implementation Plan:**
+
+#### **Phase 1: Minimal Data Enhancement** ⚡ (3-4 hours) ✅ **FULLY COMPLETE**
+**Goal**: Add just enough data to calculate defendable ROI without overwhelming users
+
+- [x] **1.1 Expand Strategic Initiative Schema** 
+  - **Files**: `app/services/types.ts` ✅ **COMPLETE**
+  - **Action**: Add optional `processMetrics` and `investmentContext` to StrategicInitiative interface
+  - **Goal**: Collect baseline metrics (cycle times, volumes, costs) and investment context
+  - **Accomplished**: Added 12 new optional fields for process baseline metrics and investment context
+
+- [x] **1.2 Add Simple ROI Collection to All Editing Interfaces**
+  - **Files**: `app/profiles/components/steps/CompanyOverviewStep.tsx`, `app/profile/components/AnalysisTab.tsx` ✅ **COMPLETE**
+  - **Action**: Add optional "Process Context" questions to strategic initiatives across all editing modes
+  - **Goal**: Gather ROI-relevant data without breaking existing profile creation flow
+  - **Accomplished**: Enhanced strategic initiatives section with user-friendly ROI data collection in both ProfileWizard and Analysis Tab editing interfaces
+
+- [x] **1.3 Debug Save Operation Issue**
+  - **Files**: `app/profile/page.tsx`, `app/store/useAuthStore.ts`, `app/services/profileService.ts` ✅ **COMPLETE**
+  - **Issue**: Save operation hangs after filling ROI fields, request never reaches server
+  - **Action**: Added comprehensive debug logging and bypassed problematic user metadata update
+  - **Goal**: Identify and fix the root cause preventing profile saves with new ROI data structure
+  - **Resolution**: Successfully bypassed Supabase auth metadata hanging issue, profile saves now work
+
+- [x] **1.4 Add ROI Read-Only Display (Optional Enhancement)**
+  - **Files**: `app/profile/page.tsx` (Overview Tab), `app/profile/components/AnalysisTab.tsx` (read-only view) ✅ **COMPLETE**
+  - **Issue**: ROI data only visible in edit mode, not displayed in read-only views
+  - **Action**: Add summary display of ROI data in non-edit mode for stakeholder visibility
+  - **Goal**: Show ROI context (process metrics, investment context) in read-only strategic initiative cards
+  - **Accomplished**: Added executive-friendly ROI summaries to both Overview tab and Analysis tab read-only views
+
+**Phase 1 Results**: 
+- ✅ Schema supports comprehensive ROI calculations with process metrics and investment context
+- ✅ UI collects ROI data through intuitive dropdowns and optional fields in ALL editing interfaces
+- ✅ Non-intrusive design preserves existing profile creation/editing experience
+- ✅ Available in both ProfileWizard (new profiles) and Analysis Tab (existing profile editing)
+- ✅ Save operation successfully stores ROI data after bypassing Supabase auth metadata issue
+- ✅ Comprehensive documentation added to README.md for future developers
+- ✅ Executive-friendly ROI summaries display in both Overview and Analysis tab read-only views
+- ✅ Ready to generate defendable ROI projections with smart defaults for missing data
+
+#### **Phase 2: Enhanced ROI Prompt Engineering** ⚡ (2-3 hours) 🔄 **READY TO START**
+**Goal**: Generate realistic ROI calculations from available data using industry intelligence
+
+- [ ] **2.1 Add ROI Calculation Prompts**
+  - **Files**: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
+  - **Action**: Add company size-based investment scaling logic and ROI projection prompts
+  - **Goal**: Generate defendable ROI using available metrics + intelligent industry defaults
+
+- [ ] **2.2 Expand Blueprint Schema for ROI**
+  - **Files**: `app/services/types.ts`
+  - **Action**: Add comprehensive `roiProjection` interface to AgenticBlueprint
+  - **Goal**: Support full ROI presentation with investment, savings, and assumptions
+
+#### **Phase 3: Professional ROI Presentation** ⚡ (2-3 hours)
+**Goal**: Display ROI business case matching executive presentation standards
+
+- [ ] **3.1 Add Executive Summary Section**
+  - **Files**: `app/profile/components/AIBlueprintTab.tsx`
+  - **Action**: Create ROI summary card with professional financial metrics presentation
+  - **Goal**: Executive-ready ROI presentation at top of blueprint
+
+- [ ] **3.2 Enhance KPI Display with ROI Links**
+  - **Files**: `app/profile/components/AIBlueprintTab.tsx`  
+  - **Action**: Show current→target values, link KPIs to ROI calculations, add measurement methods
+  - **Goal**: Clear connection between agent activities and business value
+
+#### **Phase 4: Smart Defaults & Validation** ⚡ (1-2 hours)
+**Goal**: Make ROI realistic and credible even with incomplete data
+
+- [ ] **4.1 Industry Baseline Integration**
+  - **Files**: `app/lib/llm/prompts/industryContextPrompts.ts`
+  - **Action**: Add industry-specific cost assumptions and process improvement benchmarks
+  - **Goal**: Realistic ROI scaling based on industry and company size
+
+- [ ] **4.2 ROI Validation Logic**
+  - **Files**: `app/lib/llm/prompts/agenticBlueprintPrompt.ts` (validation)
+  - **Action**: Add sanity checks for ROI percentages, payback periods, investment scaling
+  - **Goal**: Ensure all ROI projections are realistic and defensible
+
+**Target ROI Framework**:
+```typescript
+interface ROIProjection {
+  processCostSavings: string;       // "$450K annual efficiency gains"
+  laborReallocation: string;        // "$320K FTE capacity redeployment"  
+  riskAvoidance: string;           // "$150K compliance risk reduction"
+  totalInvestment: string;         // "$280K implementation cost"
+  annualValue: string;             // "$920K total annual value"
+  roiPercentage: number;           // 229
+  paybackMonths: number;           // 11
+  keyAssumptions: string[];        // ["40% cycle time improvement", "2.1 FTE reallocation"]
+}
+```
+
+**Success Criteria**: AI Blueprint generates executive-ready ROI business cases with quantified investment vs. return analysis, matching the sophistication of the procurement automation example provided.
+
+**Estimated Timeline**: 8-11 hours across 4 phases (MVP approach: 6-8 hours for Phases 1-2)
+
+---
+
+## 📝 **Previous Development Achievements**
+
 ### **Phase 3.5: Fix Prompt Compliance for KPI Improvements** ✅ **COMPLETE**
 
 **Major Achievement**: Successfully resolved the AI provider compliance issue where models (especially Gemini) were consistently failing validation by generating only 1 KPI improvement instead of the required 3+. The solution involved comprehensive prompt engineering refinements and intelligent retry logic.

@@ -192,6 +192,36 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
     updateData('systemsAndApplications', updatedSystems);
   };
 
+  // 🆕 Phase 1 ROI Enhancement: Process Metrics Helper Functions
+  const updateProcessMetrics = (initiativeIndex: number, field: string, value: string) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentMetrics = updatedInitiatives[initiativeIndex].processMetrics || {};
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      processMetrics: {
+        ...currentMetrics,
+        [field]: value
+      }
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
+  // 🆕 Phase 1 ROI Enhancement: Investment Context Helper Functions
+  const updateInvestmentContext = (initiativeIndex: number, field: string, value: string) => {
+    const currentInitiatives = data.strategicInitiatives || [];
+    const updatedInitiatives = [...currentInitiatives];
+    const currentContext = updatedInitiatives[initiativeIndex].investmentContext || {};
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      investmentContext: {
+        ...currentContext,
+        [field]: value
+      }
+    };
+    updateData('strategicInitiatives', updatedInitiatives);
+  };
+
   return (
     <div className={styles.wizardStep}>
       <h2>Company Profile</h2>
@@ -659,6 +689,188 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                   </div>
                 )}
               </div>
+
+              {/* 🆕 Phase 1 ROI Enhancement: Process Metrics Section */}
+              <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                <h6 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                  ⚡ Process Baseline Metrics <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-secondary)' }}>(Optional - for ROI calculations)</span>
+                </h6>
+                
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Current Cycle Time</label>
+                    <input
+                      type="text"
+                      value={initiative.processMetrics?.currentCycleTime || ''}
+                      onChange={(e) => updateProcessMetrics(index, 'currentCycleTime', e.target.value)}
+                      placeholder="e.g., 5 days, 2 hours, 45 minutes"
+                      className={styles.formInput}
+                    />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Current Volume</label>
+                    <input
+                      type="text"
+                      value={initiative.processMetrics?.currentVolume || ''}
+                      onChange={(e) => updateProcessMetrics(index, 'currentVolume', e.target.value)}
+                      placeholder="e.g., 50 per month, daily, weekly"
+                      className={styles.formInput}
+                    />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Current Error Rate</label>
+                    <input
+                      type="text"
+                      value={initiative.processMetrics?.currentErrorRate || ''}
+                      onChange={(e) => updateProcessMetrics(index, 'currentErrorRate', e.target.value)}
+                      placeholder="e.g., 15%, 3 per week, low/medium/high"
+                      className={styles.formInput}
+                    />
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Current Cost Level</label>
+                    <select
+                      value={initiative.processMetrics?.currentCost || ''}
+                      onChange={(e) => updateProcessMetrics(index, 'currentCost', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select cost level</option>
+                      <option value="low">💚 Low Cost</option>
+                      <option value="medium">🟡 Medium Cost</option>
+                      <option value="high">🔴 High Cost</option>
+                      <option value="very high">🚨 Very High Cost</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Labor Intensity</label>
+                    <select
+                      value={initiative.processMetrics?.laborIntensity || ''}
+                      onChange={(e) => updateProcessMetrics(index, 'laborIntensity', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select intensity</option>
+                      <option value="low">🤖 Low - Mostly Automated</option>
+                      <option value="medium">⚖️ Medium - Mixed Manual/Auto</option>
+                      <option value="high">👥 High - Mostly Manual</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Process Complexity</label>
+                    <select
+                      value={initiative.processMetrics?.processComplexity || ''}
+                      onChange={(e) => updateProcessMetrics(index, 'processComplexity', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select complexity</option>
+                      <option value="simple">🟢 Simple - Few Steps</option>
+                      <option value="moderate">🟡 Moderate - Some Complexity</option>
+                      <option value="complex">🔴 Complex - Many Dependencies</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* 🆕 Phase 1 ROI Enhancement: Investment Context Section */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h6 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: '600' }}>
+                  💰 Investment Context <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-secondary)' }}>(Optional - for ROI planning)</span>
+                </h6>
+                
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Budget Range</label>
+                    <select
+                      value={initiative.investmentContext?.budgetRange || ''}
+                      onChange={(e) => updateInvestmentContext(index, 'budgetRange', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select budget range</option>
+                      <option value="under $100K">💰 Under $100K</option>
+                      <option value="$100K-500K">💰💰 $100K - $500K</option>
+                      <option value="$500K-1M">💰💰💰 $500K - $1M</option>
+                      <option value="$1M+">💰💰💰💰 $1M+</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Timeframe Preference</label>
+                    <select
+                      value={initiative.investmentContext?.timeframePreference || ''}
+                      onChange={(e) => updateInvestmentContext(index, 'timeframePreference', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select timeframe</option>
+                      <option value="6 months">⚡ 6 months - Quick Win</option>
+                      <option value="1 year">📅 1 year - Standard</option>
+                      <option value="18 months">🏗️ 18 months - Comprehensive</option>
+                      <option value="flexible">🤷 Flexible - Quality Over Speed</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Implementation Readiness</label>
+                    <select
+                      value={initiative.investmentContext?.implementationReadiness || ''}
+                      onChange={(e) => updateInvestmentContext(index, 'implementationReadiness', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select readiness</option>
+                      <option value="low">🔴 Low - Need Preparation</option>
+                      <option value="medium">🟡 Medium - Some Preparation Needed</option>
+                      <option value="high">🟢 High - Ready to Start</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Risk Tolerance</label>
+                    <select
+                      value={initiative.investmentContext?.riskTolerance || ''}
+                      onChange={(e) => updateInvestmentContext(index, 'riskTolerance', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select tolerance</option>
+                      <option value="conservative">🛡️ Conservative - Safe Approach</option>
+                      <option value="moderate">⚖️ Moderate - Balanced Risk</option>
+                      <option value="aggressive">🚀 Aggressive - High Upside</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Success Definition</label>
+                    <select
+                      value={initiative.investmentContext?.successDefinition || ''}
+                      onChange={(e) => updateInvestmentContext(index, 'successDefinition', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select primary goal</option>
+                      <option value="cost reduction">💰 Cost Reduction</option>
+                      <option value="efficiency gains">⚡ Efficiency Gains</option>
+                      <option value="quality improvement">✨ Quality Improvement</option>
+                      <option value="revenue growth">📈 Revenue Growth</option>
+                      <option value="risk mitigation">🛡️ Risk Mitigation</option>
+                    </select>
+                  </div>
+                  
+                  <div className={styles.formGroup}>
+                    <label>Stakeholder Buy-in</label>
+                    <select
+                      value={initiative.investmentContext?.stakeholderBuyIn || ''}
+                      onChange={(e) => updateInvestmentContext(index, 'stakeholderBuyIn', e.target.value)}
+                      className={styles.formSelect}
+                    >
+                      <option value="">Select buy-in level</option>
+                      <option value="low">🔴 Low - Need Convincing</option>
+                      <option value="medium">🟡 Medium - Cautiously Supportive</option>
+                      <option value="high">🟢 High - Strong Support</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
               
               <p style={{ 
                 fontSize: '0.75rem', 
@@ -666,7 +878,7 @@ const CompanyOverviewStep: FC<StepProps> = ({ data, updateData }) => {
                 margin: '1rem 0 0 0',
                 lineHeight: '1.4'
               }}>
-                💡 Tip: Add specific, measurable outcomes and metrics to track initiative success.
+                💡 Tip: Add specific, measurable outcomes and metrics to track initiative success. The process metrics and investment context help generate more accurate ROI projections.
               </p>
             </div>
           </div>

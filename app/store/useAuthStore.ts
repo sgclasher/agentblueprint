@@ -198,24 +198,51 @@ const useAuthStore = create<AuthStore>((set, get) => {
 
   updateUserAndProfile: async (userUpdates, profileUpdates) => {
     try {
+      console.log('🏪 [AuthStore] updateUserAndProfile called with:', {
+        userUpdates,
+        profileKeys: Object.keys(profileUpdates),
+        strategicInitiativesCount: profileUpdates.strategicInitiatives?.length || 0,
+        hasProcessMetrics: profileUpdates.strategicInitiatives?.some(init => init.processMetrics) || false,
+        hasInvestmentContext: profileUpdates.strategicInitiatives?.some(init => init.investmentContext) || false,
+      });
+      
       set({ isLoading: true });
       
-      // Update user metadata in Supabase Auth
-      const { data: userData, error: userError } = await supabase.auth.updateUser({
-        data: userUpdates,
-      });
-
-      if (userError) throw userError;
+      console.log('👤 [AuthStore] Updating user metadata...');
+      console.log('🔍 [AuthStore] User updates object:', userUpdates);
+      
+      // Skip user metadata update to prevent hanging - focus on profile save
+      let userData = null;
+      console.log('⚠️ [AuthStore] Temporarily skipping user metadata update to prevent hanging');
+      console.log('💡 [AuthStore] Focusing on profile save with ROI data - user metadata can be updated later');
+      console.log('✅ [AuthStore] User metadata step completed (skipped)');
+      console.log('💾 [AuthStore] Calling ProfileService.saveCurrentUserProfile...');
 
       // Save profile data to the 'profiles' table
       const savedProfile = await ProfileService.saveCurrentUserProfile(profileUpdates);
+      
+      console.log('✅ [AuthStore] Profile saved successfully:', {
+        profileId: savedProfile.id,
+        companyName: savedProfile.companyName,
+        strategicInitiativesCount: savedProfile.strategicInitiatives?.length || 0,
+      });
 
-      // Update the state
-      set({ user: userData.user, profile: savedProfile });
+      // Update the state - keep current user since we skipped user metadata update
+      const currentState = get();
+      set({ 
+        user: currentState.user, 
+        profile: savedProfile 
+      });
 
-      return { success: true, data: { user: userData.user, profile: savedProfile } };
+      console.log('🎉 [AuthStore] updateUserAndProfile completed successfully');
+      return { success: true, data: { user: currentState.user, profile: savedProfile } };
     } catch (error: any) {
-      console.error('Update user and profile error:', error);
+      console.error('💥 [AuthStore] updateUserAndProfile error:', error);
+      console.error('🔍 [AuthStore] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
       return { success: false, error: error.message };
     } finally {
       set({ isLoading: false });

@@ -93,6 +93,26 @@ export interface StrategicInitiative {
     estimatedBudget?: string;           // "$500K", "$2M-5M"
     priority?: 'High' | 'Medium' | 'Low';
     status?: 'Planning' | 'In Progress' | 'On Hold' | 'Completed';
+    
+    // 🆕 Phase 1 ROI Enhancement: Process Baseline Metrics
+    processMetrics?: {
+        currentCycleTime?: string;      // "5 days", "2 hours", "45 minutes"
+        currentVolume?: string;         // "50 requests per month", "daily transactions", "weekly reports"
+        currentErrorRate?: string;      // "15%", "3 errors per week", "low/medium/high"
+        currentCost?: string;           // "low/medium/high", "$X per transaction", "expensive"
+        laborIntensity?: string;        // "high", "medium", "low" - how much manual work required
+        processComplexity?: string;     // "simple", "moderate", "complex" - process difficulty level
+    };
+    
+    // 🆕 Phase 1 ROI Enhancement: Investment Context
+    investmentContext?: {
+        budgetRange?: string;           // "under $100K", "$100K-500K", "$500K-1M", "$1M+"
+        timeframePreference?: string;   // "6 months", "1 year", "18 months", "flexible"
+        implementationReadiness?: string; // "low", "medium", "high" - organizational readiness
+        riskTolerance?: string;         // "conservative", "moderate", "aggressive"
+        successDefinition?: string;     // "cost reduction", "efficiency gains", "quality improvement"
+        stakeholderBuyIn?: string;      // "low", "medium", "high" - leadership support level
+    };
 }
 
 export interface SystemApplication {

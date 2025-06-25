@@ -63,12 +63,43 @@ const AnalysisTab: FC<AnalysisTabProps> = ({ profile, isEditing, updateProfile }
     updateArrayField(initiativeIndex, field, newArray);
   };
 
-  // Helper function to update specific array item
+  // Helper function to update array item
   const updateArrayItem = (initiativeIndex: number, field: string, itemIndex: number, value: string) => {
-    const currentArray = (initiatives[initiativeIndex] as any)[field] || [];
-    const newArray = [...currentArray];
-    newArray[itemIndex] = value;
-    updateArrayField(initiativeIndex, field, newArray);
+    const currentArray = [...((initiatives[initiativeIndex] as any)[field] || [])];
+    currentArray[itemIndex] = value;
+    updateArrayField(initiativeIndex, field, currentArray);
+  };
+
+  // 🆕 Phase 1 ROI Enhancement: Process Metrics Helper Functions
+  const updateProcessMetrics = (initiativeIndex: number, field: string, value: string) => {
+    if (!updateProfile) return;
+    
+    const updatedInitiatives = [...initiatives];
+    const currentMetrics = updatedInitiatives[initiativeIndex].processMetrics || {};
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      processMetrics: {
+        ...currentMetrics,
+        [field]: value
+      }
+    };
+    updateProfile('strategicInitiatives', updatedInitiatives);
+  };
+
+  // 🆕 Phase 1 ROI Enhancement: Investment Context Helper Functions
+  const updateInvestmentContext = (initiativeIndex: number, field: string, value: string) => {
+    if (!updateProfile) return;
+    
+    const updatedInitiatives = [...initiatives];
+    const currentContext = updatedInitiatives[initiativeIndex].investmentContext || {};
+    updatedInitiatives[initiativeIndex] = {
+      ...updatedInitiatives[initiativeIndex],
+      investmentContext: {
+        ...currentContext,
+        [field]: value
+      }
+    };
+    updateProfile('strategicInitiatives', updatedInitiatives);
   };
 
   const getPriorityConfig = (priority: string) => {
@@ -610,6 +641,212 @@ const AnalysisTab: FC<AnalysisTabProps> = ({ profile, isEditing, updateProfile }
                   </div>
                 </div>
 
+                {/* 🆕 Phase 1 ROI Enhancement: Process Metrics Section */}
+                <div style={{ marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'rgba(59, 130, 246, 0.03)', borderRadius: 'var(--border-radius)', border: '1px solid rgba(59, 130, 246, 0.1)' }}>
+                  <h5 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    ⚡ Process Baseline Metrics <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-secondary)' }}>(Optional - for ROI calculations)</span>
+                  </h5>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Current Cycle Time
+                      </label>
+                      <input
+                        type="text"
+                        className={styles.editableInput}
+                        value={initiative.processMetrics?.currentCycleTime || ''}
+                        onChange={(e) => updateProcessMetrics(index, 'currentCycleTime', e.target.value)}
+                        placeholder="e.g., 5 days, 2 hours, 45 minutes"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Current Volume
+                      </label>
+                      <input
+                        type="text"
+                        className={styles.editableInput}
+                        value={initiative.processMetrics?.currentVolume || ''}
+                        onChange={(e) => updateProcessMetrics(index, 'currentVolume', e.target.value)}
+                        placeholder="e.g., 50 per month, daily, weekly"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Current Error Rate
+                      </label>
+                      <input
+                        type="text"
+                        className={styles.editableInput}
+                        value={initiative.processMetrics?.currentErrorRate || ''}
+                        onChange={(e) => updateProcessMetrics(index, 'currentErrorRate', e.target.value)}
+                        placeholder="e.g., 15%, 3 per week, low/medium/high"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Current Cost Level
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.processMetrics?.currentCost || ''}
+                        onChange={(e) => updateProcessMetrics(index, 'currentCost', e.target.value)}
+                      >
+                        <option value="">Select cost level</option>
+                        <option value="low">💚 Low Cost</option>
+                        <option value="medium">🟡 Medium Cost</option>
+                        <option value="high">🔴 High Cost</option>
+                        <option value="very high">🚨 Very High Cost</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Labor Intensity
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.processMetrics?.laborIntensity || ''}
+                        onChange={(e) => updateProcessMetrics(index, 'laborIntensity', e.target.value)}
+                      >
+                        <option value="">Select intensity</option>
+                        <option value="low">🤖 Low - Mostly Automated</option>
+                        <option value="medium">⚖️ Medium - Mixed Manual/Auto</option>
+                        <option value="high">👥 High - Mostly Manual</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Process Complexity
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.processMetrics?.processComplexity || ''}
+                        onChange={(e) => updateProcessMetrics(index, 'processComplexity', e.target.value)}
+                      >
+                        <option value="">Select complexity</option>
+                        <option value="simple">🟢 Simple - Few Steps</option>
+                        <option value="moderate">🟡 Moderate - Some Complexity</option>
+                        <option value="complex">🔴 Complex - Many Dependencies</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 🆕 Phase 1 ROI Enhancement: Investment Context Section */}
+                <div style={{ marginBottom: '2rem', padding: '1.5rem', backgroundColor: 'rgba(16, 185, 129, 0.03)', borderRadius: 'var(--border-radius)', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                  <h5 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: 'var(--text-primary)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    💰 Investment Context <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: 'var(--text-secondary)' }}>(Optional - for ROI planning)</span>
+                  </h5>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Budget Range
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.investmentContext?.budgetRange || ''}
+                        onChange={(e) => updateInvestmentContext(index, 'budgetRange', e.target.value)}
+                      >
+                        <option value="">Select budget range</option>
+                        <option value="under $100K">💰 Under $100K</option>
+                        <option value="$100K-500K">💰💰 $100K - $500K</option>
+                        <option value="$500K-1M">💰💰💰 $500K - $1M</option>
+                        <option value="$1M+">💰💰💰💰 $1M+</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Timeframe Preference
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.investmentContext?.timeframePreference || ''}
+                        onChange={(e) => updateInvestmentContext(index, 'timeframePreference', e.target.value)}
+                      >
+                        <option value="">Select timeframe</option>
+                        <option value="6 months">⚡ 6 months - Quick Win</option>
+                        <option value="1 year">📅 1 year - Standard</option>
+                        <option value="18 months">🏗️ 18 months - Comprehensive</option>
+                        <option value="flexible">🤷 Flexible - Quality Over Speed</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Implementation Readiness
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.investmentContext?.implementationReadiness || ''}
+                        onChange={(e) => updateInvestmentContext(index, 'implementationReadiness', e.target.value)}
+                      >
+                        <option value="">Select readiness</option>
+                        <option value="low">🔴 Low - Need Preparation</option>
+                        <option value="medium">🟡 Medium - Some Preparation Needed</option>
+                        <option value="high">🟢 High - Ready to Start</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Risk Tolerance
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.investmentContext?.riskTolerance || ''}
+                        onChange={(e) => updateInvestmentContext(index, 'riskTolerance', e.target.value)}
+                      >
+                        <option value="">Select tolerance</option>
+                        <option value="conservative">🛡️ Conservative - Safe Approach</option>
+                        <option value="moderate">⚖️ Moderate - Balanced Risk</option>
+                        <option value="aggressive">🚀 Aggressive - High Upside</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Success Definition
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.investmentContext?.successDefinition || ''}
+                        onChange={(e) => updateInvestmentContext(index, 'successDefinition', e.target.value)}
+                      >
+                        <option value="">Select primary goal</option>
+                        <option value="cost reduction">💰 Cost Reduction</option>
+                        <option value="efficiency gains">⚡ Efficiency Gains</option>
+                        <option value="quality improvement">✨ Quality Improvement</option>
+                        <option value="revenue growth">📈 Revenue Growth</option>
+                        <option value="risk mitigation">🛡️ Risk Mitigation</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 'var(--font-weight-medium)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                        Stakeholder Buy-in
+                      </label>
+                      <select
+                        className={styles.editableSelect}
+                        value={initiative.investmentContext?.stakeholderBuyIn || ''}
+                        onChange={(e) => updateInvestmentContext(index, 'stakeholderBuyIn', e.target.value)}
+                      >
+                        <option value="">Select buy-in level</option>
+                        <option value="low">🔴 Low - Need Convincing</option>
+                        <option value="medium">🟡 Medium - Cautiously Supportive</option>
+                        <option value="high">🟢 High - Strong Support</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Editable Content Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
                   {/* Left Column: Editable Arrays */}
@@ -712,6 +949,124 @@ const AnalysisTab: FC<AnalysisTabProps> = ({ profile, isEditing, updateProfile }
                     )}
                   </div>
                 </div>
+
+                {/* 🆕 ROI Summary Display */}
+                {(initiative.processMetrics || initiative.investmentContext) && (
+                  <div style={{ 
+                    marginBottom: '1.5rem', 
+                    padding: '1.25rem', 
+                    background: 'rgba(59, 130, 246, 0.02)', 
+                    borderRadius: 'var(--border-radius)',
+                    border: '1px solid rgba(59, 130, 246, 0.08)'
+                  }}>
+                    <div style={{ 
+                      fontSize: '0.9rem', 
+                      fontWeight: '600', 
+                      color: 'var(--text-primary)', 
+                      marginBottom: '1rem',
+                      paddingBottom: '0.5rem',
+                      borderBottom: '1px solid rgba(59, 130, 246, 0.1)',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem' 
+                    }}>
+                      💰 ROI Context
+                    </div>
+                    
+                    {/* Process Metrics Row */}
+                    {(initiative.processMetrics?.currentCycleTime || initiative.processMetrics?.currentVolume || initiative.processMetrics?.currentCost || initiative.processMetrics?.laborIntensity) && (
+                      <div style={{ marginBottom: '1rem' }}>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: '500' }}>
+                          Process Baseline
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                          {initiative.processMetrics?.currentCycleTime && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Cycle Time</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.processMetrics.currentCycleTime}</div>
+                            </div>
+                          )}
+                          {initiative.processMetrics?.currentVolume && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Volume</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.processMetrics.currentVolume}</div>
+                            </div>
+                          )}
+                          {initiative.processMetrics?.currentCost && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Cost Level</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                                {initiative.processMetrics.currentCost === 'low' ? 'Low Cost' :
+                                 initiative.processMetrics.currentCost === 'medium' ? 'Medium Cost' :
+                                 initiative.processMetrics.currentCost === 'high' ? 'High Cost' :
+                                 initiative.processMetrics.currentCost === 'very high' ? 'Very High Cost' :
+                                 initiative.processMetrics.currentCost}
+                              </div>
+                            </div>
+                          )}
+                          {initiative.processMetrics?.laborIntensity && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Labor Intensity</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                                {initiative.processMetrics.laborIntensity === 'low' ? 'Mostly Automated' :
+                                 initiative.processMetrics.laborIntensity === 'medium' ? 'Mixed Manual/Auto' :
+                                 initiative.processMetrics.laborIntensity === 'high' ? 'Mostly Manual' :
+                                 initiative.processMetrics.laborIntensity}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Investment Context Row */}
+                    {(initiative.investmentContext?.budgetRange || initiative.investmentContext?.timeframePreference || initiative.investmentContext?.implementationReadiness || initiative.investmentContext?.successDefinition) && (
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: '500' }}>
+                          Investment Planning
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+                          {initiative.investmentContext?.budgetRange && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Budget Range</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.investmentContext.budgetRange}</div>
+                            </div>
+                          )}
+                          {initiative.investmentContext?.timeframePreference && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Timeline</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.investmentContext.timeframePreference}</div>
+                            </div>
+                          )}
+                          {initiative.investmentContext?.implementationReadiness && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Readiness</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                                {initiative.investmentContext.implementationReadiness === 'low' ? 'Need Preparation' :
+                                 initiative.investmentContext.implementationReadiness === 'medium' ? 'Some Prep Needed' :
+                                 initiative.investmentContext.implementationReadiness === 'high' ? 'Ready to Start' :
+                                 initiative.investmentContext.implementationReadiness}
+                              </div>
+                            </div>
+                          )}
+                          {initiative.investmentContext?.successDefinition && (
+                            <div style={{ fontSize: '0.85rem', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.25rem' }}>Success Goal</div>
+                              <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                                {initiative.investmentContext.successDefinition === 'cost reduction' ? 'Cost Reduction' :
+                                 initiative.investmentContext.successDefinition === 'efficiency gains' ? 'Efficiency Gains' :
+                                 initiative.investmentContext.successDefinition === 'quality improvement' ? 'Quality Improvement' :
+                                 initiative.investmentContext.successDefinition === 'revenue growth' ? 'Revenue Growth' :
+                                 initiative.investmentContext.successDefinition === 'risk mitigation' ? 'Risk Mitigation' :
+                                 initiative.investmentContext.successDefinition}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Initiative Content Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>

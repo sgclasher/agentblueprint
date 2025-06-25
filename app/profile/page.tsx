@@ -298,6 +298,66 @@ const ProfileOverviewTab: FC<ProfileTabProps> = ({ profile, isEditing, updatePro
                                                 <small style={{ color: 'var(--text-muted)' }}>Problems: {initiative.businessProblems.length}</small>
                                             </div>
                                         )}
+                                        
+                                        {/* 🆕 ROI Summary Display */}
+                                        {(initiative.processMetrics || initiative.investmentContext) && (
+                                            <div style={{ 
+                                                marginTop: '0.75rem', 
+                                                padding: '1rem', 
+                                                background: 'rgba(59, 130, 246, 0.02)', 
+                                                borderRadius: '6px',
+                                                border: '1px solid rgba(59, 130, 246, 0.08)'
+                                            }}>
+                                                <div style={{ 
+                                                    fontSize: '0.85rem', 
+                                                    fontWeight: '600', 
+                                                    color: 'var(--text-primary)', 
+                                                    marginBottom: '0.75rem',
+                                                    paddingBottom: '0.5rem',
+                                                    borderBottom: '1px solid rgba(59, 130, 246, 0.1)'
+                                                }}>
+                                                    💰 ROI Context
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', fontSize: '0.8rem' }}>
+                                                    {initiative.processMetrics?.currentCycleTime && (
+                                                        <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                                                            <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '0.2rem' }}>Cycle Time</div>
+                                                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.processMetrics.currentCycleTime}</div>
+                                                        </div>
+                                                    )}
+                                                    {initiative.processMetrics?.currentCost && (
+                                                        <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                                                            <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '0.2rem' }}>Cost Level</div>
+                                                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                                                                {initiative.processMetrics.currentCost === 'low' ? 'Low Cost' :
+                                                                 initiative.processMetrics.currentCost === 'medium' ? 'Medium Cost' :
+                                                                 initiative.processMetrics.currentCost === 'high' ? 'High Cost' :
+                                                                 initiative.processMetrics.currentCost === 'very high' ? 'Very High Cost' :
+                                                                 initiative.processMetrics.currentCost}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {initiative.investmentContext?.budgetRange && (
+                                                        <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                                                            <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '0.2rem' }}>Budget</div>
+                                                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.investmentContext.budgetRange}</div>
+                                                        </div>
+                                                    )}
+                                                    {initiative.investmentContext?.timeframePreference && (
+                                                        <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                                                            <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '0.2rem' }}>Timeline</div>
+                                                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.investmentContext.timeframePreference}</div>
+                                                        </div>
+                                                    )}
+                                                    {initiative.investmentContext?.implementationReadiness && (
+                                                        <div style={{ padding: '0.4rem', background: 'var(--bg-secondary)', borderRadius: '4px' }}>
+                                                            <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginBottom: '0.2rem' }}>Readiness</div>
+                                                            <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{initiative.investmentContext.implementationReadiness}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             )}
@@ -540,13 +600,41 @@ export default function ProfilePage() {
     if (!editableProfile || !editableUser) return;
     
     try {
-        await updateUserAndProfile(
+        console.log('🔄 Starting save operation...');
+        console.log('📊 Profile data structure:', {
+          strategicInitiativesCount: editableProfile.strategicInitiatives?.length || 0,
+          hasProcessMetrics: editableProfile.strategicInitiatives?.some(init => init.processMetrics) || false,
+          hasInvestmentContext: editableProfile.strategicInitiatives?.some(init => init.investmentContext) || false,
+          profileKeys: Object.keys(editableProfile),
+        });
+
+        // Check for any potential serialization issues
+        try {
+          JSON.stringify(editableProfile);
+          console.log('✅ Profile data serialization check passed');
+        } catch (serializationError) {
+          console.error('❌ Profile data serialization failed:', serializationError);
+          alert('Error: Profile data contains invalid values that cannot be saved. Please check your input fields.');
+          return;
+        }
+
+        console.log('📤 Calling updateUserAndProfile...');
+        const result = await updateUserAndProfile(
             { full_name: editableUser.displayName },
             editableProfile
         );
-        setIsEditing(false);
+        
+        console.log('📥 Save result:', result);
+        
+        if (result.success) {
+          console.log('✅ Save completed successfully');
+          setIsEditing(false);
+        } else {
+          console.error('❌ Save failed:', result.error);
+          alert(`Failed to save changes: ${result.error}`);
+        }
     } catch(error) {
-        console.error("Failed to update profile", error);
+        console.error("💥 Save operation failed:", error);
         alert('Failed to save changes. Please try again.');
     }
   };

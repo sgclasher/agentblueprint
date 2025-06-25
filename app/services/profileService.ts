@@ -24,6 +24,15 @@ export class ProfileService {
    */
   static async saveCurrentUserProfile(profileData: Partial<Profile>): Promise<Profile> {
     try {
+      console.log('💾 [ProfileService] saveCurrentUserProfile called with:', {
+        profileId: profileData.id,
+        companyName: profileData.companyName,
+        strategicInitiativesCount: profileData.strategicInitiatives?.length || 0,
+        hasProcessMetrics: profileData.strategicInitiatives?.some(init => init.processMetrics) || false,
+        hasInvestmentContext: profileData.strategicInitiatives?.some(init => init.investmentContext) || false,
+        profileDataKeys: Object.keys(profileData),
+      });
+
       const profileToSave: Partial<Profile> = {
         ...profileData,
         updatedAt: new Date().toISOString()
@@ -35,13 +44,18 @@ export class ProfileService {
         profileToSave.status = 'complete'; // Mark as complete on first save
       }
 
+      console.log('🔐 [ProfileService] Getting session for authorization...');
       // Get current session for authorization
       const { supabase } = await import('../lib/supabase');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
+        console.error('❌ [ProfileService] Session error:', sessionError);
         throw new Error('Authentication required for profile saving. Please sign in.');
       }
+
+      console.log('✅ [ProfileService] Session obtained successfully');
+      console.log('📤 [ProfileService] Making API request to /api/profiles/save...');
 
       // Use server-side API route to save profile (bypasses RLS issues)
       const response = await fetch('/api/profiles/save', {
@@ -54,22 +68,44 @@ export class ProfileService {
         credentials: 'same-origin'
       });
 
+      console.log('📥 [ProfileService] API response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+      });
+
       if (!response.ok) {
+        console.error('❌ [ProfileService] API response not OK');
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ [ProfileService] Error data:', errorData);
         throw new Error(errorData.error || `Profile save failed: ${response.status}`);
       }
 
+      console.log('🔍 [ProfileService] Parsing response JSON...');
       const result = await response.json();
+      
+      console.log('📊 [ProfileService] API result:', {
+        success: result.success,
+        hasProfile: !!result.profile,
+        profileId: result.profile?.id,
+        error: result.error,
+      });
 
       if (!result.success) {
+        console.error('❌ [ProfileService] Save result indicates failure:', result.error);
         throw new Error(result.error || 'Profile save failed');
       }
 
-      console.log('✅ Profile saved successfully via API');
+      console.log('✅ [ProfileService] Profile saved successfully via API');
       return result.profile;
       
     } catch (error) {
-      console.error('Error saving current user profile:', error);
+      console.error('💥 [ProfileService] saveCurrentUserProfile error:', error);
+      console.error('🔍 [ProfileService] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown',
+      });
       throw error;
     }
   }

@@ -294,3 +294,56 @@ Comprehensive Cursor Rules system automatically provides agentic AI context and 
 ---
 
 **Built with ❤️ for businesses ready to embrace AI transformation**
+
+### **💰 ROI Enhancement System** ✨ **NEW - January 2025**
+
+**Purpose**: Collect process baseline metrics and investment context to generate sophisticated ROI calculations for AI Blueprint recommendations.
+
+#### **📊 Data Structure & Schema**
+- **Core Interface**: `StrategicInitiative` in `app/services/types.ts`
+- **New Fields Added**:
+  - `processMetrics?: ProcessMetrics` - Baseline process performance data
+  - `investmentContext?: InvestmentContext` - Budget and implementation readiness
+- **Field Count**: 12 new optional fields across two categories
+
+#### **🔧 Implementation Files**
+
+**Schema & Types**:
+- **`app/services/types.ts`** - Core ROI data interfaces (ProcessMetrics, InvestmentContext)
+
+**User Interface**:
+- **`app/profiles/components/steps/CompanyOverviewStep.tsx`** - ROI fields in ProfileWizard (new profile creation)
+- **`app/profile/components/AnalysisTab.tsx`** - ROI fields in profile editing mode
+
+**Data Flow**:
+- **`app/store/useAuthStore.ts`** - Save operation with user metadata handling
+- **`app/services/profileService.ts`** - Profile save service with debug logging
+- **`app/api/profiles/save/route.ts`** - Server-side profile save endpoint
+
+#### **📝 ROI Data Categories**
+
+**Process Baseline Metrics** (6 fields):
+- Current Cycle Time, Volume, Error Rate
+- Current Cost Level, Labor Intensity, Process Complexity
+
+**Investment Context** (6 fields):
+- Budget Range, Timeframe Preference, Implementation Readiness
+- Risk Tolerance, Success Definition, Stakeholder Buy-in
+
+#### **🎯 Usage Patterns**
+- **All fields are optional** - non-breaking for existing profiles
+- **Dropdown-based UI** - user-friendly with descriptive options and emojis
+- **Available in both editing modes** - ProfileWizard and Analysis Tab
+- **Read-only display** - Executive-friendly ROI summaries shown in Overview and Analysis tabs
+- **Stored in database** - persisted in `profiles.profile_data` JSONB field
+
+#### **🔄 Future Phases**
+- **Phase 2**: Enhanced prompt engineering to generate ROI calculations from collected data
+- **Phase 3**: Professional ROI presentation in AI Blueprint output
+- **Phase 4**: Industry-specific ROI benchmarks and smart defaults
+
+#### **⚠️ Developer Notes**
+- ROI data is nested within `strategicInitiatives` array
+- User metadata update may hang - currently bypassed to prevent blocking profile saves
+- Debug logging throughout save pipeline for troubleshooting
+- Schema is extensible for additional ROI metrics
