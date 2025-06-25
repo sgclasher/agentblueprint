@@ -8,6 +8,8 @@
 - **KB_AI_AGENT_HANDBOOK.md:** This document is a comprehensive handbook that defines agentic AI and provides a strategic guide for its implementation within an enterprise. It covers the 2025 market landscape, governance frameworks, core architectural components, design patterns, and real-world case studies.
 - **KB_AGENTIC_WORKFLOW_MVP.md:** This document provides a high-level blueprint for implementing a minimum viable product (MVP) of an agentic AI workflow. It outlines the key components, defines the roles and collaborative processes of different AI agents, and specifies the critical points for human oversight and safety.
 
+##
+
 
 ## 🚀 What This Platform Does
 
@@ -227,7 +229,8 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 ### **Configuration & Setup**
 - **`DATABASE_SCHEMA.md`**: Complete database schema documentation
 - **`SUPABASE_SETUP.md`**: Supabase configuration instructions
-- **`instructions.md`**: Development history and current implementation plans
+- **`instructions.md`**: current implementation plans
+- **`DEVELOPMENT_HISTORY.md`**: comprehensive development history 
 
 ### **Testing**
 - **`app/__tests__/features/`**: Feature-specific test suites
