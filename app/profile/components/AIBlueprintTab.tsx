@@ -23,28 +23,86 @@ import styles from '../../profiles/[id]/ProfileDetail.module.css';
 interface AIBlueprintTabProps {
   profile: Profile;
   isEditing: boolean;
+  blueprintContext?: {
+    opportunity?: any;
+    initiativeIndex?: number;
+    initiativeSpecialInstructions?: string;
+  } | null;
+  onClearContext?: () => void;
 }
 
-const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
+const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing, blueprintContext, onClearContext }) => {
   const [blueprint, setBlueprint] = useState<AgenticBlueprint | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCached, setIsCached] = useState(false);
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [selectedInitiative, setSelectedInitiative] = useState<string>('auto');
+  const [specialInstructions, setSpecialInstructions] = useState<string>('');
+  const [hasProcessedContext, setHasProcessedContext] = useState<string | null>(null);
 
-  // Reset initiative selection when profile changes
+  // Reset initiative selection and special instructions when profile changes
   useEffect(() => {
     setSelectedInitiative('auto');
+    setSpecialInstructions('');
   }, [profile?.id]);
 
-  // Auto-load cached blueprint on component mount
+  // Debug blueprint state changes
   useEffect(() => {
-    if (!hasAttemptedLoad && !isLoading && profile?.id) {
+    console.log('[AIBlueprint] Blueprint state changed:', {
+      hasBlueprint: !!blueprint,
+      businessObjective: blueprint?.businessObjective?.slice(0, 50) + '...',
+      digitalTeamSize: blueprint?.digitalTeam?.length
+    });
+  }, [blueprint]);
+
+  // Handle blueprint context from AI Opportunities navigation and auto-generate
+  useEffect(() => {
+    if (blueprintContext && blueprintContext.opportunity && !isLoading) {
+      const contextId = `${blueprintContext.opportunity.title}-${blueprintContext.initiativeIndex || 'auto'}`;
+      
+      // Prevent processing the same context twice
+      if (hasProcessedContext === contextId) {
+        return;
+      }
+      
+      console.log('[AIBlueprint] 🎯 Processing new opportunity context:', blueprintContext.opportunity.title);
+      
+      // Set the initiative if provided
+      if (blueprintContext.initiativeIndex !== undefined) {
+        setSelectedInitiative(blueprintContext.initiativeIndex.toString());
+      }
+      
+      // Set special instructions from opportunity context
+      if (blueprintContext.initiativeSpecialInstructions) {
+        setSpecialInstructions(blueprintContext.initiativeSpecialInstructions);
+      }
+      
+      // Mark this context as processed
+      setHasProcessedContext(contextId);
+      
+      // Force regenerate with opportunity context (not cached)
+      setTimeout(() => {
+        console.log('[AIBlueprint] Force generating with opportunity context...');
+        generateBlueprint(true); // Force regenerate
+      }, 200);
+      
+      // Clear context after processing
+      setTimeout(() => {
+        if (onClearContext) {
+          onClearContext();
+        }
+      }, 1000);
+    }
+  }, [blueprintContext, isLoading]);
+
+  // Auto-load cached blueprint on component mount (but not if we have opportunity context)
+  useEffect(() => {
+    if (!hasAttemptedLoad && !isLoading && profile?.id && !blueprintContext) {
       console.log('[AIBlueprint] Auto-loading cached blueprint for profile:', profile.id);
       loadCachedBlueprint();
     }
-  }, [hasAttemptedLoad, isLoading, profile?.id]);
+  }, [hasAttemptedLoad, isLoading, profile?.id, blueprintContext]);
 
   // Load cached blueprint from server
   const loadCachedBlueprint = async () => {
@@ -87,7 +145,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
     setError(null);
 
     try {
-      console.log('[AIBlueprint] Starting blueprint generation, forceRegenerate:', forceRegenerate);
+      console.log('[AIBlueprint] Generating blueprint...');
       
       // Validate profile before making API call
       if (!profile) {
@@ -107,11 +165,15 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
 
       console.log('[AIBlueprint] Making API call to generate blueprint...');
       
-      // Prepare request body with optional initiative selection
+      // Prepare request body with optional initiative selection and special instructions
       const requestBody: any = { forceRegenerate };
       
       if (selectedInitiative !== 'auto') {
         requestBody.selectedInitiativeIndex = parseInt(selectedInitiative);
+      }
+      
+      if (specialInstructions.trim()) {
+        requestBody.specialInstructions = specialInstructions.trim();
       }
       
       const response = await fetch('/api/profiles/generate-blueprint', {
@@ -145,6 +207,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
       setHasAttemptedLoad(true);
       
       console.log('[AIBlueprint] Blueprint generation completed successfully');
+      console.log('[AIBlueprint] Blueprint state now has:', result.blueprint ? 'blueprint data' : 'no blueprint');
 
     } catch (error: any) {
       console.error('[AIBlueprint] Blueprint generation failed:', error);
@@ -192,10 +255,52 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
       <div className={styles.analysisCard} style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
           <div style={{ flex: 1 }}>
-            <h3 style={{ margin: '0 0 1rem 0' }}>
-              <Workflow size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-              Agent Digital Team Blueprint
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>
+                <Workflow size={24} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                Agent Digital Team Blueprint
+              </h3>
+              
+              {/* Opportunity Context Indicator */}
+              {blueprintContext?.opportunity && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  backgroundColor: isLoading ? 'rgba(34, 197, 94, 0.1)' : 'rgba(124, 58, 237, 0.1)',
+                  border: isLoading ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(124, 58, 237, 0.2)',
+                  borderRadius: 'var(--border-radius)',
+                  fontSize: '0.875rem'
+                }}>
+                  {isLoading ? (
+                    <RefreshCw size={16} className="animate-spin" style={{ color: 'var(--accent-green)' }} />
+                  ) : (
+                    <Zap size={16} style={{ color: 'var(--accent-purple)' }} />
+                  )}
+                  <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
+                    {isLoading ? 'Generating blueprint from' : 'From Opportunity'}: {blueprintContext.opportunity.title}
+                  </span>
+                  {onClearContext && !isLoading && (
+                    <button 
+                      onClick={onClearContext}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        padding: '0.25rem',
+                        borderRadius: '2px',
+                        fontSize: '0.75rem'
+                      }}
+                      title="Clear opportunity context"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
             
             {/* Strategic Initiative Selector */}
             <div style={{ marginBottom: '1rem' }}>
@@ -252,6 +357,57 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
                   Blueprint will focus on: <strong>{profile.strategicInitiatives[parseInt(selectedInitiative)]?.initiative}</strong>
                 </div>
               )}
+            </div>
+
+            {/* Special Instructions Field */}
+            <div style={{ marginBottom: '1rem' }}>
+              <label 
+                htmlFor="special-instructions" 
+                style={{ 
+                  display: 'block', 
+                  fontSize: '0.875rem', 
+                  fontWeight: 'var(--font-weight-medium)', 
+                  color: 'var(--text-muted)', 
+                  marginBottom: '0.5rem' 
+                }}
+              >
+                Special Instructions (Optional):
+              </label>
+              <textarea 
+                id="special-instructions"
+                aria-label="Special Instructions for Blueprint Generation"
+                placeholder="Add any specific requirements, constraints, or focus areas for your AI blueprint. For example: 'Focus on HIPAA compliance requirements' or 'Prioritize integration with Salesforce CRM' or 'Consider remote team collaboration needs'..."
+                value={specialInstructions} 
+                onChange={(e) => setSpecialInstructions(e.target.value)}
+                maxLength={500}
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--border-radius)',
+                  border: '1px solid var(--border-primary)',
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.4',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+                disabled={isLoading}
+              />
+              <div style={{ 
+                marginTop: '0.25rem', 
+                fontSize: '0.75rem', 
+                color: 'var(--text-muted)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span>Help AI tailor the blueprint to your specific needs and industry requirements</span>
+                <span style={{ color: specialInstructions.length > 450 ? 'var(--accent-orange)' : 'var(--text-muted)' }}>
+                  {specialInstructions.length}/500
+                </span>
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -319,8 +475,34 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing }) => {
             <p style={{ marginBottom: '1rem' }}>
               Transform your business goals into a clear, actionable AI &ldquo;digital team&rdquo; blueprint. See exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
             </p>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              Click &ldquo;Generate Blueprint&rdquo; to create{hasAttemptedLoad ? ' a' : ' your first'} AI digital team strategy.
+            {blueprintContext?.opportunity ? (
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Your blueprint will be automatically generated based on the selected opportunity. No additional action needed!
+              </p>
+            ) : (
+              <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                Click &ldquo;Generate Blueprint&rdquo; to create{hasAttemptedLoad ? ' a' : ' your first'} AI digital team strategy.
+              </p>
+            )}
+          </div>
+        )}
+
+        {isLoading && blueprintContext?.opportunity && (
+          <div style={{ 
+            margin: 0, 
+            color: 'var(--text-muted)', 
+            textAlign: 'center',
+            padding: '2rem',
+            background: 'rgba(34, 197, 94, 0.05)',
+            borderRadius: 'var(--border-radius)',
+            border: '1px solid rgba(34, 197, 94, 0.1)'
+          }}>
+            <RefreshCw size={32} className="animate-spin" style={{ color: 'var(--accent-green)', marginBottom: '1rem' }} />
+            <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: '500', color: 'var(--text-primary)' }}>
+              Generating Your AI Blueprint
+            </p>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>
+              Creating a custom blueprint for "{blueprintContext.opportunity.title}" using {blueprintContext.opportunity.agenticPattern?.recommendedPattern || 'optimized'} patterns...
             </p>
           </div>
         )}

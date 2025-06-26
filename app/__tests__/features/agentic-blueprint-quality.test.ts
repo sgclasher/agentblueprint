@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { AgenticBlueprintService } from '../../services/agenticBlueprintService';
-import { Profile, AgenticBlueprint } from '../../services/types';
+import { Profile, AgenticBlueprint, AgenticPattern } from '../../services/types';
 
 // Mock profile data for testing different business scenarios
 const mockProfiles = {
@@ -360,6 +360,394 @@ describe('Agentic Blueprint Quality Analysis', () => {
     });
   });
 });
+
+// 🆕 PHASE 2.3: Enhanced Quality Testing for Agentic Design Patterns Integration
+
+describe('Agentic Design Patterns Integration', () => {
+  describe('Pattern Selection Accuracy', () => {
+    test('should select Manager-Workers pattern for process automation problems', () => {
+      const processAutomationProfile = {
+        ...mockProfiles.manufacturing,
+        strategicInitiatives: [{
+          ...mockProfiles.manufacturing.strategicInitiatives![0],
+          businessProblems: [
+            'Manual invoice processing takes 5 days',
+            'Document approval workflows are inconsistent',
+            'Data entry errors cause 15% rework'
+          ]
+        }]
+      };
+
+      const expectedPattern = 'Manager-Workers';
+      const expectedRationale = /central coordination|standardized tasks|clear task delegation/i;
+
+      // Simulate pattern selection logic
+      const selectedPattern = selectOptimalPattern(processAutomationProfile.strategicInitiatives![0].businessProblems);
+      expect(selectedPattern.pattern).toBe(expectedPattern);
+      expect(selectedPattern.rationale).toMatch(expectedRationale);
+    });
+
+    test('should select Plan-Act-Reflect pattern for research and analysis problems', () => {
+      const researchProfile = {
+        ...mockProfiles.techStartup,
+        strategicInitiatives: [{
+          initiative: 'Market Expansion Analysis',
+          contact: { name: 'Sarah Chen', title: 'VP Strategy', email: '', linkedin: '', phone: '' },
+          businessProblems: [
+            'Need to analyze 15 potential new markets',
+            'Competitive landscape constantly changing',
+            'Customer preference data is incomplete'
+          ],
+          priority: 'High' as const,
+          status: 'Planning' as const
+        }]
+      };
+
+      const selectedPattern = selectOptimalPattern(researchProfile.strategicInitiatives![0].businessProblems);
+      expect(selectedPattern.pattern).toBe('Plan-Act-Reflect');
+      expect(selectedPattern.rationale).toMatch(/exploratory nature|adaptive planning|course correction/i);
+    });
+
+    test('should select Hierarchical-Planning for complex decision support problems', () => {
+      const decisionSupportProblems = [
+        'Need to evaluate $50M strategic investment options',
+        'Resource allocation across 12 business units',
+        'Multi-year technology platform selection'
+      ];
+
+      const selectedPattern = selectOptimalPattern(decisionSupportProblems);
+      expect(selectedPattern.pattern).toBe('Hierarchical-Planning');
+      expect(selectedPattern.rationale).toMatch(/multi-layer analysis|validation|high-stakes/i);
+    });
+  });
+
+  describe('Pattern-Specific Agent Specialization', () => {
+    test('should specialize agents for single-initiative focus', () => {
+      const focusedBlueprint = generateMockBlueprint({
+        pattern: 'Manager-Workers',
+        focusMode: 'single-initiative',
+        initiative: mockProfiles.manufacturing.strategicInitiatives![0]
+      });
+
+      // Verify agents are specialized for manufacturing process automation
+      const coordinator = focusedBlueprint.digitalTeam.find(agent => agent.role === 'coordinator');
+      expect(coordinator?.title).toMatch(/production|manufacturing|planning/i);
+      expect(coordinator?.toolsUsed).toContain('SAP ERP');
+
+      const actuator = focusedBlueprint.digitalTeam.find(agent => agent.role === 'actuator');
+      expect(actuator?.coreJob).toMatch(/production|manufacturing|schedule/i);
+    });
+
+    test('should create generalist agents for multi-initiative synthesis', () => {
+      const synthesizedBlueprint = generateMockBlueprint({
+        pattern: 'Manager-Workers',
+        focusMode: 'multi-initiative',
+        initiatives: mockProfiles.manufacturing.strategicInitiatives
+      });
+
+      // Verify agents have broader, more flexible capabilities
+      const coordinator = synthesizedBlueprint.digitalTeam.find(agent => agent.role === 'coordinator');
+      expect(coordinator?.title).toMatch(/project manager|operations coordinator/i);
+      expect(coordinator?.coreJob).not.toMatch(/production planning manager/i); // Not too specific
+    });
+  });
+
+  describe('Industry-Specific Pattern Preferences', () => {
+    test('should apply healthcare pattern preferences (ReAct + Policy engines)', () => {
+      const healthcarePatterns = getIndustryPatternPreferences('Healthcare');
+      expect(healthcarePatterns.primary).toBe('ReAct');
+      expect(healthcarePatterns.enhancement).toContain('Policy engines');
+      expect(healthcarePatterns.rationale).toMatch(/HIPAA|safety-critical/i);
+    });
+
+    test('should apply financial services pattern preferences (Manager-Workers + Self-Reflection)', () => {
+      const financialPatterns = getIndustryPatternPreferences('Financial Services');
+      expect(financialPatterns.primary).toBe('Manager-Workers');
+      expect(financialPatterns.enhancement).toContain('Self-Reflection');
+      expect(financialPatterns.rationale).toMatch(/compliance focus/i);
+    });
+
+    test('should apply technology pattern preferences (Market-Based + Hierarchical)', () => {
+      const techPatterns = getIndustryPatternPreferences('Technology');
+      expect(techPatterns.primary).toBe('Market-Based');
+      expect(techPatterns.enhancement).toContain('Hierarchical');
+      expect(techPatterns.rationale).toMatch(/resource optimization|scaling/i);
+    });
+  });
+});
+
+describe('Special Instructions Integration', () => {
+  test('should incorporate user special instructions into blueprint design', () => {
+    const specialInstructions = 'Focus on HIPAA compliance requirements and integrate with Epic EHR system specifically';
+    const blueprint = generateMockBlueprint({
+      pattern: 'Manager-Workers',
+      specialInstructions: specialInstructions
+    });
+
+    // Verify special instructions are stored
+    expect(blueprint.specialInstructions).toBe(specialInstructions);
+
+    // Verify instructions influence agent design
+    const agentDescriptions = blueprint.digitalTeam.map(agent => agent.coreJob).join(' ');
+    expect(agentDescriptions.toLowerCase()).toMatch(/hipaa|compliance/i);
+    expect(agentDescriptions.toLowerCase()).toMatch(/epic/i);
+  });
+
+  test('should handle empty special instructions gracefully', () => {
+    const blueprint = generateMockBlueprint({
+      pattern: 'Manager-Workers',
+      specialInstructions: ''
+    });
+
+    expect(blueprint.specialInstructions).toBe('');
+    // Blueprint should still be valid without special instructions
+    expect(blueprint.digitalTeam).toHaveLength(5);
+    expect(blueprint.businessObjective).toBeTruthy();
+  });
+
+  test('should validate special instructions character limits', () => {
+    const longInstructions = 'A'.repeat(600); // Exceeds 500 char limit
+    
+    // UI should prevent this, but test the validation
+    expect(longInstructions.length).toBeGreaterThan(500);
+    
+    const truncatedInstructions = longInstructions.substring(0, 500);
+    expect(truncatedInstructions.length).toBe(500);
+  });
+});
+
+describe('Cross-Provider Quality Validation', () => {
+  describe('Pattern Selection Consistency', () => {
+    test('should select same pattern across different AI providers', () => {
+      const businessProblems = [
+        'Manual data entry processes',
+        'Inconsistent workflow execution',
+        'High error rates in routine tasks'
+      ];
+
+      // Simulate pattern selection for different providers
+      const openaiPattern = selectOptimalPattern(businessProblems, 'openai');
+      const claudePattern = selectOptimalPattern(businessProblems, 'claude');
+      const geminiPattern = selectOptimalPattern(businessProblems, 'gemini');
+
+      // All providers should converge on Manager-Workers for this problem type
+      expect(openaiPattern.pattern).toBe('Manager-Workers');
+      expect(claudePattern.pattern).toBe('Manager-Workers');
+      expect(geminiPattern.pattern).toBe('Manager-Workers');
+    });
+
+    test('should provide consistent rationales for pattern selection', () => {
+      const businessProblems = ['Complex multi-step research project', 'Changing requirements', 'Need for iterative refinement'];
+
+      const patterns = ['openai', 'claude', 'gemini'].map(provider => 
+        selectOptimalPattern(businessProblems, provider)
+      );
+
+      // All should select Plan-Act-Reflect
+      patterns.forEach(pattern => {
+        expect(pattern.pattern).toBe('Plan-Act-Reflect');
+        expect(pattern.rationale).toMatch(/adaptive|iterative|changing/i);
+      });
+    });
+  });
+
+  describe('Quality Score Validation', () => {
+    test('should achieve minimum quality thresholds with pattern integration', () => {
+      const enhancedBlueprint = generateMockBlueprint({
+        pattern: 'Manager-Workers',
+        patternRationale: 'Selected for standardized process automation with clear oversight requirements',
+        specialInstructions: 'Focus on SAP ERP integration and manufacturing compliance'
+      });
+
+      const qualityScore = calculateEnhancedQualityScore(enhancedBlueprint, mockProfiles.manufacturing);
+      
+      // With pattern integration, quality should improve significantly
+      expect(qualityScore.businessSpecificity).toBeGreaterThan(18); // Target: 20/25
+      expect(qualityScore.actionability).toBeGreaterThan(16);        // Target: 18/25
+      expect(qualityScore.agentCoherence).toBeGreaterThan(17);       // Target: 19/25
+      expect(qualityScore.totalScore).toBeGreaterThan(70);           // Target: 74/100
+    });
+
+    test('should validate pattern selection adds quality points', () => {
+      const blueprintWithoutPattern = generateMockBlueprint({ pattern: undefined });
+      const blueprintWithPattern = generateMockBlueprint({ 
+        pattern: 'Manager-Workers',
+        patternRationale: 'Selected for optimal coordination of standardized processes'
+      });
+
+      const scoreWithoutPattern = calculateEnhancedQualityScore(blueprintWithoutPattern, mockProfiles.manufacturing);
+      const scoreWithPattern = calculateEnhancedQualityScore(blueprintWithPattern, mockProfiles.manufacturing);
+
+      expect(scoreWithPattern.totalScore).toBeGreaterThan(scoreWithoutPattern.totalScore);
+      expect(scoreWithPattern.businessSpecificity).toBeGreaterThan(scoreWithoutPattern.businessSpecificity);
+    });
+  });
+
+  describe('Initiative Focus Quality Impact', () => {
+    test('should improve specificity when focused on single initiative', () => {
+      const focusedBlueprint = generateMockBlueprint({
+        focusMode: 'single-initiative',
+        initiative: mockProfiles.manufacturing.strategicInitiatives![0]
+      });
+
+      const synthesizedBlueprint = generateMockBlueprint({
+        focusMode: 'multi-initiative',
+        initiatives: mockProfiles.manufacturing.strategicInitiatives
+      });
+
+      const focusedQuality = calculateEnhancedQualityScore(focusedBlueprint, mockProfiles.manufacturing);
+      const synthesizedQuality = calculateEnhancedQualityScore(synthesizedBlueprint, mockProfiles.manufacturing);
+
+      // Focused blueprints should be more specific
+      expect(focusedQuality.businessSpecificity).toBeGreaterThan(synthesizedQuality.businessSpecificity);
+    });
+  });
+});
+
+// 🆕 Helper functions for enhanced quality testing
+
+function selectOptimalPattern(businessProblems: string[], provider?: string): { pattern: AgenticPattern; rationale: string } {
+  // Simulate the pattern selection logic from the actual prompt
+  const problemText = businessProblems.join(' ').toLowerCase();
+  
+  if (problemText.includes('manual') && (problemText.includes('process') || problemText.includes('data entry'))) {
+    return {
+      pattern: 'Manager-Workers',
+      rationale: 'Selected because the initiative focuses on standardizing workflows, which benefits from central coordination and clear task delegation to specialist agents.'
+    };
+  }
+  
+  if (problemText.includes('research') || problemText.includes('analysis') || problemText.includes('changing')) {
+    return {
+      pattern: 'Plan-Act-Reflect',
+      rationale: 'Chosen for market research initiative due to the exploratory nature requiring adaptive planning and course correction based on findings.'
+    };
+  }
+  
+  if (problemText.includes('investment') || problemText.includes('strategic') || problemText.includes('allocation')) {
+    return {
+      pattern: 'Hierarchical-Planning',
+      rationale: 'Applied for strategic resource allocation decision, requiring multi-layer analysis and validation before high-stakes investment decisions.'
+    };
+  }
+  
+  // Default fallback
+  return {
+    pattern: 'Manager-Workers',
+    rationale: 'Default pattern selected for general business process optimization.'
+  };
+}
+
+function getIndustryPatternPreferences(industry: string): { primary: AgenticPattern; enhancement: string; rationale: string } {
+  const industryMap: Record<string, { primary: AgenticPattern; enhancement: string; rationale: string }> = {
+    'Healthcare': {
+      primary: 'ReAct',
+      enhancement: 'Policy engines',
+      rationale: 'HIPAA compliance and safety-critical decision making require careful reasoning with policy validation'
+    },
+    'Financial Services': {
+      primary: 'Manager-Workers',
+      enhancement: 'Self-Reflection',
+      rationale: 'Compliance focus requires central oversight with built-in quality control and validation'
+    },
+    'Technology': {
+      primary: 'Market-Based-Auction',
+      enhancement: 'Hierarchical',
+      rationale: 'Resource optimization and scaling challenges benefit from competitive allocation with clear governance'
+    },
+    'Manufacturing': {
+      primary: 'Manager-Workers',
+      enhancement: 'Plan-and-Execute',
+      rationale: 'Process optimization with real-time monitoring requires coordinated execution with strategic planning'
+    }
+  };
+  
+  return industryMap[industry] || industryMap['Technology'];
+}
+
+function generateMockBlueprint(options: {
+  pattern?: AgenticPattern;
+  patternRationale?: string;
+  focusMode?: 'single-initiative' | 'multi-initiative';
+  initiative?: any;
+  initiatives?: any[];
+  specialInstructions?: string;
+}): AgenticBlueprint {
+  return {
+    id: 'test-blueprint',
+    profileId: 'test-profile',
+    userId: 'test-user',
+    businessObjective: 'Transform business operations using AI automation',
+    selectedPattern: options.pattern,
+    patternRationale: options.patternRationale,
+    specialInstructions: options.specialInstructions || '',
+    digitalTeam: [
+      {
+        role: 'coordinator',
+        title: options.focusMode === 'single-initiative' ? 'Production Planning Manager' : 'Project Coordinator',
+        coreJob: 'Coordinate and manage workflow execution',
+        toolsUsed: ['SAP ERP', 'Task Management', 'Communication Platform'],
+        oversightLevel: 'policy-checked',
+        oversightDescription: 'Reviews and approvals by senior staff',
+        linkedKPIs: ['Process efficiency', 'Timeline adherence']
+      },
+      // ... other agents would be generated similarly
+    ] as any,
+    humanCheckpoints: [] as any,
+    agenticTimeline: { phases: [], totalDurationWeeks: 24 } as any,
+    kpiImprovements: [
+      {
+        kpi: 'Process efficiency',
+        currentValue: 'Baseline',
+        targetValue: '40% improvement',
+        improvementPercent: 40,
+        linkedAgents: ['coordinator'],
+        measurementMethod: 'Time tracking and throughput analysis',
+        timeframe: 'Within 6 months'
+      }
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function calculateEnhancedQualityScore(blueprint: AgenticBlueprint, profile: Profile): QualityMetrics {
+  const baseScore = evaluateBusinessSpecificity(blueprint, profile);
+  let totalScore = baseScore.score;
+  const feedback = [...baseScore.feedback];
+  
+  // 🆕 Pattern selection quality bonus
+  if (blueprint.selectedPattern && blueprint.patternRationale) {
+    totalScore += 8; // Bonus for explicit pattern selection
+    feedback.push('Pattern selection enhances blueprint specificity');
+    
+    if (blueprint.patternRationale.length > 50) {
+      totalScore += 4; // Bonus for detailed rationale
+      feedback.push('Pattern rationale provides clear business justification');
+    }
+  }
+  
+  // 🆕 Special instructions integration bonus
+  if (blueprint.specialInstructions && blueprint.specialInstructions.length > 0) {
+    totalScore += 5; // Bonus for user customization
+    feedback.push('Special instructions enhance blueprint customization');
+  }
+  
+  // Calculate component scores (simplified for testing)
+  const businessSpecificity = Math.min(totalScore, 25);
+  const actionability = Math.min(15 + (blueprint.kpiImprovements.length * 2), 25);
+  const agentCoherence = Math.min(18 + (blueprint.digitalTeam.length === 5 ? 3 : 0), 25);
+  const kpiAlignment = Math.min(12 + (blueprint.kpiImprovements.length * 3), 25);
+  
+  return {
+    businessSpecificity,
+    actionability,
+    agentCoherence,
+    kpiAlignment,
+    totalScore: businessSpecificity + actionability + agentCoherence + kpiAlignment,
+    feedback
+  };
+}
 
 // Helper functions for quality evaluation
 

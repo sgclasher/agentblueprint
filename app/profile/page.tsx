@@ -570,6 +570,15 @@ export default function ProfilePage() {
   const [editableProfile, setEditableProfile] = useState<Profile | null>(null);
   const [editableUser, setEditableUser] = useState({ displayName: '' });
 
+  // Cross-tab communication state for opportunity-to-blueprint integration
+  const [blueprintContext, setBlueprintContext] = useState<{
+    opportunity?: any;
+    initiativeIndex?: number;
+    initiativeSpecialInstructions?: string;
+  } | null>(null);
+
+
+
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push(`/auth/signin?redirect=${encodeURIComponent(window.location.pathname)}`);
@@ -652,6 +661,25 @@ export default function ProfilePage() {
 
   const handleProfileCreated = (newProfile: Profile) => {
     setProfile(newProfile);
+  };
+
+  const handleNavigateToBlueprint = (opportunity: any, initiativeIndex?: number) => {
+    console.log('[ProfilePage] Navigating to blueprint for opportunity:', opportunity?.title);
+
+    // Generate special instructions based on the opportunity
+    const specialInstructions = opportunity.agenticPattern 
+      ? `Focus on implementing a ${opportunity.agenticPattern.recommendedPattern} pattern for ${opportunity.title}. ${opportunity.agenticPattern.implementationApproach}`
+      : `Generate a blueprint for ${opportunity.title} in the ${opportunity.category} category.`;
+
+    // Set the blueprint context with the opportunity details
+    setBlueprintContext({
+      opportunity,
+      initiativeIndex,
+      initiativeSpecialInstructions: specialInstructions.slice(0, 500) // Limit to 500 chars
+    });
+
+    // Navigate to the blueprint tab
+    setActiveTab('blueprint');
   };
   
   const getIndustryIcon = (industry: string | undefined): React.ReactNode => {
@@ -748,10 +776,19 @@ export default function ProfilePage() {
           <AnalysisTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />
         )}
         {activeTab === 'opportunities' && editableProfile && (
-          <AIOpportunitiesTab profile={editableProfile} isEditing={isEditing} />
+          <AIOpportunitiesTab 
+            profile={editableProfile} 
+            isEditing={isEditing} 
+            onNavigateToBlueprint={handleNavigateToBlueprint}
+          />
         )}
         {activeTab === 'blueprint' && editableProfile && (
-          <AIBlueprintTab profile={editableProfile} isEditing={isEditing} />
+          <AIBlueprintTab 
+            profile={editableProfile} 
+            isEditing={isEditing}
+            blueprintContext={blueprintContext}
+            onClearContext={() => setBlueprintContext(null)}
+          />
         )}
         {activeTab === 'systems' && editableProfile && (
           <SystemsTab profile={editableProfile} isEditing={isEditing} updateProfile={updateEditableProfile} />

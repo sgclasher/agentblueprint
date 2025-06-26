@@ -53,14 +53,18 @@ export default function AddServiceForm({
             type: 'select', 
             required: true,
             options: [
-              { value: 'gpt-4o', label: 'GPT-4o (Recommended)' },
-              { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Cost-Effective)' },
-              { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Legacy)' },
-              { value: 'gpt-4.1', label: 'GPT-4.1 (Latest - 1M Context)' },
-              { value: 'o1', label: 'o1 (Advanced Reasoning)' },
+              { value: 'gpt-4o', label: 'GPT-4o (Recommended - Stable & Multimodal)' },
+              { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Cost-Effective & Reliable)' },
+              { value: 'o1', label: 'o1 (Advanced Reasoning - Stable)' },
+              { value: 'o1-mini', label: 'o1 Mini (Fast Reasoning - Stable)' },
+              { value: 'gpt-4.1', label: 'GPT-4.1 (1M Context Window)' },
               { value: 'o1-preview', label: 'o1 Preview (Reasoning Beta)' },
-              { value: 'o1-mini', label: 'o1 Mini (Fast Reasoning)' },
-              { value: 'gpt-4', label: 'GPT-4 (Classic)' }
+              { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Legacy)' },
+              { value: 'gpt-4', label: 'GPT-4 (Classic)' },
+              { value: 'o3-pro', label: 'o3-pro (2025 - Requires Pro Access)' },
+              { value: 'o3', label: 'o3 (2025 - May Require Special Access)' },
+              { value: 'o4-mini', label: 'o4 Mini (2025 - Limited Availability)' },
+              { value: 'codex-mini', label: 'Codex Mini (2025 - Limited Availability)' }
             ]
           },
           { name: 'base_url', label: 'Base URL (Optional)', type: 'url', required: false },
@@ -77,12 +81,13 @@ export default function AddServiceForm({
             type: 'select', 
             required: true,
             options: [
+              { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro Preview (Most Advanced)' },
+              { value: 'gemini-2.5-flash-lite-preview-06-17', label: 'Gemini 2.5 Flash Lite Preview (June 2025)' },
+              { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash Preview (May 2025)' },
+              { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (Latest Stable)' },
               { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Recommended)' },
               { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Advanced)' },
-              { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (Latest Stable)' },
-              { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (Fast & Efficient)' },
-              { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro Preview (Most Advanced)' },
-              { value: 'gemini-2.5-flash-preview-05-20', label: 'Gemini 2.5 Flash Preview (Experimental)' }
+              { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash 8B (Fast & Efficient)' }
             ]
           },
           { name: 'base_url', label: 'Base URL (Optional)', type: 'url', required: false },

@@ -19,12 +19,12 @@ export default function BlueprintExecutiveSummary({
   
   // Format currency values for display
   const formatCurrency = (value: string): string => {
-    // Extract numeric value and unit (K, M, etc.)
-    const match = value.match(/\$?([\d,]+)(K|M)?/);
+    // Extract numeric value and unit (K, M, etc.) - updated regex to include decimals
+    const match = value.match(/\$?([\d,.]+)(K|M)?/);
     if (!match) return value;
     
     const [, number, unit] = match;
-    const numericValue = parseInt(number.replace(/,/g, ''));
+    const numericValue = parseFloat(number.replace(/,/g, ''));
     
     if (unit === 'K') {
       return `$${numericValue.toLocaleString()}K`;
@@ -50,11 +50,11 @@ export default function BlueprintExecutiveSummary({
   
   // Calculate monthly value for visual display
   const getMonthlyValue = (): string => {
-    const annualMatch = roiProjection.annualValue.match(/\$?([\d,]+)(K|M)?/);
+    const annualMatch = roiProjection.annualValue.match(/\$?([\d,.]+)(K|M)?/);
     if (!annualMatch) return '$0';
     
     const [, number, unit] = annualMatch;
-    const annualNumeric = parseInt(number.replace(/,/g, ''));
+    const annualNumeric = parseFloat(number.replace(/,/g, ''));
     const monthlyNumeric = Math.round(annualNumeric / 12);
     
     if (unit === 'K') {
@@ -190,7 +190,14 @@ export default function BlueprintExecutiveSummary({
           <div className={styles.investmentItem}>
             <span className={styles.investmentLabel}>3-Year Value</span>
             <span className={styles.investmentValue}>
-              {roiProjection.threeYearValue || `~${formatCurrency(`$${parseInt(roiProjection.annualValue.replace(/\D/g, '')) * 3}K`)}`}
+              {roiProjection.threeYearValue || (() => {
+                const match = roiProjection.annualValue.match(/\$?([\d,.]+)(K|M)?/);
+                if (!match) return '~$0K';
+                const [, number, unit] = match;
+                const annualNumeric = parseFloat(number.replace(/,/g, ''));
+                const threeYearValue = annualNumeric * 3;
+                return `~${formatCurrency(`$${threeYearValue}${unit || 'K'}`)}`;
+              })()}
             </span>
           </div>
         </div>
@@ -273,7 +280,14 @@ export default function BlueprintExecutiveSummary({
             <span>-{formatCurrency(roiProjection.totalInvestment)}</span>
             <span>{getMonthlyValue()} × 12</span>
             <span>{formatCurrency(roiProjection.annualValue)} × 2</span>
-            <span>{roiProjection.threeYearValue || `~${formatCurrency(`$${parseInt(roiProjection.annualValue.replace(/\D/g, '')) * 3}K`)}`}</span>
+            <span>{roiProjection.threeYearValue || (() => {
+              const match = roiProjection.annualValue.match(/\$?([\d,.]+)(K|M)?/);
+              if (!match) return '~$0K';
+              const [, number, unit] = match;
+              const annualNumeric = parseFloat(number.replace(/,/g, ''));
+              const threeYearValue = annualNumeric * 3;
+              return `~${formatCurrency(`$${threeYearValue}${unit || 'K'}`)}`;
+            })()}</span>
           </div>
         </div>
       </div>

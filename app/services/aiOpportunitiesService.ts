@@ -16,6 +16,12 @@ export interface AIOpportunity {
     prerequisites: string[];
     riskFactors: string[];
   };
+  agenticPattern: {
+    recommendedPattern: string;
+    patternRationale: string;
+    implementationApproach: string;
+    patternComplexity: 'Low' | 'Medium' | 'High';
+  };
   relevantInitiatives: string[];
   aiTechnologies: string[];
 }
@@ -103,6 +109,59 @@ export class AIOpportunitiesService {
       console.error('AI opportunities analysis failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get agentic pattern recommendation for an opportunity category
+   * @param category - Opportunity category
+   * @returns Agentic pattern recommendation
+   */
+  static getAgenticPatternForCategory(category: string): {
+    recommendedPattern: string;
+    patternRationale: string;
+    implementationApproach: string;
+    patternComplexity: 'Low' | 'Medium' | 'High';
+  } {
+    const patternMap: Record<string, any> = {
+      'Process Automation': {
+        recommendedPattern: 'Manager-Workers',
+        patternRationale: 'Selected for process automation because it provides central coordination of standardized tasks with clear task delegation to specialist agents, ensuring quality control and audit trails.',
+        implementationApproach: 'Deploy a coordinator agent to manage workflow orchestration with specialist worker agents for each process step (data extraction, validation, processing, and output).',
+        patternComplexity: 'Medium'
+      },
+      'Decision Support': {
+        recommendedPattern: 'Hierarchical-Planning',
+        patternRationale: 'Chosen for decision support due to the need for multi-layer analysis and validation before high-stakes decisions, ensuring comprehensive evaluation and risk assessment.',
+        implementationApproach: 'Implement multiple analyst layers with strategic planner, tactical analysts, and validation agents working together to provide comprehensive decision intelligence.',
+        patternComplexity: 'High'
+      },
+      'Customer Experience': {
+        recommendedPattern: 'Blackboard-Shared-Memory',
+        patternRationale: 'Selected for customer experience because it enables real-time event handling and coordinated response across multiple touchpoints, ensuring seamless omnichannel experience.',
+        implementationApproach: 'Create a shared context board where customer events trigger multiple specialized agents (support, personalization, escalation) to collaborate in real-time.',
+        patternComplexity: 'Medium'
+      },
+      'Data Analytics': {
+        recommendedPattern: 'Plan-Act-Reflect',
+        patternRationale: 'Chosen for data analytics due to the exploratory nature requiring adaptive planning and course correction based on findings, enabling iterative insight generation.',
+        implementationApproach: 'Deploy planning agent for analysis strategy, execution agents for data processing, and reflection agent to evaluate findings and adjust analysis approach.',
+        patternComplexity: 'High'
+      },
+      'Workforce Augmentation': {
+        recommendedPattern: 'Tool-Use',
+        patternRationale: 'Selected for workforce augmentation because it provides AI assistants with quality control that directly augment human capabilities without complex orchestration overhead.',
+        implementationApproach: 'Implement individual AI assistants with tool access and self-reflection capabilities, scaling to Manager-Workers pattern for complex task distribution.',
+        patternComplexity: 'Low'
+      },
+      'Risk Management': {
+        recommendedPattern: 'ReAct',
+        patternRationale: 'Chosen for risk management because it combines reasoning with coordinated response, enabling intelligent threat analysis and systematic mitigation execution.',
+        implementationApproach: 'Deploy ReAct agents for risk signal analysis with Manager-Workers coordination for response execution and real-time monitoring integration.',
+        patternComplexity: 'Medium'
+      }
+    };
+
+    return patternMap[category] || patternMap['Workforce Augmentation'];
   }
 
   /**
@@ -325,6 +384,7 @@ export class AIOpportunitiesService {
           prerequisites: ['Process documentation', 'Change management plan', 'Integration capabilities'],
           riskFactors: ['Change resistance', 'Process complexity', 'System integration challenges']
         },
+        agenticPattern: this.getAgenticPatternForCategory('Process Automation'),
         relevantInitiatives: this.findRelevantInitiatives(profile.strategicInitiatives || [], manualProcessProblems),
         aiTechnologies: ['Robotic Process Automation (RPA)', 'Machine Learning', 'Natural Language Processing', 'Computer Vision']
       });
@@ -365,6 +425,7 @@ export class AIOpportunitiesService {
           prerequisites: ['Data integration', 'Analytics infrastructure', 'User training'],
           riskFactors: ['Data quality issues', 'User adoption', 'Model accuracy']
         },
+        agenticPattern: this.getAgenticPatternForCategory('Decision Support'),
         relevantInitiatives: decisionMakingNeeds.map(init => init.initiative),
         aiTechnologies: ['Predictive Analytics', 'Machine Learning', 'Business Intelligence AI', 'Recommendation Systems']
       });
@@ -404,6 +465,7 @@ export class AIOpportunitiesService {
           prerequisites: ['Customer data integration', 'Omnichannel strategy', 'Agent training'],
           riskFactors: ['Customer acceptance', 'Integration complexity', 'Data privacy concerns']
         },
+        agenticPattern: this.getAgenticPatternForCategory('Customer Experience'),
         relevantInitiatives: this.findRelevantInitiatives(profile.strategicInitiatives || [], customerProblems),
         aiTechnologies: ['Conversational AI', 'Natural Language Understanding', 'Sentiment Analysis', 'Personalization Engines']
       });
@@ -443,6 +505,7 @@ export class AIOpportunitiesService {
           prerequisites: ['Data integration strategy', 'Cloud infrastructure', 'Analytics team'],
           riskFactors: ['Data silos', 'Integration complexity', 'Governance challenges']
         },
+        agenticPattern: this.getAgenticPatternForCategory('Data Analytics'),
         relevantInitiatives: [],
         aiTechnologies: ['Machine Learning Pipelines', 'Automated Analytics', 'Predictive Modeling', 'Data Science Automation']
       });
@@ -482,6 +545,7 @@ export class AIOpportunitiesService {
           prerequisites: ['User training', 'Workflow integration', 'Performance metrics'],
           riskFactors: ['User adoption', 'Workflow disruption', 'Skill gaps']
         },
+        agenticPattern: this.getAgenticPatternForCategory('Workforce Augmentation'),
         relevantInitiatives: this.findRelevantInitiatives(profile.strategicInitiatives || [], productivityProblems),
         aiTechnologies: ['AI Assistants', 'Workflow Automation', 'Intelligent Document Processing', 'Smart Scheduling']
       });
@@ -517,6 +581,7 @@ export class AIOpportunitiesService {
           prerequisites: ['Security infrastructure', 'Compliance framework', 'Risk assessment processes'],
           riskFactors: ['Regulatory complexity', 'False positives', 'Integration challenges']
         },
+        agenticPattern: this.getAgenticPatternForCategory('Risk Management'),
         relevantInitiatives: [],
         aiTechnologies: ['Anomaly Detection', 'Predictive Risk Analytics', 'Automated Compliance', 'Threat Intelligence']
       });

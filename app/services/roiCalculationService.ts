@@ -79,23 +79,33 @@ export class ROICalculationService {
     const riskFactors = this.generateRiskFactors(readiness, processMetrics?.processComplexity);
     const contingencyPercentage = readiness === 'low' ? 25 : readiness === 'medium' ? 15 : 10;
     
+        // Helper function to format currency with appropriate units
+    const formatCurrencyValue = (value: number): string => {
+      if (value >= 1000000) {
+        return `$${(value / 1000000).toFixed(1)}M`;
+      } else if (value >= 1000) {
+        return `$${Math.round(value / 1000)}K`;
+      }
+      return `$${Math.round(value)}`;
+    };
+
     // Generate executive summary
     const businessObjective = `Automate ${processMetrics?.processComplexity || 'moderate'} complexity processes to improve efficiency`;
     const executiveSummary = this.generateExecutiveSummary({
       roiPercentage,
       paybackMonths,
-      annualValue: `$${(totalAnnualValue / 1000).toFixed(0)}K`,
-      totalInvestment: `$${Math.round(investmentAmount / 1000)}K`,
+      annualValue: formatCurrencyValue(totalAnnualValue),
+      totalInvestment: formatCurrencyValue(investmentAmount),
       businessObjective
     });
-    
+
     return {
-      processCostSavings: `$${(processCostSavings / 1000).toFixed(0)}K annual efficiency gains`,
-      laborReallocation: `$${(laborReallocation / 1000).toFixed(0)}K FTE capacity redeployment`,
-      riskAvoidance: `$${(riskAvoidance / 1000).toFixed(0)}K compliance risk reduction`,
-      totalInvestment: `$${Math.round(investmentAmount / 1000)}K`,
-      ongoingCosts: `$${Math.round(investmentAmount * 0.15 / 1000)}K annual maintenance`,
-      annualValue: `$${(totalAnnualValue / 1000).toFixed(0)}K total annual value`,
+      processCostSavings: `${formatCurrencyValue(processCostSavings)} annual efficiency gains`,
+      laborReallocation: `${formatCurrencyValue(laborReallocation)} FTE capacity redeployment`,
+      riskAvoidance: `${formatCurrencyValue(riskAvoidance)} compliance risk reduction`,
+      totalInvestment: formatCurrencyValue(investmentAmount),
+      ongoingCosts: `${formatCurrencyValue(investmentAmount * 0.15)} annual maintenance`,
+      annualValue: `${formatCurrencyValue(totalAnnualValue)} total annual value`,
       roiPercentage,
       paybackMonths,
       keyAssumptions: this.generateKeyAssumptions(processMetrics, investmentContext),

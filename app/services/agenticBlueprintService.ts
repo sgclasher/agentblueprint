@@ -43,6 +43,7 @@ export class AgenticBlueprintService {
    * @param credentialsRepo - Credentials repository
    * @param preferredProvider - AI provider preference
    * @param selectedInitiativeIndex - Optional index of specific initiative to focus on
+   * @param specialInstructions - Optional user customization instructions
    * @returns AI-generated agentic blueprint
    */
   static async generateBlueprint(
@@ -50,7 +51,8 @@ export class AgenticBlueprintService {
     userId: string, 
     credentialsRepo: any, 
     preferredProvider?: string,
-    selectedInitiativeIndex?: number
+    selectedInitiativeIndex?: number,
+    specialInstructions?: string
   ): Promise<AgenticBlueprint> {
     if (!profile) {
       throw new Error('Profile is required for blueprint generation');
@@ -197,6 +199,39 @@ Create agents that can support multiple initiatives where there are synergies.
     console.log('[Provider Detection] Actual provider selected:', actualProvider, 'from status:', providerStatus.provider);
     
     const modelCapabilities = this.detectModelCapabilities(actualProvider);
+
+    // 🆕 PHASE 2: Pattern Selection Logic
+    console.log('[Pattern Selection] Determining optimal agentic pattern for business context...');
+    let selectedPattern: string;
+    
+    // First, try to extract pattern from AI Opportunities if available
+    // This would be populated if user came from AI Opportunities → Blueprint flow
+    const { extractPatternFromOpportunities, autoSelectPattern } = await import('../lib/llm/prompts/agenticBlueprintPrompt');
+    
+    // For now, use auto-selection based on business problems
+    // In future, this could integrate with AI Opportunities analysis
+    selectedPattern = autoSelectPattern(focusedProfile);
+    
+    console.log('[Pattern Selection] Selected pattern:', selectedPattern);
+    console.log('[Pattern Selection] Pattern basis: Business problem analysis from strategic initiatives');
+    
+    // Validate pattern selection
+    const { getPatternDefinition } = await import('../lib/llm/patterns/agenticPatternDefinitions');
+    const patternDefinition = getPatternDefinition(selectedPattern);
+    
+    if (!patternDefinition) {
+      console.error('[Pattern Selection] Invalid pattern selected:', selectedPattern);
+      selectedPattern = 'Manager-Workers'; // Safe fallback
+      console.log('[Pattern Selection] Falling back to default pattern:', selectedPattern);
+    } else {
+      console.log('[Pattern Selection] Pattern details:', {
+        name: patternDefinition.patternName,
+        type: patternDefinition.patternType,
+        agentCount: patternDefinition.agentCount,
+        bestFor: patternDefinition.bestFor.slice(0, 3),
+        coordinationMechanism: patternDefinition.coordinationMechanism
+      });
+    }
     
     // Configure prompt generation with industry intelligence and model optimizations
     const promptConfig: AgenticBlueprintPromptConfig = {
@@ -214,7 +249,9 @@ Create agents that can support multiple initiatives where there are synergies.
       },
       includeKPIProbability: true,
       includeROIProjection: !!roiProjection,  // 🆕 Enable ROI in prompt if we have process metrics
-      blueprintFocusContext: blueprintFocusContext  // 🆕 PHASE 2.2: Initiative focus context
+      blueprintFocusContext: blueprintFocusContext,  // 🆕 PHASE 2.2: Initiative focus context
+      specialInstructions: specialInstructions,  // 🆕 PHASE 2.3: User customization instructions
+      selectedPattern: selectedPattern  // 🆕 PHASE 2: Pattern-specific generation
     };
 
     // 🆕 Generate optimized prompts with model-specific features
@@ -391,8 +428,12 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
 
       if (!aiResponse.digitalTeam || !Array.isArray(aiResponse.digitalTeam)) {
         missingFields.push('digitalTeam (must be array)');
-      } else if (aiResponse.digitalTeam.length !== 5) {
-        invalidFields.push(`digitalTeam has ${aiResponse.digitalTeam.length} agents, must have exactly 5`);
+      } else {
+        // Validate agent count matches the selected pattern
+        const expectedAgentCount = patternDefinition?.agentCount || 5; // Fallback to 5 for legacy
+        if (aiResponse.digitalTeam.length !== expectedAgentCount) {
+          invalidFields.push(`digitalTeam has ${aiResponse.digitalTeam.length} agents, must have exactly ${expectedAgentCount} for ${selectedPattern} pattern`);
+        }
       }
 
       if (!aiResponse.humanCheckpoints || !Array.isArray(aiResponse.humanCheckpoints)) {
@@ -438,7 +479,7 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
       }
 
       // Additional validation warnings (log but don't fail)
-      const warnings = validateAgenticBlueprintResponse(aiResponse);
+      const warnings = validateAgenticBlueprintResponse(aiResponse, selectedPattern);
       if (warnings && warnings.length > 0) {
         console.warn('=== AI RESPONSE QUALITY WARNINGS ===');
         warnings.forEach((warning: string, index: number) => {
@@ -462,6 +503,9 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
         },
         kpiImprovements: aiResponse.kpiImprovements,
         roiProjection: aiResponse.roiProjection || roiProjection,  // 🆕 Use AI-generated ROI or fallback to calculated
+        selectedPattern: aiResponse.selectedPattern as any,  // 🆕 PHASE 2.3: Pattern selection
+        patternRationale: aiResponse.patternRationale,  // 🆕 PHASE 2.3: Pattern explanation
+        specialInstructions: specialInstructions,  // 🆕 PHASE 2.3: User customization instructions
         aiModel: preferredProvider || 'auto-selected',
         promptVersion: '3.1', // 🆕 Phase 1.4: ROI-enhanced prompt version
         createdAt: new Date().toISOString(),

@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, FC } from 'react';
 import { Profile } from '../../services/types';
-import { Brain, Zap, RefreshCw, Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Settings } from 'lucide-react';
+import { Brain, Zap, RefreshCw, Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Settings, Network, Users, Share2, GitBranch, Target, Workflow } from 'lucide-react';
 import styles from '../../profiles/[id]/ProfileDetail.module.css';
 
 interface AIOpportunitiesTabProps {
   profile: Profile;
   isEditing: boolean;
+  onNavigateToBlueprint?: (opportunity: AIOpportunity, initiativeIndex?: number) => void;
 }
 
 interface AIOpportunity {
@@ -25,6 +26,12 @@ interface AIOpportunity {
     timeframe: string;
     prerequisites: string[];
     riskFactors: string[];
+  };
+  agenticPattern?: {
+    recommendedPattern: string;
+    patternRationale: string;
+    implementationApproach: string;
+    patternComplexity: 'Low' | 'Medium' | 'High';
   };
   relevantInitiatives: string[];
   aiTechnologies: string[];
@@ -48,7 +55,7 @@ interface AIOpportunitiesAnalysis {
   };
 }
 
-const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing }) => {
+const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, onNavigateToBlueprint }) => {
   const [opportunities, setOpportunities] = useState<AIOpportunitiesAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -186,6 +193,46 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
     return colors[complexity] || colors['Medium'];
   };
 
+  const getAgenticPatternIcon = (pattern: string) => {
+    const icons: { [key: string]: React.ReactNode } = {
+      'Tool-Use': <Settings size={16} className="text-blue-500" />,
+      'ReAct': <Brain size={16} className="text-green-500" />,
+      'Self-Reflection': <CheckCircle size={16} className="text-purple-500" />,
+      'Plan-and-Execute': <Target size={16} className="text-orange-500" />,
+      'Plan-Act-Reflect': <GitBranch size={16} className="text-indigo-500" />,
+      'Hierarchical-Planning': <Network size={16} className="text-red-500" />,
+      'Manager-Workers': <Users size={16} className="text-blue-600" />,
+      'Hierarchical-Hub-Spoke': <Share2 size={16} className="text-green-600" />,
+      'Blackboard-Shared-Memory': <Workflow size={16} className="text-purple-600" />,
+      'Market-Based-Auction': <TrendingUp size={16} className="text-orange-600" />,
+      'Decentralized-Swarm': <Network size={16} className="text-pink-500" />
+    };
+    return icons[pattern] || <Brain size={16} className="text-gray-500" />;
+  };
+
+  const findRelevantInitiativeIndex = (opportunity: AIOpportunity): number | undefined => {
+    if (!profile.strategicInitiatives || !opportunity.relevantInitiatives.length) {
+      return undefined;
+    }
+
+    // Find the first strategic initiative that matches any of the opportunity's relevant initiatives
+    const initiativeIndex = profile.strategicInitiatives.findIndex(initiative =>
+      opportunity.relevantInitiatives.some(relevantName =>
+        initiative.initiative.toLowerCase().includes(relevantName.toLowerCase()) ||
+        relevantName.toLowerCase().includes(initiative.initiative.toLowerCase())
+      )
+    );
+
+    return initiativeIndex >= 0 ? initiativeIndex : undefined;
+  };
+
+  const handleGenerateBlueprint = (opportunity: AIOpportunity) => {
+    if (!onNavigateToBlueprint) return;
+    
+    const initiativeIndex = findRelevantInitiativeIndex(opportunity);
+    onNavigateToBlueprint(opportunity, initiativeIndex);
+  };
+
   if (isEditing) {
     return (
       <div className={styles.tabContent}>
@@ -311,9 +358,26 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem' }}>
                     {getCategoryIcon(opportunity.category)}
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>
-                        {opportunity.title}
-                      </h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                        <h4 style={{ margin: 0, fontSize: '1.25rem', flex: 1 }}>
+                          {opportunity.title}
+                        </h4>
+                        {onNavigateToBlueprint && (
+                          <button 
+                            className="btn btn-primary"
+                            onClick={() => handleGenerateBlueprint(opportunity)}
+                            style={{ 
+                              fontSize: '0.875rem', 
+                              padding: '0.5rem 1rem',
+                              marginLeft: '1rem',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            <Zap size={16} style={{ marginRight: '0.5rem' }} />
+                            Generate Blueprint
+                          </button>
+                        )}
+                      </div>
                       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                         <span style={{ 
                           padding: '0.25rem 0.75rem', 
@@ -330,6 +394,17 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
                         <span className={`badge ${getComplexityBadge(opportunity.implementation.complexity)}`}>
                           {opportunity.implementation.complexity} Complexity
                         </span>
+                        {opportunity.relevantInitiatives.length > 0 && (
+                          <span style={{ 
+                            padding: '0.25rem 0.75rem', 
+                            borderRadius: 'var(--border-radius)', 
+                            fontSize: '0.75rem',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            color: 'var(--accent-green)'
+                          }}>
+                            📋 {opportunity.relevantInitiatives.length} Initiative{opportunity.relevantInitiatives.length > 1 ? 's' : ''}
+                          </span>
+                        )}
                       </div>
                       <p style={{ margin: '0 0 1rem 0', lineHeight: 'var(--line-height)' }}>
                         {opportunity.description}
@@ -337,7 +412,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: opportunity.agenticPattern ? '1fr 1fr 1fr' : '1fr 1fr', gap: '1.5rem' }}>
                     <div>
                       <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: 'var(--accent-green)' }}>
                         <DollarSign size={16} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
@@ -372,7 +447,79 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing })
                         </div>
                       )}
                     </div>
+                    {opportunity.agenticPattern ? (
+                      <div>
+                        <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: 'var(--accent-purple)' }}>
+                          {getAgenticPatternIcon(opportunity.agenticPattern.recommendedPattern)}
+                          <span style={{ marginLeft: '0.25rem' }}>Agentic Pattern</span>
+                        </h5>
+                        <div style={{ 
+                          padding: '0.5rem', 
+                          backgroundColor: 'rgba(124, 58, 237, 0.1)', 
+                          borderRadius: 'var(--border-radius)',
+                          marginBottom: '0.75rem'
+                        }}>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                            {opportunity.agenticPattern.recommendedPattern}
+                          </div>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {opportunity.agenticPattern.patternRationale}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '0.9rem' }}>
+                          <strong>Complexity:</strong>
+                          <span className={`badge ${getComplexityBadge(opportunity.agenticPattern.patternComplexity)}`} style={{ marginLeft: '0.5rem' }}>
+                            {opportunity.agenticPattern.patternComplexity}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <h5 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', color: 'var(--text-muted)' }}>
+                          <Brain size={16} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
+                          Legacy Analysis
+                        </h5>
+                        <div style={{ 
+                          padding: '0.5rem', 
+                          backgroundColor: 'rgba(156, 163, 175, 0.1)', 
+                          borderRadius: 'var(--border-radius)',
+                          marginBottom: '0.75rem'
+                        }}>
+                          <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                            Refresh analysis to see agentic pattern recommendations
+                          </div>
+                        </div>
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => generateAnalysis(true)}
+                          style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}
+                        >
+                          <RefreshCw size={14} style={{ marginRight: '0.25rem' }} />
+                          Update Analysis
+                        </button>
+                      </div>
+                    )}
                   </div>
+
+                  {/* Agentic Implementation Approach */}
+                  {opportunity.agenticPattern && (
+                    <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-primary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <Network size={16} style={{ marginRight: '0.5rem', color: 'var(--accent-purple)' }} />
+                        <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>Implementation Approach:</strong>
+                      </div>
+                      <p style={{ 
+                        margin: 0, 
+                        fontSize: '0.9rem', 
+                        lineHeight: '1.4',
+                        color: 'var(--text-secondary)',
+                        fontStyle: 'italic',
+                        paddingLeft: '1.5rem'
+                      }}>
+                        {opportunity.agenticPattern.implementationApproach}
+                      </p>
+                    </div>
+                  )}
 
                   {opportunity.aiTechnologies.length > 0 && (
                     <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-primary)' }}>

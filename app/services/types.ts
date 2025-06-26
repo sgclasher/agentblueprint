@@ -156,6 +156,21 @@ export interface ROIProjection {
     recommendedAction: string;          // "Proceed with Phase 1 pilot"
 }
 
+// 🆕 PHASE 2.3: Agentic Design Pattern Types
+export type AgenticPattern = 
+    | 'Tool-Use'                    // Simple API calls and data retrieval
+    | 'ReAct'                       // Reason and Act cycles for research/analysis
+    | 'Self-Reflection'             // Quality assurance and validation
+    | 'Plan-and-Execute'            // Strategic planning with execution
+    | 'Plan-Act-Reflect'            // Adaptive planning with monitoring
+    | 'Hierarchical-Planning'       // Multi-layer planning cascades
+    | 'Manager-Workers'             // Central coordinator with specialists
+    | 'Hierarchical-Hub-Spoke'      // Tree structure with multiple managers
+    | 'Blackboard-Shared-Memory'    // Event-driven collaboration
+    | 'Market-Based-Auction'        // Resource bidding and optimization
+    | 'Decentralized-Swarm'         // Peer-to-peer coordination
+    | 'Hybrid-Pattern';             // Combination of multiple patterns
+
 // 🆕 NEW: Agentic Blueprint Types
 export interface AgenticBlueprint {
     id: string;
@@ -170,6 +185,11 @@ export interface AgenticBlueprint {
     // 🆕 ROI Business Case
     roiProjection?: ROIProjection;      // Optional ROI projection for executive presentation
     
+    // 🆕 PHASE 2.3: Agentic Design Pattern Integration
+    selectedPattern?: AgenticPattern;   // Primary agentic pattern used (e.g., "Manager-Workers")
+    patternRationale?: string;          // Explanation of why this pattern was selected
+    specialInstructions?: string;       // User-provided customization instructions
+    
     // Generation metadata
     aiModel?: string;
     promptVersion?: string;
@@ -181,14 +201,28 @@ export interface AgenticBlueprint {
     updatedAt: string;
 }
 
-export interface DigitalTeamMember {
+// Legacy interface for backward compatibility - DEPRECATED
+export interface LegacyDigitalTeamMember {
     role: 'coordinator' | 'researcher' | 'analyst' | 'quality-checker' | 'actuator';
-    title: string;                      // "Project Manager", "Analyst", "Consultant", "Auditor", "Ops Specialist"
+    title: string;
+    coreJob: string;
+    toolsUsed: string[];
+    oversightLevel: 'human-approval' | 'policy-checked' | 'full-autonomy';
+    oversightDescription: string;
+    linkedKPIs: string[];
+}
+
+// New pattern-based digital team member - supports dynamic agent structures
+export interface DigitalTeamMember {
+    role: string;                       // Dynamic role based on agentic pattern (e.g., "task-manager", "reasoning-agent")
+    title: string;                      // "Project Manager", "Analyst", "Consultant", etc.
     coreJob: string;                    // Description of main responsibility
+    responsibilities: string[];         // Detailed list of agent responsibilities
     toolsUsed: string[];                // ["Calendar", "Task tracker", "Internal search"]
     oversightLevel: 'human-approval' | 'policy-checked' | 'full-autonomy';
     oversightDescription: string;       // "Human approval required initially"
     linkedKPIs: string[];               // KPIs this agent directly impacts
+    interactionPatterns: string[];      // How this agent interacts with others (e.g., "Direct coordination", "Event-driven")
 }
 
 export interface HumanCheckpoint {

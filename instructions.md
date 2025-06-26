@@ -1,343 +1,219 @@
 # AI Business Advisory Platform - Development Instructions
 
-## 🎯 Current Task
+## 🎯 Current Task: Fix Agentic Pattern Implementation
 
-### **Phase 2: Strategic Initiative Selection & Opportunity Integration Implementation**
+### **Task Overview**
+**Problem**: Blueprint generation uses hard-coded 5-agent template instead of implementing actual agentic design patterns  
+**Goal**: Complete prompt service redesign with dynamic pattern implementation  
+**Approach**: Make pattern selection actually change the blueprint structure, not just the labels
 
-**Objective**: Implement strategic initiative selection UI and integrate AI Opportunities with AI Blueprint generation for focused, initiative-specific blueprints.
+### **Implementation Plan**
 
-**Implementation Plan**:
+#### **Phase 1: Analysis and Refactoring Preparation** (1 hour)
+- [x] **Step 1.1: Create pattern-specific agent structure definitions** ✅ **COMPLETE**
+  - Primary files: Create `app/lib/llm/patterns/agenticPatternDefinitions.ts`
+  - Define agent structures for each of the 12 patterns from KB_AGENTIC_DESIGN_PATTERNS.md
+  - Map patterns to specific agent counts, roles, and interactions
 
-#### **Step 2.1: Add Strategic Initiative Selector UI** (1.5 hours)
-- [x] **2.1a: Create Initiative Selector Component** ✅ **COMPLETE**
-  - Primary files: `app/profile/components/AIBlueprintTab.tsx`
-  - ✅ Add dropdown selector with "Auto (All High Priority)" and individual initiative options
-  - ✅ Implement state management for selected initiative
-  - ✅ Add visual indicators showing which initiative is being used
-  - ✅ Tests written and passing in `app/__tests__/features/strategic-initiative-selection.test.tsx`
+- [x] **Step 1.2: Create pattern-specific prompt templates** ✅ **COMPLETE**
+  - Primary files: Create `app/lib/llm/patterns/patternPromptTemplates.ts`
+  - Design modular prompt sections for each pattern type
+  - Define pattern-specific JSON response schemas
 
-- [x] **2.1b: Update Blueprint Tab Layout** ✅ **COMPLETE**
-  - Primary files: `app/profile/components/AIBlueprintTab.tsx`
-  - ✅ Integrate selector into existing UI without disrupting current functionality
-  - ✅ Add loading states and user feedback (selector disabled during generation)
-  - ✅ Ensure mobile responsiveness (professional dropdown styling)
-  - ✅ Added initiative context indicator showing focused initiative when selected
+- [x] **Step 1.3: Write tests for pattern implementations** ✅ **COMPLETE**
+  - Primary files: Create `app/__tests__/features/pattern-specific-blueprints.test.ts`
+  - Define test cases for each of the 12 patterns
+  - Verify correct agent counts and structures per pattern
+  - **VALIDATION**: Existing tests failing as expected (9 failures showing hard-coded 5-agent issues)
 
-#### **Step 2.2: Enhance Blueprint API for Initiative Context** (1 hour)
-- [x] **2.2a: Update API Route Interface** ✅ **COMPLETE**
-  - Primary files: `app/api/profiles/generate-blueprint/route.ts`
-  - ✅ Add optional `selectedInitiativeIndex` parameter to request interface
-  - ✅ Implement server-side validation for initiative selection
-  - ✅ Maintain backward compatibility with current API calls
+#### **Phase 2: Core Prompt Service Redesign** (2 hours)
+- [x] **Step 2.1: Refactor agenticBlueprintPrompt.ts** ✅ **COMPLETE**
+  - Primary files: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
+  - Remove hard-coded 5-agent model
+  - Implement dynamic prompt generation based on selected pattern
+  - Update JSON response interface to support variable agent counts
+  - **DELIVERED**: Pattern-based system with legacy fallback, new interfaces, auto-pattern selection
 
-- [x] **2.2b: Add Initiative Filtering Logic** ✅ **COMPLETE**
+- [x] **Step 2.2: Update blueprint service for pattern selection** ✅ **COMPLETE**
   - Primary files: `app/services/agenticBlueprintService.ts`
-  - ✅ Create initiative filtering function in `generateBlueprint()` method
-  - ✅ Update blueprint generation to use selected initiative context via `focusedProfile`
-  - ✅ Preserve auto-selection behavior as default (when `selectedInitiativeIndex` is undefined)
-  - ✅ Add `blueprintFocusContext` to prompt configuration interface and generation
+  - Add pattern selection logic based on AI Opportunities analysis
+  - Pass selected pattern to prompt generation
+  - Update validation to handle variable agent counts
+  - **DELIVERED**: Auto-pattern selection, pattern-aware validation, updated types
 
-#### **Step 2.3: Create Initiative-Focused Prompts** (2-3 hours) 🎯 **ENHANCED APPROACH**
-- [ ] **2.3a: Integrate Agentic AI Knowledge Base Education**
-  - Primary files: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
-  - ✅ **Reference Documents**: `KB_AI_AGENT_HANDBOOK.md` (agentic AI concepts), `KB_EXAMPLE_AGENTIC_SOLUTION.md` (quality benchmark)
-  - **Objective**: Transform generic "Process Analyst" outputs into specific "Vendor Evaluation Specialist" with detailed workflows
-  - **Quality Target**: Match specificity level of RFx workflow example (trigger → flow → outcome patterns)
-  - Inject agentic AI education from KB handbook into system prompt
-  - Use RFx example as template for industry-specific agent design patterns
+- [x] **Step 2.3: Create pattern-specific validation logic** ✅ **COMPLETE**
+  - Primary files: Update `validateAgenticBlueprintResponse` in `agenticBlueprintPrompt.ts`
+  - Remove hard-coded 5-agent validation
+  - Implement pattern-specific validation rules
+  - Ensure each pattern's requirements are met
+  - **DELIVERED**: Pattern-aware validation with legacy fallback, agent count validation per pattern
 
-- [ ] **2.3b: Enhanced Prompt Engineering for Initiative Focus**
-  - Primary files: `app/lib/llm/prompts/agenticBlueprintPrompt.ts`
-  - Add prompt variations for single-initiative focus using KB examples
-  - Map strategic initiative problems to specific agent capabilities (procurement → RFx specialists)
-  - Include initiative-specific business problems and metrics in context
-  - Generate industry-specific workflows instead of generic digital teams
-  - Maintain synthesis capability for multiple initiatives
+#### **Phase 3: UI Updates for Dynamic Agent Support** (1 hour)
+- [x] **Step 3.1: Update AIBlueprintTab component** ⏳ **IN PROGRESS**
+  - Primary files: `app/profile/components/AIBlueprintTab.tsx`
+  - Remove "5 Specialist Agents" assumption
+  - Support dynamic agent count display
+  - Add pattern visualization/explanation
 
-- [ ] **2.3c: Cross-Provider Testing with Quality Benchmarks**
+- [ ] **Step 3.2: Update BlueprintExecutiveSummary component**
+  - Primary files: `app/profile/components/BlueprintExecutiveSummary.tsx`
+  - Update agent count references
+  - Add pattern-specific ROI justifications
+
+- [ ] **Step 3.3: Update type definitions**
+  - Primary files: `app/services/types.ts`
+  - Update AgenticBlueprint interface to support variable agent arrays
+  - Add pattern-specific metadata fields
+
+#### **Phase 4: Testing and Validation** (1 hour)
+- [ ] **Step 4.1: Run pattern-specific tests**
+  - Execute new test suite for all 12 patterns
+  - Verify correct agent generation per pattern
+  - Validate pattern selection logic
+
+- [ ] **Step 4.2: End-to-end testing**
+  - Test complete flow from AI Opportunities → Blueprint generation
+  - Verify pattern selection influences agent structure
+  - Test with different business contexts
+
+- [ ] **Step 4.3: Update existing tests**
   - Primary files: `app/__tests__/features/agentic-blueprint-quality.test.ts`
-  - Write tests for focused vs. synthesized blueprints using KB quality standards
-  - Validate effectiveness across OpenAI, Claude, and Gemini
-  - Ensure output matches KB example specificity (agent names, tools, workflows)
-  - Test transformation: generic → industry-specific agent roles
-
-#### **Step 2.4: Opportunity-to-Blueprint Integration** (30 min)
-- [ ] **2.4a: Add Generate Blueprint Button**
-  - Primary files: `app/profile/components/AIOpportunitiesTab.tsx`
-  - Add "Generate Blueprint from Opportunity" button
-  - Link opportunities to their source strategic initiatives
-  - Implement seamless navigation to blueprint tab
-
-- [ ] **2.4b: Cross-Tab Communication**
-  - Primary files: `app/profile/page.tsx`
-  - Create mechanism for passing initiative context between tabs
-  - Update tab state management to support initiative pre-selection
-  - Ensure smooth user workflow
-
-#### **Step 2.5: Testing & Validation** (30 min)
-- [ ] **2.5a: Write Integration Tests**
-  - Primary files: `app/__tests__/features/strategic-initiative-selection.test.ts`
-  - Test initiative selection workflow
-  - Validate API request/response with initiative context
-  - Test cross-tab navigation functionality
-
-- [ ] **2.5b: User Experience Testing**
-  - Primary files: Manual testing checklist
-  - Test complete workflow: select initiative → generate blueprint → view ROI
-  - Validate opportunity-to-blueprint navigation
-  - Ensure accessibility and mobile compatibility
-
-**Target Timeline**: 4-5 hours total  
-**Expected Outcome**: Users can generate highly specific, industry-focused AI blueprints from strategic initiatives with professional-grade workflow detail.
-
-**🎯 ENHANCED QUALITY APPROACH**:
-Based on user feedback that current outputs are "rather generic", Step 2.3 has been enhanced to use knowledge base documents for dramatic quality improvement:
-- **Education Source**: `KB_AI_AGENT_HANDBOOK.md` - Comprehensive agentic AI concepts for LLM education
-- **Quality Benchmark**: `KB_EXAMPLE_AGENTIC_SOLUTION.md` - RFx workflow example showing target specificity level
-- **Transformation Goal**: Generic "Process Analyst" → Specific "Vendor Evaluation Specialist" with detailed tools and workflows
-- **Industry Focus**: Map business problems to industry-specific agent capabilities and detailed implementation patterns
+  - Remove assumptions about 5-agent structure
+  - Update quality scoring for variable agent counts
 
 ---
 
-## 🎯 Current Priority
+## 🎯 Current Status
 
-### **Executive-Grade AI Blueprint Enhancement & Strategic Integration**
+### **Phase 2 Complete** ✅
+- ✅ **AI Opportunities Enhancement**: Agentic design patterns integration complete
+- ✅ **Cross-Tab Integration**: Seamless opportunity-to-blueprint workflow implemented
+- ✅ **Strategic Initiative Selection**: UI and API infrastructure complete
+- ✅ **Agent Blueprint System**: Production-ready with cross-provider support
 
-**Objective**: Enhance the AI Blueprint system with professional ROI business case presentation and optional integration with AI Opportunities for executive-ready strategic AI implementation plans.
-
-**Business Context**: Based on architecture analysis, the current AI Opportunities and AI Blueprint systems are well-designed but independent. Key opportunity: Add optional integration and professional ROI presentation to create executive-ready AI strategy documents that match procurement/investment decision standards.
-
-**Current System Status**:
-- ✅ AI Opportunities and AI Blueprints are independent, parallel systems (both read from Strategic Initiatives)
-- ✅ Clean separation allows flexible user journeys and independent caching
-- ✅ Strong foundation with advanced prompt engineering and cross-provider support
-- ❌ Missing professional ROI business case format in blueprints
-- ❌ No optional connection between strategic analysis (opportunities) and tactical implementation (blueprints)
-- ❌ Blueprint presentation not executive-ready for investment decisions
-
-## 📋 Current Task - AI Blueprint ROI Enhancement Implementation Plan
-
-### **Phase 1: Enhanced ROI Business Case Integration** ✅ **COMPLETE** (7-9 hours)
-
-- [x] **Step 1.1: Define ROI Projection Data Structures** (30 min) ✅
-  - Create `roiProjection` interface in `app/services/types.ts`
-  - Add fields for process savings, labor reallocation, risk avoidance, investment costs, ROI percentage, payback period
-  - Update `AgenticBlueprint` interface to include optional `roiProjection` field
-
-- [x] **Step 1.2: Create ROI Calculation Service** (2 hours) ✅
-  - Create `app/services/roiCalculationService.ts`
-  - Implement calculation methods using process metrics from strategic initiatives
-  - Add industry-specific scaling factors and confidence level calculations
-  - Write comprehensive unit tests in `app/__tests__/features/roi-calculation.test.ts`
-
-- [x] **Step 1.3: Enhance Blueprint Generation Prompts** (1.5 hours) ✅
-  - Update `app/lib/llm/prompts/agenticBlueprintPrompt.ts` to request ROI data
-  - Add ROI calculation instructions to system prompt
-  - Include process metrics context in user prompt
-  - Test with all three providers (OpenAI, Claude, Gemini)
-
-- [x] **Step 1.4: Update Blueprint Generation Service** (1.5 hours) ✅
-  - Modify `app/services/agenticBlueprintService.ts` to integrate ROI calculations
-  - Add validation for ROI projections (ensure reasonable percentages/payback)
-  - Update caching logic to include ROI data
-  - Write integration tests
-
-- [x] **Step 1.5: Create Executive Summary Component** (2 hours) ✅
-  - Create `app/profile/components/BlueprintExecutiveSummary.tsx`
-  - Design professional financial metrics display
-  - Include charts for ROI visualization
-  - Add confidence level indicators
-
-- [x] **Step 1.6: Update AI Blueprint Tab UI** (1.5 hours) ✅
-  - Modify `app/profile/components/AIBlueprintTab.tsx` to display executive summary
-  - Integrate BlueprintExecutiveSummary component into AI Blueprint tab
-  - ROI data now displays automatically when available in blueprint
-
-### **Phase 2: Strategic Initiative Selection & Opportunity Integration** (3-4 hours)
-
-- [ ] **Step 2.1: Add Strategic Initiative Selector UI** (1.5 hours)
-  - Add initiative selector dropdown in `app/profile/components/AIBlueprintTab.tsx`
-  - Include "Auto (All High Priority)" and individual initiative options
-  - Create state management for selected initiative
-  - Add UI indicators showing which initiative was used for ROI calculations
-
-- [ ] **Step 2.2: Enhance Blueprint API for Initiative Context** (1 hour)
-  - Update `app/api/profiles/generate-blueprint/route.ts` to accept specific initiative ID
-  - Modify request interface to include optional `selectedInitiativeId` parameter
-  - Add server-side validation and initiative filtering logic
-  - Support both auto-selection (current behavior) and manual selection
-
-- [ ] **Step 2.3: Create Initiative-Focused Prompts** (1 hour)
-  - Add prompt variations in `agenticBlueprintPrompt.ts` for single-initiative focus
-  - Include initiative-specific business problems and metrics in context
-  - Maintain synthesis capability when multiple initiatives are selected
-  - Test effectiveness across providers for focused vs. synthesized blueprints
-
-- [ ] **Step 2.4: Opportunity-to-Blueprint Integration** (30 min)
-  - Add "Generate Blueprint" button in `app/profile/components/AIOpportunitiesTab.tsx`
-  - Link specific opportunities to their source strategic initiatives
-  - Implement seamless navigation from opportunity analysis to blueprint generation
-
-### **Phase 3: Smart Defaults & Industry Intelligence** (1-2 hours)
-
-- [ ] **Step 3.1: Add Industry ROI Benchmarks** (1 hour)
-  - Create `app/lib/industryBenchmarks.ts` with ROI data by industry
-  - Include typical payback periods and success rates
-  - Add validation rules for realistic projections
-
-- [ ] **Step 3.2: Implement ROI Validation Logic** (1 hour)
-  - Add validation in `roiCalculationService.ts` for defensible percentages
-  - Create warning system for unrealistic projections
-  - Add industry-specific thresholds
-
-### **Phase 4: Executive Presentation & Export** (Optional, 2-3 hours)
-
-- [ ] **Step 4.1: Create PDF Export Template** (1.5 hours)
-  - Design professional business case PDF template
-  - Include executive summary, ROI projections, implementation roadmap
-  - Use existing PDF infrastructure from timeline export
-
-- [ ] **Step 4.2: Add Export Functionality** (1.5 hours)
-  - Add export button to AI Blueprint tab
-  - Implement API endpoint for PDF generation
-  - Test PDF generation across different blueprints
-
-**Total Estimated Time**: 12-18 hours (MVP: 8-12 hours for Phases 1-2)
+**Platform Status**: Production-ready MVP with comprehensive AI advisory capabilities
 
 ---
 
-## 📋 Implementation Plan
+## 🚨 **CRITICAL ISSUE IDENTIFIED**
 
-### **Phase 1: Enhanced ROI Business Case Integration** (Priority)
-- Add comprehensive `roiProjection` interface to AgenticBlueprint schema
-- Enhance ROI calculation prompts with industry-validated investment scaling
-- Create executive summary section with professional financial metrics
-- Link KPI improvements to ROI calculations for clear business value connection
+### **Blueprint Generation Architectural Flaw**
 
-### **Phase 2: Strategic Initiative Selection & Opportunity Integration**
-- Add Strategic Initiative selector UI with "Auto" and individual initiative options  
-- Enhance blueprint generation API to accept specific initiative context
-- Create initiative-focused prompt variations for targeted blueprints
-- Display traceability showing which initiative was used for ROI calculations
-- Add "Generate Blueprint from Opportunity" workflow in AI Opportunities tab
+**Problem**: Blueprint generation uses hard-coded 5-agent template instead of implementing actual agentic design patterns from `KB_AGENTIC_DESIGN_PATTERNS.md`
 
-### **Phase 3: Smart Defaults & Industry Intelligence**
-- Add industry-specific ROI benchmarks for realistic projections
-- Implement validation logic for defensible ROI percentages and payback periods
-- Enhanced caching with ROI metadata for instant business case loading
+**Evidence**: 
+- AI Opportunities correctly identify "Manager-Workers" pattern with specific rationale
+- Blueprint generation ignores this and forces generic coordinator/researcher/analyst/quality-checker/actuator roles
+- Pattern selection is cosmetic only - doesn't change actual agent structure or interactions
 
-### **Phase 4: Executive Presentation & Export** (Optional)
-- Professional PDF export with ROI business case format
-- Presentation mode optimized for stakeholder meetings
+**Root Cause**: 
+- Prompt template hard-codes exactly 5 agents with predefined roles
+- No integration with actual pattern definitions from knowledge base
+- Agent interactions don't match any real agentic design pattern
 
-**Target ROI Framework**:
-```typescript
-interface ROIProjection {
-  processCostSavings: string;    // "$450K annual efficiency gains"
-  laborReallocation: string;     // "$320K FTE capacity redeployment"  
-  riskAvoidance: string;        // "$150K compliance risk reduction"
-  totalInvestment: string;      // "$280K implementation cost"
-  annualValue: string;          // "$920K total annual value"
-  roiPercentage: number;        // 229
-  paybackMonths: number;        // 11
-  keyAssumptions: string[];     // ["40% cycle time improvement"]
-  confidenceLevel: 'High' | 'Medium' | 'Low';
-}
-```
-
-**Timeline**: 12-18 hours across 4 phases (MVP: 8-12 hours for Phases 1-2)
+**Required Fix**: Complete prompt service redesign needed:
+1. Remove hard-coded 5-agent model
+2. Create pattern-specific blueprint generators  
+3. Implement dynamic agent structures based on selected patterns
+4. Use actual pattern definitions from KB_AGENTIC_DESIGN_PATTERNS.md
+5. Make agent count and roles flexible per pattern requirements
 
 ---
 
-## 📚 Recently Completed
+## 🚨 **CURRENT CRITICAL ISSUES - NEXT SHIFT PRIORITY**
 
-### **Phase 2 Steps 2.1 & 2.2: Strategic Initiative Selection Infrastructure** ✅ **COMPLETE**
+### **ISSUE 1: Blueprint Generation Context Disconnection** ⚠️ **HIGH PRIORITY**
 
-**Accomplished**: Complete UI and API infrastructure for strategic initiative-focused blueprint generation
-- **Initiative Selector UI**: Professional dropdown with "Auto" and individual initiative options  
-- **State Management**: Initiative selection persists, resets on profile change, disabled during loading
-- **API Enhancement**: Server-side handling of `selectedInitiativeIndex` parameter with backward compatibility
-- **Service Layer**: Initiative filtering logic creating `focusedProfile` for targeted blueprint generation
-- **Prompt Integration**: `blueprintFocusContext` system for AI guidance on initiative-focused vs comprehensive blueprints
-- **Testing**: 7 comprehensive tests covering UI functionality, API integration, and edge cases
+**Problem**: Blueprint generation not using AI Opportunity context when user clicks specific opportunity
+- User clicks specific AI opportunity → expects focused blueprint for THAT opportunity  
+- Instead gets generic company-wide blueprint that "does not resemble in the slightest the ai opportunity"
+- Pattern selection working but content context is lost
 
-**Impact**: Foundation complete for generating highly specific, industry-focused AI blueprints. Ready for Step 2.3 prompt enhancement to address generic output quality.
+**Investigation Required**:
+- **Primary files**: `app/profile/components/AIBlueprintTab.tsx`, `app/api/profiles/generate-blueprint/route.ts`
+- **Debug flow**: AI Opportunity click → Blueprint API call → Context preservation
+- **Check**: How `blueprintFocusContext` and `selectedInitiativeIndex` flow through system
+- **Expected**: Blueprint should specialize ALL agents around selected opportunity workflow
 
-### **Phase 1 ROI Enhancement: Process Baseline Metrics & Investment Context** ✅ **COMPLETE**
+### **ISSUE 2: Claude Partial Response Generation** ⚠️ **HIGH PRIORITY**
 
-**Accomplished**: Added 12 new optional ROI fields to Strategic Initiatives for defendable ROI calculations
-- **Process Metrics**: Cycle time, volume, error rate, cost level, labor intensity, complexity
-- **Investment Context**: Budget range, timeframe, readiness, risk tolerance, success definition
-- **UI Enhancement**: User-friendly dropdowns in both ProfileWizard and Analysis Tab
-- **Read-only Display**: Executive-friendly ROI summaries in Overview and Analysis tabs
-- **Bug Resolution**: Fixed save operation hanging issue by bypassing Supabase auth metadata update
+**Problem**: Claude generating incomplete JSON responses
+- Only generating `digitalTeam` (4 agents, correct count for Manager-Workers)
+- Missing: `businessObjective`, `humanCheckpoints`, `agenticTimeline`, `kpiImprovements`
+- Pattern-specific prompts enhanced but still failing
 
-### **AI Blueprint System - Production Ready** ✅ **COMPLETE**
+**Investigation Required**:
+- **Primary files**: `app/lib/llm/patterns/patternPromptTemplates.ts`
+- **Test**: Try OpenAI/Gemini providers to isolate Claude-specific issue
+- **Check**: Token limits, prompt complexity, JSON schema enforcement
+- **Debug logs**: `[AI Response]` and `[Field Analysis]` showing what Claude actually returns
 
-**Achievement**: Cross-provider AI Blueprint generation with executive-ready quality
-- **Quality Improvement**: Business Specificity Score improved from 10/25 → 20+/25
-- **5-Agent Digital Teams**: Coordinator, Researcher, Analyst, Quality-Checker, Actuator
-- **Cross-Provider Support**: OpenAI, Claude, Gemini with provider-specific optimizations
-- **Validation System**: Intelligent retry logic ensures 3+ KPI improvements consistently
-- **Persistence**: Cached in `profiles.agentic_blueprint_cache` for instant loading
+### **COMPLETED WORK** ✅
+
+**Phase 1 & 2 Architecture Complete**:
+- ✅ Pattern definitions implemented (`agenticPatternDefinitions.ts`)
+- ✅ Pattern-specific prompt templates created (`patternPromptTemplates.ts`) 
+- ✅ Auto-pattern selection working (Manager-Workers correctly selected)
+- ✅ Validation logic updated for variable agent counts
+- ✅ JSON structure templates with proper agent roles
+
+**What's Working**:
+- AI Opportunities correctly identify agentic patterns with rationale
+- Pattern selection flows from opportunities to blueprint generation
+- Agent count validation matches pattern requirements (4 for Manager-Workers)
+
+**What's Broken**:
+- Blueprint content doesn't match selected opportunity context
+- Claude generating partial JSON responses despite enhanced prompts
+- No fallbacks implemented per user requirements (errors should be visible)
+
+### **IMMEDIATE NEXT STEPS FOR NEXT SHIFT**
+
+1. **Fix Context Flow** (1-2 hours):
+   - Trace `blueprintFocusContext` from AI Opportunity → Blueprint API
+   - Ensure opportunity-specific business problems reach pattern prompts
+   - Verify agent specialization around selected opportunity
+
+2. **Debug Claude Response Issue** (1 hour):
+   - Test with OpenAI/Gemini to isolate provider-specific problems
+   - Check pattern prompt token lengths and complexity
+   - Add more aggressive JSON structure enforcement
+
+3. **Validate End-to-End Flow** (30 minutes):
+   - Test: Click opportunity → Generate blueprint → Content matches opportunity
+   - Verify: Agent roles align with opportunity workflow
+   - Confirm: No generic company-wide blueprints
 
 ---
 
-## 🛠️ Quick Reference
+## 🛠️ **Quick Reference**
 
 ### **Core Files & Architecture**
 
 **Key Application Files**:
-- `app/profile/page.tsx` - Main business profile interface with 6-tab business intelligence dashboard (Overview, Initiatives, AI Opportunities, Agent Blueprint, Systems, Contacts)
+- `app/profile/page.tsx` - Main business profile interface with 6-tab dashboard
 - `app/profiles/components/ProfileWizard.tsx` - 2-step onboarding wizard
 - `app/admin/page.tsx` - AI provider credential management
 
 **Business Logic**:
 - `app/services/aiService.ts` - **CRITICAL** - Centralized AI provider abstraction
-- `app/services/agenticBlueprintService.ts` - Agent Blueprint generation logic (5-agent digital teams)
-- `app/services/aiOpportunitiesService.ts` - AI opportunity analysis
+- `app/services/agenticBlueprintService.ts` - Agent Blueprint generation (NEEDS FIXING)
+- `app/services/aiOpportunitiesService.ts` - AI opportunity analysis with patterns
 - `app/services/profileService.ts` - Profile data operations and timeline coordination
 
 **Data Layer**:
 - `app/repositories/profileRepository.ts` - Database operations with caching
-- `app/services/types.ts` - TypeScript interfaces for core data structures
-- `app/lib/llm/prompts/` - All prompt engineering templates
+- `app/services/types.ts` - TypeScript interfaces including AgenticPattern types
+- `app/lib/llm/prompts/agenticBlueprintPrompt.ts` - Blueprint prompts (NEEDS REBUILDING)
 
-### **Architecture Patterns**
+### **Platform Capabilities**
+- **Agent Blueprint System**: Production-ready but architecturally flawed (patterns cosmetic only)
+- **Business Profile Management**: 6-tab interface with ROI data collection
+- **AI Timeline**: Multi-scenario generation with permanent caching
+- **AI Opportunities**: Enhanced with agentic pattern recommendations (working correctly)
+- **Cross-Provider Support**: OpenAI, Claude, Gemini with provider-specific optimizations
 
-```typescript
-// API Route Pattern
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-const { data } = await supabase
-  .from('table_name')
-  .select('*')
-  .eq('user_id', user.id);
-
-// AI Service Usage
-const result = await aiService.generateJson(
-  systemPrompt,
-  userPrompt,
-  userId,
-  CredentialsRepository,
-  preferredProvider
-);
-```
-
-### **Development Guidelines**
-- **Modular Independence**: Features should be independently modifiable
-- **Shared Infrastructure**: `aiService.ts`, `credentialsRepository.ts`, `profileRepository.ts`
-- **Security First**: Service role + explicit user authorization in all API routes
-- **Performance**: Use caching for expensive AI operations
-
-### **Knowledge Base References**
-- **KB_LLM_MODEL_UPDATES_2025.md** - Latest 2025 API changes and model capabilities
-- **KB_AI_AGENT_HANDBOOK.md** - Agentic AI strategic implementation guide
-- **KB_AGENTIC_WORKFLOW_MVP.md** - MVP blueprint for agentic AI workflows
-
-### **Critical Database Migration** (Agent Blueprint Support)
+### **Critical Database Migration** (Required)
 
 **BEFORE TESTING Agent Blueprints**, run in Supabase SQL Editor:
 ```sql
@@ -351,20 +227,34 @@ ON profiles USING gin (agentic_blueprint_cache)
 WHERE agentic_blueprint_cache IS NOT NULL;
 ```
 
-### **Platform Status**
-- **Agent Blueprint System**: Production-ready with cross-provider support (OpenAI, Claude, Gemini)
-- **Business Profile Management**: 6-tab business intelligence interface with ROI data collection
-- **AI Timeline**: Multi-scenario generation with permanent caching
-- **AI Opportunities**: Strategic recommendations with readiness scoring
+---
+
+## 🎯 **Future Development Roadmap**
+
+### **Phase 3: Fix Agentic Patterns** (4-5 hours) - **CURRENT PRIORITY**
+- Fix blueprint generation to implement actual agentic design patterns
+- Create pattern-specific agent structures and interactions
+- Remove hard-coded 5-agent assumptions
+
+### **Phase 4: Enhanced Executive Presentation** (2-3 hours)
+- PDF export with professional business case format
+- Executive-ready presentation materials
+
+### **Phase 5: Smart Defaults & Industry Intelligence** (1-2 hours)
+- Industry ROI benchmarks for realistic projections
+- ROI validation logic with industry-specific thresholds
 
 ---
 
-*For comprehensive development history and detailed implementation records, see [DEVELOPMENT_HISTORY.md](./DEVELOPMENT_HISTORY.md)*
+## 📚 **Knowledge Base Resources**
 
-**Last Updated**: January 2025  
-**Status**: Production-ready MVP with comprehensive AI advisory capabilities
+- **KB_AGENTIC_DESIGN_PATTERNS.md**: 12 foundational patterns for proper implementation
+- **KB_AI_AGENT_HANDBOOK.md**: Comprehensive agentic AI implementation guide
+- **KB_LLM_MODEL_UPDATES_2025.md**: Latest API changes and model capabilities
+- **DEVELOPMENT_HISTORY.md**: Complete development history and detailed implementation records
 
-**Recent Updates**:
-- ✅ **UI/UX Enhancement**: Updated interface naming for clarity ("Analysis" → "Initiatives", "AI Blueprint" → "Agent Blueprint", "Profile" → "Business Profile")
-- ✅ **Phase 1 ROI Enhancement**: Executive-ready financial business case generation
-- ✅ **Cross-Provider Support**: OpenAI, Claude, Gemini with provider-specific optimizations
+---
+
+**Last Updated**: January 2025 - End of Session  
+**Status**: Phase 2 Architecture Complete, Context Integration Issues Identified  
+**Next Session Goal**: Fix blueprint context flow and Claude response generation issues

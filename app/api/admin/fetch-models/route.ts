@@ -16,10 +16,15 @@ const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 // Fallback models if API fetching fails
 const FALLBACK_MODELS = {
   openai: [
-    { id: 'gpt-4o', name: 'GPT-4o (Recommended)', description: 'Most capable GPT-4 model' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini (Cost-Effective)', description: 'Faster and cheaper' },
-    { id: 'gpt-4.1', name: 'GPT-4.1 (Latest)', description: '1M context window' },
-    { id: 'o1', name: 'o1 (Reasoning)', description: 'Advanced reasoning model' },
+    { id: 'gpt-4o', name: 'GPT-4o (Recommended - Stable & Multimodal)', description: 'Most capable and reliable GPT-4 model' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini (Cost-Effective & Reliable)', description: 'Faster, cost-effective, and reliable' },
+    { id: 'o1', name: 'o1 (Advanced Reasoning - Stable)', description: 'Advanced reasoning model - stable access' },
+    { id: 'o1-mini', name: 'o1 Mini (Fast Reasoning - Stable)', description: 'Fast reasoning model - stable access' },
+    { id: 'gpt-4.1', name: 'GPT-4.1 (1M Context)', description: '1M context window' },
+    { id: 'o3-pro', name: 'o3-pro (2025 - Requires Pro Access)', description: 'Advanced reasoning - requires Pro subscription' },
+    { id: 'o3', name: 'o3 (2025 - May Require Special Access)', description: 'Advanced reasoning - may require special access' },
+    { id: 'o4-mini', name: 'o4 Mini (2025 - Limited Availability)', description: 'Fast reasoning - limited availability' },
+    { id: 'codex-mini', name: 'Codex Mini (2025 - Limited Availability)', description: 'Code generation - limited availability' },
   ],
   gemini: [
     { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Recommended)', description: 'Fast and versatile' },

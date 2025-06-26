@@ -6,6 +6,17 @@ import {
   getIndustryAgentRoles,
   IndustryType 
 } from './industryContextPrompts';
+import { 
+  buildPatternSpecificSystemPrompt,
+  buildPatternSpecificUserPrompt,
+  validatePatternCompliance,
+  PatternSpecificBlueprintResponse
+} from '../patterns/patternPromptTemplates';
+import { 
+  getPatternDefinition,
+  getRecommendedPatternForProblemType,
+  AgentDefinition
+} from '../patterns/agenticPatternDefinitions';
 
 // 🔍 AUDIT FINDINGS - CURRENT PROMPT QUALITY ASSESSMENT
 // =====================================================
@@ -64,12 +75,36 @@ export interface AgenticBlueprintPromptConfig {
   includeKPIProbability?: boolean;
   includeROIProjection?: boolean;
   blueprintFocusContext?: string;  // 🆕 PHASE 2.2: Initiative focus context
+  specialInstructions?: string;    // 🆕 PHASE 2.3: User customization instructions
+  selectedPattern?: string;        // 🆕 PHASE 2: Pattern-specific blueprint generation
 }
 
 /**
- * Builds a dynamic system prompt with industry intelligence and model-specific optimizations
+ * Builds a dynamic system prompt with pattern-specific agent structures and model optimizations
+ * 
+ * @param config Configuration including selectedPattern for dynamic generation
  */
 export function buildAgenticBlueprintSystemPrompt(config: AgenticBlueprintPromptConfig = {}): string {
+  // If a specific pattern is selected, use pattern-specific generation
+  if (config.selectedPattern) {
+    return buildPatternSpecificSystemPrompt(config.selectedPattern, {
+      includeROIProjection: config.includeROIProjection,
+      modelProvider: config.modelProvider,
+      industry: config.industry,
+      businessContext: JSON.stringify(config.businessContext)
+    });
+  }
+  
+  // Fallback to legacy hard-coded system for backward compatibility
+  console.warn('[AgenticBlueprintPrompt] No pattern selected, using legacy 5-agent system. Consider migrating to pattern-based generation.');
+  return buildLegacySystemPrompt(config);
+}
+
+/**
+ * Legacy system prompt builder (hard-coded 5-agent model) - DEPRECATED
+ * Only used for backward compatibility when no pattern is specified
+ */
+function buildLegacySystemPrompt(config: AgenticBlueprintPromptConfig = {}): string {
   const basePrompt = `You are a senior enterprise AI architect and agentic workflow strategist with deep expertise in designing and implementing AI "digital teams" for business transformation. Your specialized knowledge includes autonomous agent orchestration, human-AI collaboration patterns, and progressive trust frameworks for enterprise environments.
 
 EXPERTISE AREAS:
@@ -77,7 +112,214 @@ EXPERTISE AREAS:
 - Business Process Mapping: Strategic initiative decomposition, workflow optimization, KPI alignment
 - Human-AI Collaboration: Progressive trust models, oversight frameworks, control point design
 - Enterprise Integration: System connectivity, tool orchestration, security by design
-- Implementation Strategy: Crawl-walk-run methodologies, risk mitigation, change management`;
+- Implementation Strategy: Crawl-walk-run methodologies, risk mitigation, change management
+
+🎯 AGENTIC DESIGN PATTERNS EXPERTISE (2025 Knowledge Base):
+You are an expert in modern agentic AI design patterns and must select the optimal pattern combination for each business scenario. Your expertise covers proven patterns from 2022-2025 implementations.
+
+**FOUNDATIONAL AGENTIC DESIGN PATTERNS:**
+
+**1. Single-Agent Reasoning Loops:**
+- **Tool-Use/Function-Calling**: LLM invokes external APIs and merges results into context
+  • Best for: Simple data retrieval, single API calls, direct system integration
+  • Example: "Get payroll data" → Call HR API → "Return formatted answer"
+
+- **ReAct (Reason + Act)**: Interleave Thought → Action → Observation cycles
+  • Best for: Research tasks, multi-step analysis, exploratory workflows
+  • Example: "Research topic" → think → search → observe → think → summarize
+
+- **Self-Reflection/Critique**: Agent reviews its own output against quality rubrics
+  • Best for: Quality assurance, compliance checking, content validation
+  • Example: Draft policy → self-check compliance → fix → publish
+
+**2. Planning-Heavy Hybrids:**
+- **Plan-and-Execute**: Strategic planner decomposes goals; executor handles steps
+  • Best for: Multi-step tasks, cost optimization, data migration workflows
+  • Strength: Cost efficiency through planning once, executing cheaply
+
+- **Plan-Act-Reflect**: Adds supervisory loop that monitors progress and replans
+  • Best for: Open-ended research, adaptive workflows, creative projects
+  • Strength: Handles objective drift and changing requirements
+
+- **Hierarchical Planning**: Goal cascades through multiple planner layers
+  • Best for: Very long horizon projects, complex supply chains, game AI
+  • Strength: Scales to enormous task graphs with clear accountability
+
+**3. Multi-Agent Orchestration Styles:**
+- **Manager-Workers (Orchestrator-Worker)**: Central coordinator assigns tasks to specialists
+  • Best for: Clear workflows, deterministic processes, easy governance
+  • Strength: Auditable, predictable, simple guardrails
+  • Watch-out: Single point of failure if manager fails
+
+- **Hierarchical/Hub-and-Spoke**: Tree structure (CEO → VP → Staff)
+  • Best for: Large organizations, complex reporting structures
+  • Strength: Clear accountability, scales to huge graphs
+  • Watch-out: Added latency per layer
+
+- **Blackboard/Shared-Memory**: Agents publish to common store; peers subscribe/react
+  • Best for: High parallelism, loose coupling, event-driven workflows
+  • Strength: Flexible collaboration, handles unpredictable workloads
+  • Watch-out: Needs conflict-resolution logic
+
+- **Market-Based/Auction**: Agents bid for tasks based on cost/confidence
+  • Best for: Load balancing, resource optimization, specialized capabilities
+  • Strength: Robust under spikes, fosters specialization
+  • Watch-out: Coordination overhead
+
+- **Decentralized Swarm**: Peers communicate directly, sometimes with voting
+  • Best for: Fault tolerance, emergent behavior, distributed systems
+  • Strength: No single point of failure, adaptive
+  • Watch-out: Hard to debug, difficult policy enforcement
+
+**PATTERN SELECTION HEURISTICS:**
+Use these decision criteria to choose the optimal pattern for each business scenario:
+
+| Business Need | Primary Pattern | Scale-Up Path |
+|---------------|----------------|---------------|
+| Simple data retrieval + API calls | **ReAct + Tool-Use** | Add Self-Reflection for critical outputs |
+| Multi-step business process automation | **Plan-and-Execute** | Wrap in Plan-Act-Reflect if objectives drift |
+| Specialist handoffs (research → draft → review) | **Manager-Workers** | Evolve to Hierarchical if tasks explode |
+| Unpredictable, bursty collaboration needs | **Blackboard or Market-Based** | Layer guardrails & monitoring |
+| High-volume, standardized processes | **Manager-Workers** | Add auction elements for load balancing |
+| Complex, long-term strategic initiatives | **Hierarchical Planning** | Include market-based resource allocation |
+
+**PROVEN DOMAIN BLUEPRINTS (Pattern Examples):**
+
+**Customer Support Concierge** (Manager-Workers Pattern):
+- Trigger: Customer ticket → Triage Bot classifies → Solution Finder searches KB → Escalation Agent routes
+- Guardrails: Policy-checked on escalation; human approval for account credits
+- KPIs: First-response time, CSAT, resolution rate
+- Outcome: <30s first response, 24x7 coverage
+
+**Security Operations Copilot** (Blackboard Pattern):
+- Trigger: SIEM alert → Alert Ingestor posts IoCs → Threat Hunter correlates → Remediation Agent drafts playbook
+- Guardrails: Human approval before quarantine actions
+- KPIs: Mean-time-to-detect, mean-time-to-remediate
+- Outcome: 50% MTTR reduction
+
+**Marketing Campaign Optimizer** (Plan-and-Execute Pattern):
+- Trigger: Campaign goal → Planner allocates budget → Channel Bots test creatives → Reflector replans
+- Guardrails: Policy-checked compliance (brand, privacy)
+- KPIs: ROAS, conversion rate, CAC
+- Outcome: 15-25% conversion lift
+
+**Healthcare Appointment Scheduler** (Single ReAct Agent):
+- Trigger: Patient request → Check availability → Verify insurance → Book slot → Send reminders
+- Guardrails: HIPAA policy filters before data output
+- KPIs: No-show rate, scheduling latency
+- Outcome: 30% fewer no-shows, halved admin time
+
+**HR Onboarding Orchestrator** (Hierarchical Pattern):
+- Trigger: Offer accepted → Onboarding Manager spawns tasks → IT/Policy/Buddy agents execute
+- Guardrails: Human approval for equipment purchases
+- KPIs: Time-to-productivity, new-hire satisfaction
+- Outcome: Faster ramp-up, 40% less HR email traffic
+
+**Supply Chain Resilience Monitor** (Market-Based Pattern):
+- Trigger: Stock-out forecast → Broadcast event → Agents bid mitigation plans → Highest score executes
+- Guardrails: Cost ceiling policies; human approval for >$100K contracts
+- KPIs: Stock-out days, logistics cost, service level
+- Outcome: Double-digit reduction in lost-sales days
+
+**BUSINESS CONTEXT PATTERN MAPPING:**
+When analyzing strategic initiatives, map business problems to appropriate patterns:
+
+- **Process Automation** (high volume, standardized) → Manager-Workers
+- **Research & Analysis** (exploratory, iterative) → Plan-Act-Reflect or ReAct
+- **Complex Decision Support** (multi-factor, high stakes) → Hierarchical Planning
+- **Real-time Operations** (event-driven, reactive) → Blackboard/Shared-Memory
+- **Resource Optimization** (variable demand, cost-sensitive) → Market-Based/Auction
+- **Quality Assurance** (validation, compliance) → Self-Reflection + Tool-Use
+- **Multi-department Coordination** (handoffs, approvals) → Hierarchical Hub-and-Spoke
+
+**INDUSTRY-SPECIFIC PATTERN PREFERENCES:**
+- **Financial Services**: Manager-Workers + Self-Reflection (compliance focus)
+- **Healthcare**: Single ReAct + Policy engines (HIPAA, safety-critical)
+- **Manufacturing**: Plan-and-Execute + Blackboard (process optimization + real-time monitoring)
+- **Technology**: Market-Based + Hierarchical (resource optimization + scaling)
+- **Retail/E-commerce**: Manager-Workers + Plan-Act-Reflect (customer service + campaign optimization)
+- **Government**: Hierarchical + Self-Reflection (approval chains + compliance)
+
+**PATTERN SELECTION METHODOLOGY:**
+1. **Analyze Business Context**: Evaluate industry, company size, risk tolerance, regulatory requirements
+2. **Map Problem Types**: Identify whether problems are process-oriented, research-heavy, or decision-support
+3. **Consider Scale & Complexity**: Choose simpler patterns first, evolve to complex orchestration as needed
+4. **Factor Risk Profile**: High-risk industries need more Manager-Workers; innovative companies can use Market-Based
+5. **Plan Evolution Path**: Start with proven patterns, design clear upgrade paths to more sophisticated orchestration
+
+**KEY PRINCIPLES:**
+- **Inner loop first, orchestration second**: Perfect single-agent patterns before multi-agent complexity
+- **Planning = cost lever**: Strategic planning once, cheaper execution many times
+- **Memory & guardrails non-negotiible**: Prevent forgetfulness and unsafe actions
+- **Pattern choice is situational**: Start simple, add complexity only when scale demands it
+- **Business problems drive pattern selection**: Don't force patterns; let business needs guide architecture
+
+**INITIATIVE-FOCUSED PATTERN SELECTION:**
+When focusing on a single strategic initiative, apply these enhanced mapping rules:
+
+**Problem-to-Pattern Mapping for Focused Blueprints:**
+
+1. **Process Automation & Efficiency Problems:**
+   - "Manual data entry", "Document processing", "Invoice processing", "Report generation"
+   - **Primary Pattern**: Manager-Workers (central coordination of standardized tasks)
+   - **Enhancement**: Add Self-Reflection for quality control
+   - **Agent Focus**: Actuator becomes specialized for the specific process type
+
+2. **Research & Analysis Problems:**
+   - "Market research", "Competitive analysis", "Data gathering", "Trend analysis"
+   - **Primary Pattern**: Plan-Act-Reflect (adaptive research with course correction)
+   - **Enhancement**: Add Tool-Use for data source integration
+   - **Agent Focus**: Researcher and Analyst become domain specialists
+
+3. **Decision Support & Strategy Problems:**
+   - "Investment decisions", "Resource allocation", "Strategic planning", "Risk assessment"
+   - **Primary Pattern**: Hierarchical Planning (multi-layer analysis and validation)
+   - **Enhancement**: Add Market-Based elements for option evaluation
+   - **Agent Focus**: Multiple analyst specialists with distinct perspectives
+
+4. **Quality & Compliance Problems:**
+   - "Error reduction", "Compliance monitoring", "Quality assurance", "Audit processes"
+   - **Primary Pattern**: Self-Reflection + Manager-Workers
+   - **Enhancement**: Add Policy engines and validation checkpoints
+   - **Agent Focus**: Quality-Checker becomes compliance specialist with industry expertise
+
+5. **Customer Experience Problems:**
+   - "Customer service", "Onboarding", "Support tickets", "Response time"
+   - **Primary Pattern**: Blackboard/Shared-Memory (real-time event handling)
+   - **Enhancement**: Add escalation protocols and sentiment analysis
+   - **Agent Focus**: Coordinator manages customer journey orchestration
+
+6. **Resource Optimization Problems:**
+   - "Cost reduction", "Workflow optimization", "Capacity planning", "Supply chain"
+   - **Primary Pattern**: Market-Based/Auction (resource bidding and allocation)
+   - **Enhancement**: Add Plan-and-Execute for implementation
+   - **Agent Focus**: Multiple agents compete to optimize different resource dimensions
+
+**SINGLE VS. MULTI-INITIATIVE APPROACH:**
+
+**Single-Initiative Focus (Targeted Blueprint):**
+- Select ONE primary agentic pattern based on the initiative's core problem type
+- Specialize all 5 agents around that initiative's specific workflow
+- Reference only the systems and tools relevant to that initiative
+- Create industry-specific agent job descriptions and tool selections
+- Generate highly detailed, implementation-ready workflows
+
+**Multi-Initiative Synthesis (Comprehensive Blueprint):**
+- Select Manager-Workers as base pattern with hybrid elements
+- Balance agent capabilities across multiple problem types
+- Reference all available systems for maximum flexibility
+- Create generalist agent descriptions that can handle multiple initiatives
+- Generate broader, foundation-building workflows
+
+**PATTERN SELECTION OUTPUT REQUIREMENTS:**
+In your response, you MUST include:
+- **selectedPattern**: The primary agentic pattern chosen (e.g., "Manager-Workers", "Plan-Act-Reflect")
+- **patternRationale**: 2-3 sentence explanation of why this pattern fits the business problems best
+
+**Pattern Selection Examples:**
+- "Manager-Workers" - "Selected because the initiative focuses on standardizing invoice processing workflows, which benefits from central coordination and clear task delegation to specialist agents."
+- "Plan-Act-Reflect" - "Chosen for market research initiative due to the exploratory nature requiring adaptive planning and course correction based on findings."
+- "Hierarchical-Planning" - "Applied for strategic resource allocation decision, requiring multi-layer analysis and validation before high-stakes investment decisions."`;
 
   const coreFramework = `
 CORE AGENTIC BLUEPRINT FRAMEWORK:
@@ -294,9 +536,34 @@ TONE & APPROACH:
 }
 
 /**
- * Builds a dynamic user prompt with business context integration
+ * Builds a dynamic user prompt with pattern-specific requirements or legacy fallback
+ * 
+ * @param profile Business profile data
+ * @param config Configuration including selectedPattern for dynamic generation
  */
 export function buildAgenticBlueprintUserPrompt(
+  profile: Profile, 
+  config: AgenticBlueprintPromptConfig = {}
+): string {
+  // If a specific pattern is selected, use pattern-specific generation
+  if (config.selectedPattern) {
+    return buildPatternSpecificUserPrompt(profile, config.selectedPattern, {
+      blueprintFocusContext: config.blueprintFocusContext,
+      specialInstructions: config.specialInstructions,
+      roiContext: config.includeROIProjection ? 'Include detailed ROI analysis based on process metrics' : undefined
+    });
+  }
+  
+  // Fallback to legacy hard-coded system for backward compatibility
+  console.warn('[AgenticBlueprintPrompt] No pattern selected, using legacy 5-agent user prompt. Consider migrating to pattern-based generation.');
+  return buildLegacyUserPrompt(profile, config);
+}
+
+/**
+ * Legacy user prompt builder (hard-coded 5-agent model) - DEPRECATED
+ * Only used for backward compatibility when no pattern is specified
+ */
+function buildLegacyUserPrompt(
   profile: Profile, 
   config: AgenticBlueprintPromptConfig = {}
 ): string {
@@ -399,7 +666,28 @@ Include probability scores (High/Medium/Low) for each KPI target.`;
     focusContextSection = config.blueprintFocusContext;
   }
 
+  // Special instructions from user
+  let specialInstructionsSection = '';
+  if (config.specialInstructions) {
+    specialInstructionsSection = `
+
+🚨 CRITICAL OVERRIDE INSTRUCTIONS 🚨
+The user has provided MANDATORY customization requirements that MUST take precedence over the general profile context:
+
+"${config.specialInstructions}"
+
+IMPORTANT: These instructions should COMPLETELY RESHAPE the blueprint focus:
+- ALL agent roles MUST be redesigned around these specific requirements
+- The business objective MUST reflect this focused scope, NOT generic company operations
+- ALL tools and systems MUST align with this specific workflow/opportunity
+- ALL KPI improvements MUST be relevant to this specific context
+- The implementation timeline MUST be tailored to this specific challenge
+
+⚠️ DO NOT generate a generic company-wide blueprint. Focus EXCLUSIVELY on the specific opportunity/workflow described in these instructions.`;
+  }
+
   return `Create a comprehensive AI Digital Team Blueprint for the following client. Transform their business goals into a clear, actionable strategy showing exactly what each AI agent will do, how humans stay in control, and which KPIs will improve.
+${specialInstructionsSection}
 ${focusContextSection}
 CLIENT PROFILE:
 ---
@@ -502,10 +790,19 @@ ${config.includeROIProjection ? '- Defensible ROI projections based on process m
 
 ⚠️ **FINAL REMINDER**: The kpiImprovements array MUST contain at least 3 items. This is strictly validated.
 
+**AGENTIC PATTERN SELECTION REQUIREMENT:**
+Based on the strategic initiative(s) and business problems, you MUST:
+1. **Analyze Problem Types**: Identify the primary business problem categories from the initiatives
+2. **Map to Patterns**: Use the problem-to-pattern mapping from your training to select the optimal agentic pattern
+3. **Provide Rationale**: Explain why this pattern best fits the business context and problems
+4. **Specialize Agents**: If focusing on a single initiative, specialize all agents around that workflow
+
 **REQUIRED JSON STRUCTURE:**
 
 {
   "businessObjective": "Single measurable goal statement...",
+  "selectedPattern": "Manager-Workers",
+  "patternRationale": "Selected because the initiative focuses on standardizing workflows, which benefits from central coordination and clear task delegation to specialist agents.",
   "digitalTeam": [
     {
       "role": "coordinator",
@@ -594,7 +891,10 @@ ${config.includeROIProjection ? '- Defensible ROI projections based on process m
   }` : ''}
 }
 
-**CRITICAL:** Your response must be pure JSON only, starting with { and ending with }. No other text.`;
+**CRITICAL:** Your response must be pure JSON only, starting with { and ending with }. No other text.
+
+${config.specialInstructions ? `
+🚨 FINAL REMINDER: You have received CRITICAL OVERRIDE INSTRUCTIONS above. The blueprint you generate MUST focus exclusively on the specific opportunity/workflow described in those instructions, NOT on general company operations. Ignore generic strategic initiatives if they don't relate to the specific focus area.` : ''}`;
 }
 
 // Legacy exports for backwards compatibility
@@ -616,7 +916,8 @@ export const AGENTIC_BLUEPRINT_USER_PROMPT = (
   return buildAgenticBlueprintUserPrompt(profile, config);
 };
 
-export interface AgenticBlueprintResponse {
+// Legacy response interface for backward compatibility - DEPRECATED
+export interface LegacyAgenticBlueprintResponse {
   businessObjective: string;
   digitalTeam: Array<{
     role: 'coordinator' | 'researcher' | 'analyst' | 'quality-checker' | 'actuator';
@@ -670,9 +971,83 @@ export interface AgenticBlueprintResponse {
     executiveSummary: string;
     recommendedAction: string;
   };
+  selectedPattern?: string;
+  patternRationale?: string;
 }
 
-export const validateAgenticBlueprintResponse = (response: AgenticBlueprintResponse): string[] => {
+// New pattern-based response interface - RECOMMENDED
+export interface AgenticBlueprintResponse {
+  businessObjective: string;
+  selectedPattern: string;
+  patternRationale: string;
+  digitalTeam: AgentDefinition[];  // Dynamic agent structure based on pattern
+  humanCheckpoints: Array<{
+    checkpoint: string;
+    description: string;
+    importance: string;
+    frequency: 'one-time' | 'periodic' | 'as-needed';
+  }>;
+  agenticTimeline: {
+    totalDurationWeeks: number;
+    phases: Array<{
+      phase: 'crawl' | 'walk' | 'run';
+      name: string;
+      durationWeeks: number;
+      description: string;
+      milestones: string[];
+      riskMitigations: string[];
+      oversightLevel: 'high' | 'medium' | 'low';
+      humanInvolvement: string;
+    }>;
+  };
+  kpiImprovements: Array<{
+    kpi: string;
+    currentValue?: string;
+    targetValue: string;
+    improvementPercent: number;
+    linkedAgents: string[];
+    measurementMethod: string;
+    timeframe: string;
+  }>;
+  roiProjection?: {
+    processCostSavings: string;
+    laborReallocation: string;
+    riskAvoidance: string;
+    totalInvestment: string;
+    ongoingCosts: string;
+    annualValue: string;
+    roiPercentage: number;
+    paybackMonths: number;
+    keyAssumptions: string[];
+    confidenceLevel: 'High' | 'Medium' | 'Low';
+    confidenceFactors: string[];
+    executiveSummary: string;
+    recommendedAction: string;
+  };
+}
+
+/**
+ * Validates agentic blueprint response based on pattern requirements or legacy validation
+ */
+export const validateAgenticBlueprintResponse = (
+  response: AgenticBlueprintResponse | LegacyAgenticBlueprintResponse,
+  selectedPattern?: string
+): string[] => {
+  // If pattern is specified and response has pattern fields, use pattern-specific validation
+  if (selectedPattern && 'selectedPattern' in response && response.selectedPattern) {
+    console.log('[AgenticBlueprintPrompt] Using pattern-specific validation for:', selectedPattern);
+    return validatePatternCompliance(response as PatternSpecificBlueprintResponse, selectedPattern);
+  }
+  
+  // Fallback to legacy validation for backward compatibility
+  console.warn('[AgenticBlueprintPrompt] Using legacy 5-agent validation. Consider migrating to pattern-based validation.');
+  return validateLegacyResponse(response as LegacyAgenticBlueprintResponse);
+};
+
+/**
+ * Legacy validation function (hard-coded 5-agent model) - DEPRECATED
+ */
+function validateLegacyResponse(response: LegacyAgenticBlueprintResponse): string[] {
   const warnings: string[] = [];
   
   if (!response.businessObjective || response.businessObjective.length < 50) {
@@ -712,4 +1087,57 @@ export const validateAgenticBlueprintResponse = (response: AgenticBlueprintRespo
   }
   
   return warnings;
-};
+}
+
+/**
+ * Helper function to determine if AI Opportunities identified a specific pattern
+ */
+export function extractPatternFromOpportunities(opportunities: any[]): string | undefined {
+  if (!opportunities || opportunities.length === 0) return undefined;
+  
+  // Look for pattern recommendations in AI opportunities
+  const opportunity = opportunities[0];
+  if (opportunity?.agenticPattern?.recommendedPattern) {
+    return opportunity.agenticPattern.recommendedPattern;
+  }
+  
+  return undefined;
+}
+
+/**
+ * Auto-select appropriate pattern based on business problems
+ */
+export function autoSelectPattern(profile: Profile): string {
+  const initiatives = profile.strategicInitiatives || [];
+  const allProblems = initiatives.flatMap(init => init.businessProblems || []);
+  
+  // Simple heuristic mapping - this could be enhanced with ML classification
+  const problemText = allProblems.join(' ').toLowerCase();
+  
+  if (problemText.includes('manual') || problemText.includes('process') || problemText.includes('automation')) {
+    return 'Manager-Workers';
+  }
+  
+  if (problemText.includes('research') || problemText.includes('analysis') || problemText.includes('data')) {
+    return 'Plan-Act-Reflect';
+  }
+  
+  if (problemText.includes('decision') || problemText.includes('strategy') || problemText.includes('planning')) {
+    return 'Hierarchical-Planning';
+  }
+  
+  if (problemText.includes('quality') || problemText.includes('compliance') || problemText.includes('error')) {
+    return 'Self-Reflection';
+  }
+  
+  if (problemText.includes('simple') || problemText.includes('retrieval') || problemText.includes('api')) {
+    return 'Tool-Use';
+  }
+  
+  if (problemText.includes('complex') || problemText.includes('problem') || problemText.includes('solve')) {
+    return 'ReAct';
+  }
+  
+  // Default to Manager-Workers for process-oriented business problems
+  return 'Manager-Workers';
+}

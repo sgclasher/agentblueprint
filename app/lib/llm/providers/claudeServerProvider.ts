@@ -62,15 +62,53 @@ Please provide the output in a single, valid JSON object, starting with { and en
         throw new Error('No content received from Anthropic API');
       }
 
-      // Claude often wraps JSON in markdown code blocks, so we need to strip them
+      // Claude often wraps JSON in markdown code blocks, thinking tags, or other XML-like tags
       let cleanedContent = content.trim();
       
+      console.log('[Claude Debug] Raw response length:', cleanedContent.length);
+      console.log('[Claude Debug] First 200 chars:', cleanedContent.substring(0, 200));
+      
+      // 🆕 Remove any XML-like tags (including thinking, anythingl, etc.)
+      // This is more aggressive - remove anything that looks like XML tags
+      cleanedContent = cleanedContent.replace(/<[^>]*>/g, '');
+      
       // Remove markdown code block markers if present
-      if (cleanedContent.startsWith('```json')) {
-        cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (cleanedContent.startsWith('```')) {
-        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      if (cleanedContent.includes('```json')) {
+        cleanedContent = cleanedContent.replace(/```json/g, '').replace(/```/g, '');
+      } else if (cleanedContent.includes('```')) {
+        cleanedContent = cleanedContent.replace(/```/g, '');
       }
+      
+      // 🆕 Aggressively find JSON object - look for { and matching }
+      const jsonStart = cleanedContent.indexOf('{');
+      if (jsonStart === -1) {
+        throw new Error('No JSON object found in response');
+      }
+      
+      // Find the matching closing brace by counting braces
+      let braceCount = 0;
+      let jsonEnd = -1;
+      
+      for (let i = jsonStart; i < cleanedContent.length; i++) {
+        if (cleanedContent[i] === '{') {
+          braceCount++;
+        } else if (cleanedContent[i] === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            jsonEnd = i;
+            break;
+          }
+        }
+      }
+      
+      if (jsonEnd === -1) {
+        throw new Error('Could not find matching closing brace for JSON object');
+      }
+      
+      cleanedContent = cleanedContent.substring(jsonStart, jsonEnd + 1);
+      
+      console.log('[Claude Debug] Extracted JSON length:', cleanedContent.length);
+      console.log('[Claude Debug] First 200 chars of JSON:', cleanedContent.substring(0, 200));
 
       return JSON.parse(cleanedContent);
 

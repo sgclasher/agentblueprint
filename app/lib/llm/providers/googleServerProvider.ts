@@ -16,6 +16,7 @@ export class GoogleServerProvider {
     // 2.5 models are still in preview - use correct preview names from API docs
     'gemini-2.5-pro': 'gemini-2.5-pro-preview-06-05',  // Map to actual preview model
     'gemini-2.5-flash': 'gemini-2.5-flash-preview-05-20',  // Map to actual preview model
+    'gemini-2.5-flash-lite': 'gemini-2.5-flash-lite-preview-06-17',  // Map to new lite model
     
     // Common fallbacks - use stable models for reliability
     'gemini-pro': 'gemini-1.5-pro',  // Use stable 1.5 Pro
@@ -45,7 +46,7 @@ export class GoogleServerProvider {
       // Stable models
       'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash-8b',
       // Preview models (correct names from API docs)
-      'gemini-2.5-pro-preview-06-05', 'gemini-2.5-flash-preview-05-20',
+      'gemini-2.5-pro-preview-06-05', 'gemini-2.5-flash-preview-05-20', 'gemini-2.5-flash-lite-preview-06-17',
       // Common aliases
       'gemini-pro', 'gemini-flash'
     ];
@@ -237,6 +238,30 @@ export class GoogleServerProvider {
       // Updated model list with correct names from official API documentation
       const geminiModels = [
         {
+          id: 'gemini-2.5-pro-preview-06-05',
+          name: 'Gemini 2.5 Pro Preview (Most Advanced)',
+          description: 'Our most intelligent model with enhanced reasoning - Preview version',
+          created: null,
+        },
+        {
+          id: 'gemini-2.5-flash-lite-preview-06-17',
+          name: 'Gemini 2.5 Flash Lite Preview (June 2025)',
+          description: 'Low-cost, high-performance model released June 17, 2025',
+          created: null,
+        },
+        {
+          id: 'gemini-2.5-flash-preview-05-20',
+          name: 'Gemini 2.5 Flash Preview (May 2025)',
+          description: 'Fast and intelligent model with 2.5 generation improvements - Preview version',
+          created: null,
+        },
+        {
+          id: 'gemini-2.0-flash',
+          name: 'Gemini 2.0 Flash (Latest Stable)',
+          description: 'Next generation features, speed, and enhanced performance',
+          created: null,
+        },
+        {
           id: 'gemini-1.5-flash',
           name: 'Gemini 1.5 Flash (Recommended & Stable)',
           description: 'Fast and versatile model for most use cases with proven reliability',
@@ -246,24 +271,6 @@ export class GoogleServerProvider {
           id: 'gemini-1.5-pro',
           name: 'Gemini 1.5 Pro (Stable)',
           description: 'Advanced reasoning and complex task handling, reliable for production use',
-          created: null,
-        },
-        {
-          id: 'gemini-2.0-flash',
-          name: 'Gemini 2.0 Flash (Stable)',
-          description: 'Next generation features, speed, and enhanced performance',
-          created: null,
-        },
-        {
-          id: 'gemini-2.5-pro-preview-06-05',
-          name: 'Gemini 2.5 Pro Preview (Latest)',
-          description: 'Our most intelligent model with enhanced reasoning - Preview version',
-          created: null,
-        },
-        {
-          id: 'gemini-2.5-flash-preview-05-20',
-          name: 'Gemini 2.5 Flash Preview (Latest)',
-          description: 'Fast and intelligent model with 2.5 generation improvements - Preview version',
           created: null,
         },
         {
