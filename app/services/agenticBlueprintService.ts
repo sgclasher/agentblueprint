@@ -1,4 +1,4 @@
-import { Profile, AgenticBlueprint, DigitalTeamMember, HumanCheckpoint, AgenticTimeline, KPIImprovement, ROIProjection } from './types';
+import { Profile, AgenticBlueprint, DigitalTeamMember, HumanCheckpoint, AgenticTimeline, KPIImprovement, ROIProjection, DomainContext, BusinessDomain, OpportunityContext } from './types';
 import { ROICalculationService } from './roiCalculationService';
 
 /**
@@ -44,6 +44,7 @@ export class AgenticBlueprintService {
    * @param preferredProvider - AI provider preference
    * @param selectedInitiativeIndex - Optional index of specific initiative to focus on
    * @param specialInstructions - Optional user customization instructions
+   * @param opportunityContext - Optional AI opportunity context for focused blueprints
    * @returns AI-generated agentic blueprint
    */
   static async generateBlueprint(
@@ -52,7 +53,8 @@ export class AgenticBlueprintService {
     credentialsRepo: any, 
     preferredProvider?: string,
     selectedInitiativeIndex?: number,
-    specialInstructions?: string
+    specialInstructions?: string,
+    opportunityContext?: any
   ): Promise<AgenticBlueprint> {
     if (!profile) {
       throw new Error('Profile is required for blueprint generation');
@@ -63,11 +65,146 @@ export class AgenticBlueprintService {
       throw new Error('Profile must have at least one strategic initiative to generate a blueprint');
     }
 
-    // 🆕 PHASE 2.2: Strategic Initiative Filtering
+    // 🆕 STEP 1: ENHANCED OPPORTUNITY CONTEXT ANALYSIS
+    console.log('[Domain Analysis] Starting enhanced opportunity context analysis...');
+    
+    let domainContext: DomainContext | undefined;
+    let enhancedOpportunityContext: OpportunityContext | undefined;
+    
+    if (opportunityContext) {
+      try {
+        // Extract and enhance opportunity context with domain intelligence
+        enhancedOpportunityContext = this.analyzeOpportunityContext(opportunityContext, profile);
+        domainContext = this.extractDomainContext(enhancedOpportunityContext, profile);
+        
+        console.log('[Domain Analysis] Detected business domain:', domainContext.domain);
+        console.log('[Domain Analysis] Domain terms:', domainContext.domainTerms.slice(0, 5));
+        console.log('[Domain Analysis] Workflow type:', enhancedOpportunityContext.workflowType);
+        
+      } catch (analysisError: any) {
+        console.error('[Domain Analysis] Error in domain analysis:', analysisError);
+        console.log('[Domain Analysis] Falling back to generic analysis');
+        // Continue with basic opportunity context processing
+      }
+    }
+
+    // 🆕 PHASE 2.2: Strategic Initiative Filtering and Opportunity Context Integration
     let focusedProfile = profile;
     let blueprintFocusContext = '';
     
-    if (selectedInitiativeIndex !== undefined && selectedInitiativeIndex >= 0) {
+    // 🎯 CRITICAL FIX: Handle opportunity context first (highest priority)
+    if (opportunityContext) {
+      console.log(`[Opportunity Focus] Generating blueprint focused on opportunity: "${opportunityContext?.title || 'Unknown'}"`);
+      
+      try {
+        // 🛡️ SECURITY FIX: Validate and sanitize opportunity context data
+        const safeOpportunityContext = this.validateAndSanitizeOpportunityContext(opportunityContext);
+        
+        // 🆕 ENHANCED: Include domain context in blueprint focus
+        const domainFocusSection = domainContext ? `
+DOMAIN INTELLIGENCE:
+- Business Domain: ${domainContext.domain}
+- Domain-Specific Terms: ${domainContext.domainTerms.join(', ')}
+- Typical Workflow Steps: ${domainContext.workflowSteps.join(' → ')}
+- Common Tools: ${domainContext.commonTools.join(', ')}
+- Key Metrics: ${domainContext.keyMetrics.join(', ')}
+- Regulatory Context: ${domainContext.regulatoryRequirements.join(', ')}
+
+AGENT SPECIALIZATION REQUIREMENTS:
+- Agents must be named and specialized for ${domainContext.domain} workflows
+- Tools should be domain-specific: ${domainContext.commonTools.slice(0, 3).join(', ')}
+- KPIs should focus on: ${domainContext.keyMetrics.slice(0, 3).join(', ')}
+- Workflow should follow: ${domainContext.workflowSteps.join(' → ')}
+` : '';
+        
+        // Build comprehensive opportunity-focused context
+        blueprintFocusContext = `
+🎯 OPPORTUNITY FOCUS MODE: This blueprint should be specifically designed for the following AI opportunity:
+
+OPPORTUNITY DETAILS:
+- Title: "${safeOpportunityContext.title}"
+- Category: ${safeOpportunityContext.category}
+- Description: ${safeOpportunityContext.description}
+
+BUSINESS IMPACT:
+- Primary Metrics: ${safeOpportunityContext.primaryMetrics}
+- Estimated ROI: ${safeOpportunityContext.estimatedROI}
+- Time to Value: ${safeOpportunityContext.timeToValue}
+- Confidence Level: ${safeOpportunityContext.confidenceLevel}
+
+AGENTIC PATTERN:
+- Recommended Pattern: ${safeOpportunityContext.recommendedPattern}
+- Pattern Rationale: ${safeOpportunityContext.patternRationale}
+- Implementation Approach: ${safeOpportunityContext.implementationApproach}
+- Pattern Complexity: ${safeOpportunityContext.patternComplexity}
+
+IMPLEMENTATION REQUIREMENTS:
+- Complexity: ${safeOpportunityContext.implementationComplexity}
+- Timeframe: ${safeOpportunityContext.timeframe}
+- Prerequisites: ${safeOpportunityContext.prerequisites}
+- Risk Factors: ${safeOpportunityContext.riskFactors}
+
+AI TECHNOLOGIES:
+${safeOpportunityContext.aiTechnologies}
+
+${domainFocusSection}
+
+CRITICAL INSTRUCTIONS:
+1. The AI digital team should be tailored specifically to implement this EXACT opportunity workflow
+2. Use the recommended agentic pattern: ${safeOpportunityContext.recommendedPattern}
+3. All agents should specialize in tasks directly related to this opportunity's business impact
+4. Tools and systems should align with the specific AI technologies and prerequisites listed
+5. KPI improvements should directly map to the primary metrics identified for this opportunity
+6. Business objective should reference this specific opportunity, not generic company transformation
+7. Agent roles and interactions should follow the implementation approach described above
+8. ${domainContext ? `Agents must be ${domainContext.domain}-specific specialists, not generic coordinators` : 'Use domain-appropriate agent specialization'}
+
+This is NOT a generic company-wide blueprint - it's a focused implementation plan for this specific AI opportunity.
+`;
+        
+        console.log(`[Opportunity Focus] Context processed successfully`);
+        console.log(`[Opportunity Focus] Using pattern: ${safeOpportunityContext.recommendedPattern}`);
+        console.log(`[Opportunity Focus] Primary metrics: ${safeOpportunityContext.primaryMetrics}`);
+        
+      } catch (contextError: any) {
+        console.error('[Opportunity Focus] Error processing opportunity context:', contextError);
+        
+        // Fall back to basic context with error handling
+        blueprintFocusContext = `
+🎯 OPPORTUNITY FOCUS MODE: This blueprint should be specifically designed for the provided AI opportunity.
+
+NOTE: Some opportunity context data was malformed and has been sanitized for processing.
+The AI digital team should be tailored to implement the specific opportunity workflow provided.
+Use the Manager-Workers pattern as a safe default for this implementation.
+`;
+        console.log('[Opportunity Focus] Using fallback context due to processing error');
+      }
+      
+        // If opportunity has relevant initiatives, filter profile to those initiatives
+        if (opportunityContext.relevantInitiatives && Array.isArray(opportunityContext.relevantInitiatives) && opportunityContext.relevantInitiatives.length > 0) {
+          try {
+            const relevantInitiatives = profile.strategicInitiatives?.filter(initiative =>
+              opportunityContext.relevantInitiatives.some((relevantName: string) =>
+                relevantName && typeof relevantName === 'string' && (
+                  initiative.initiative.toLowerCase().includes(relevantName.toLowerCase()) ||
+                  relevantName.toLowerCase().includes(initiative.initiative.toLowerCase())
+                )
+              )
+            ) || [];
+            
+            if (relevantInitiatives.length > 0) {
+              focusedProfile = {
+                ...profile,
+                strategicInitiatives: relevantInitiatives
+              };
+              console.log(`[Opportunity Focus] Filtered to ${relevantInitiatives.length} relevant initiatives`);
+            }
+          } catch (filterError) {
+            console.warn('[Opportunity Focus] Error filtering initiatives, using all initiatives:', filterError);
+          }
+        }
+      
+    } else if (selectedInitiativeIndex !== undefined && selectedInitiativeIndex >= 0) {
       console.log(`[Initiative Focus] Generating blueprint focused on initiative index: ${selectedInitiativeIndex}`);
       
       // Validate initiative index
@@ -99,7 +236,7 @@ KPI improvements should be measurable outcomes directly tied to this initiative'
       console.log(`[Initiative Focus] Focused on: "${selectedInitiative.initiative}" (Priority: ${selectedInitiative.priority})`);
       console.log(`[Initiative Focus] Business problems: ${selectedInitiative.businessProblems?.length || 0} identified`);
     } else {
-      console.log('[Initiative Focus] Using all strategic initiatives (Auto mode)');
+      console.log('[Focus Mode] Using all strategic initiatives (Auto mode)');
       blueprintFocusContext = `
 🎯 COMPREHENSIVE MODE: This blueprint should synthesize all strategic initiatives into a cohesive AI digital team strategy.
 Consider all initiatives but prioritize High priority initiatives for primary focus.
@@ -200,20 +337,32 @@ Create agents that can support multiple initiatives where there are synergies.
     
     const modelCapabilities = this.detectModelCapabilities(actualProvider);
 
-    // 🆕 PHASE 2: Pattern Selection Logic
+    // 🆕 PHASE 2: Pattern Selection Logic with Opportunity Integration
     console.log('[Pattern Selection] Determining optimal agentic pattern for business context...');
     let selectedPattern: string;
     
-    // First, try to extract pattern from AI Opportunities if available
-    // This would be populated if user came from AI Opportunities → Blueprint flow
-    const { extractPatternFromOpportunities, autoSelectPattern } = await import('../lib/llm/prompts/agenticBlueprintPrompt');
-    
-    // For now, use auto-selection based on business problems
-    // In future, this could integrate with AI Opportunities analysis
-    selectedPattern = autoSelectPattern(focusedProfile);
-    
-    console.log('[Pattern Selection] Selected pattern:', selectedPattern);
-    console.log('[Pattern Selection] Pattern basis: Business problem analysis from strategic initiatives');
+    // 🎯 CRITICAL FIX: Use opportunity's recommended pattern if available
+    if (opportunityContext) {
+      try {
+        const safeOpportunityContext = this.validateAndSanitizeOpportunityContext(opportunityContext);
+        selectedPattern = safeOpportunityContext.recommendedPattern;
+        console.log('[Pattern Selection] Using opportunity-recommended pattern:', selectedPattern);
+        console.log('[Pattern Selection] Pattern basis: AI Opportunity analysis');
+        console.log('[Pattern Selection] Pattern rationale:', safeOpportunityContext.patternRationale);
+      } catch (patternError) {
+        console.warn('[Pattern Selection] Error accessing opportunity pattern, using auto-selection:', patternError);
+        // Fallback to auto-selection
+        const { autoSelectPattern } = await import('../lib/llm/prompts/agenticBlueprintPrompt');
+        selectedPattern = autoSelectPattern(focusedProfile);
+        console.log('[Pattern Selection] Selected fallback pattern:', selectedPattern);
+      }
+    } else {
+      // Fallback to auto-selection based on business problems
+      const { autoSelectPattern } = await import('../lib/llm/prompts/agenticBlueprintPrompt');
+      selectedPattern = autoSelectPattern(focusedProfile);
+      console.log('[Pattern Selection] Selected pattern:', selectedPattern);
+      console.log('[Pattern Selection] Pattern basis: Business problem analysis from strategic initiatives');
+    }
     
     // Validate pattern selection
     const { getPatternDefinition } = await import('../lib/llm/patterns/agenticPatternDefinitions');
@@ -976,8 +1125,6 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
     return 'high';
   }
 
-
-
   /**
    * 🆕 Generate progressive trust levels for the timeline
    */
@@ -1309,5 +1456,310 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
     }
 
     return score;
+  }
+
+  /**
+   * Validates and sanitizes opportunity context to prevent 500 errors
+   * @param opportunityContext - Raw opportunity context from AI Opportunities API
+   * @returns Sanitized opportunity context with safe string values
+   */
+  private static validateAndSanitizeOpportunityContext(opportunityContext: any): {
+    title: string;
+    category: string;
+    description: string;
+    primaryMetrics: string;
+    estimatedROI: string;
+    timeToValue: string;
+    confidenceLevel: string;
+    recommendedPattern: string;
+    patternRationale: string;
+    implementationApproach: string;
+    patternComplexity: string;
+    implementationComplexity: string;
+    timeframe: string;
+    prerequisites: string;
+    riskFactors: string;
+    aiTechnologies: string;
+  } {
+    console.log('[Context Validation] Validating opportunity context:', typeof opportunityContext);
+    
+    // Helper function to safely join arrays
+    const safeJoin = (arr: any, separator = ', ', fallback = 'Not specified'): string => {
+      if (!arr) return fallback;
+      if (typeof arr === 'string') return arr;
+      if (Array.isArray(arr)) {
+        try {
+          return arr.filter(item => item && typeof item === 'string').join(separator) || fallback;
+        } catch (error) {
+          console.warn('[Context Validation] Error joining array:', error);
+          return fallback;
+        }
+      }
+      return fallback;
+    };
+
+    // Helper function to safely access nested properties
+    const safeGet = (obj: any, path: string, fallback = 'Not specified'): string => {
+      try {
+        const keys = path.split('.');
+        let current = obj;
+        for (const key of keys) {
+          if (current && typeof current === 'object' && key in current) {
+            current = current[key];
+          } else {
+            return fallback;
+          }
+        }
+        return current && typeof current === 'string' ? current : fallback;
+      } catch (error) {
+        console.warn(`[Context Validation] Error accessing path '${path}':`, error);
+        return fallback;
+      }
+    };
+
+    try {
+      const sanitized = {
+        title: safeGet(opportunityContext, 'title', 'AI Opportunity'),
+        category: safeGet(opportunityContext, 'category', 'Process Automation'),
+        description: safeGet(opportunityContext, 'description', 'AI-powered process improvement'),
+        
+        // Business Impact - handle array safely
+        primaryMetrics: safeJoin(opportunityContext?.businessImpact?.primaryMetrics, ', ', 'Efficiency improvements'),
+        estimatedROI: safeGet(opportunityContext, 'businessImpact.estimatedROI', '100-200%'),
+        timeToValue: safeGet(opportunityContext, 'businessImpact.timeToValue', '3-6 months'),
+        confidenceLevel: safeGet(opportunityContext, 'businessImpact.confidenceLevel', 'Medium'),
+        
+        // Agentic Pattern
+        recommendedPattern: safeGet(opportunityContext, 'agenticPattern.recommendedPattern', 'Manager-Workers'),
+        patternRationale: safeGet(opportunityContext, 'agenticPattern.patternRationale', 'Suitable for coordinated workflow automation'),
+        implementationApproach: safeGet(opportunityContext, 'agenticPattern.implementationApproach', 'Phased implementation with human oversight'),
+        patternComplexity: safeGet(opportunityContext, 'agenticPattern.patternComplexity', 'Medium'),
+        
+        // Implementation Requirements - handle arrays safely
+        implementationComplexity: safeGet(opportunityContext, 'implementation.complexity', 'Medium'),
+        timeframe: safeGet(opportunityContext, 'implementation.timeframe', '6-12 months'),
+        prerequisites: safeJoin(opportunityContext?.implementation?.prerequisites, ', ', 'Standard business process assessment'),
+        riskFactors: safeJoin(opportunityContext?.implementation?.riskFactors, ', ', 'Change management considerations'),
+        
+        // AI Technologies - handle array safely with line formatting
+        aiTechnologies: opportunityContext?.aiTechnologies 
+          ? safeJoin(opportunityContext.aiTechnologies, '\n- ', '- Natural Language Processing\n- Machine Learning').replace(/^/, '- ')
+          : '- Natural Language Processing\n- Machine Learning'
+      };
+
+      console.log('[Context Validation] Successfully sanitized opportunity context');
+      return sanitized;
+      
+    } catch (error: any) {
+      console.error('[Context Validation] Critical error in sanitization:', error);
+      
+      // Ultimate fallback - return safe defaults
+      return {
+        title: 'AI Process Automation',
+        category: 'Process Automation',
+        description: 'AI-powered business process improvement initiative',
+        primaryMetrics: 'Efficiency improvements, Cost reduction',
+        estimatedROI: '150-250%',
+        timeToValue: '3-6 months',
+        confidenceLevel: 'Medium',
+        recommendedPattern: 'Manager-Workers',
+        patternRationale: 'Suitable for coordinated workflow automation',
+        implementationApproach: 'Phased implementation with human oversight',
+        patternComplexity: 'Medium',
+        implementationComplexity: 'Medium',
+        timeframe: '6-12 months',
+        prerequisites: 'Business process assessment, stakeholder alignment',
+        riskFactors: 'Change management, integration complexity',
+        aiTechnologies: '- Natural Language Processing\n- Machine Learning\n- Workflow Automation'
+      };
+    }
+  }
+
+  /**
+   * Analyze opportunity context to extract enhanced business intelligence
+   */
+  private static analyzeOpportunityContext(opportunityContext: any, profile: Profile): OpportunityContext {
+    const { detectBusinessDomain } = require('../lib/llm/patterns/domainAgentPatterns');
+    
+    // Detect business domain from opportunity data
+    const domain = detectBusinessDomain(
+      opportunityContext.category || '',
+      opportunityContext.description || '',
+      profile.industry
+    );
+    
+    // Analyze workflow type based on description and category
+    const workflowType = this.detectWorkflowType(opportunityContext.description, opportunityContext.category);
+    
+    return {
+      title: opportunityContext.title || 'Unknown Opportunity',
+      category: opportunityContext.category || 'Process Automation',
+      description: opportunityContext.description || '',
+      businessProblems: opportunityContext.businessProblems || [],
+      recommendedPattern: opportunityContext.recommendedPattern || 'Manager-Workers',
+      patternRationale: opportunityContext.patternRationale || '',
+      implementationApproach: opportunityContext.implementationApproach || '',
+      estimatedROI: opportunityContext.estimatedROI || '',
+      timeToValue: opportunityContext.timeToValue || '',
+      confidenceLevel: opportunityContext.confidenceLevel || 'Medium',
+      timeframe: opportunityContext.timeframe || '',
+      prerequisites: opportunityContext.prerequisites || [],
+      aiTechnologies: opportunityContext.aiTechnologies || [],
+      domain,
+      workflowType
+    };
+  }
+
+  /**
+   * Extract domain-specific context from opportunity analysis
+   */
+  private static extractDomainContext(opportunityContext: OpportunityContext, profile: Profile): DomainContext {
+    const { getDomainAgentPattern, getDomainSpecificTools } = require('../lib/llm/patterns/domainAgentPatterns');
+    
+    const domainPattern = getDomainAgentPattern(opportunityContext.domain || 'generic');
+    
+    // Extract domain-specific terms from opportunity description
+    const domainTerms = this.extractDomainTerms(opportunityContext.description, opportunityContext.domain || 'generic');
+    
+    // Extract workflow steps from opportunity and domain knowledge
+    const workflowSteps = this.extractWorkflowSteps(opportunityContext, domainPattern);
+    
+    // Get domain-specific tools, incorporating existing systems
+    const existingSystems = profile.systemsAndApplications?.map(sys => sys.name) || [];
+    const commonTools = getDomainSpecificTools(opportunityContext.domain || 'generic', existingSystems);
+    
+    return {
+      domain: opportunityContext.domain || 'generic',
+      domainTerms,
+      workflowSteps,
+      commonTools,
+      keyMetrics: this.extractDomainKPIs(opportunityContext.domain || 'generic', opportunityContext.description),
+      regulatoryRequirements: this.extractRegulatoryContext(opportunityContext.domain || 'generic', profile.industry),
+      typicalRoles: domainPattern.agentRoles?.map((role: { title: string }) => role.title) || []
+    };
+  }
+
+  /**
+   * Detect workflow type from opportunity description
+   */
+  private static detectWorkflowType(description: string, category: string): 'linear' | 'parallel' | 'branching' | 'cyclical' {
+    const text = `${description} ${category}`.toLowerCase();
+    
+    if (text.includes('approval') || text.includes('sequence') || text.includes('step')) {
+      return 'linear';
+    } else if (text.includes('parallel') || text.includes('simultaneous') || text.includes('concurrent')) {
+      return 'parallel';
+    } else if (text.includes('decision') || text.includes('routing') || text.includes('conditional')) {
+      return 'branching';
+    } else if (text.includes('review') || text.includes('iteration') || text.includes('continuous')) {
+      return 'cyclical';
+    }
+    
+    return 'linear'; // Default
+  }
+
+  /**
+   * Extract domain-specific terminology from text
+   */
+  private static extractDomainTerms(description: string, domain: BusinessDomain): string[] {
+    const domainTermMaps: Record<BusinessDomain, string[]> = {
+      'procurement': ['RFP', 'vendor', 'sourcing', 'contract', 'purchase order', 'supplier'],
+      'financial-services': ['credit', 'risk assessment', 'portfolio', 'compliance', 'audit'],
+      'healthcare': ['patient', 'clinical', 'HIPAA', 'treatment', 'diagnosis', 'medical record'],
+      'manufacturing': ['production', 'quality control', 'inventory', 'equipment', 'maintenance'],
+      'technology': ['development', 'deployment', 'code review', 'CI/CD', 'monitoring'],
+      'education': ['student', 'curriculum', 'assessment', 'learning', 'academic'],
+      'retail': ['inventory', 'customer', 'sales', 'merchandise', 'e-commerce'],
+      'government': ['citizen', 'regulation', 'policy', 'public service', 'compliance'],
+      'legal': ['contract', 'litigation', 'compliance', 'legal research', 'case management'],
+      'real-estate': ['property', 'lease', 'mortgage', 'valuation', 'development'],
+      'consulting': ['analysis', 'strategy', 'recommendation', 'transformation', 'advisory'],
+      'media': ['content', 'publishing', 'broadcasting', 'marketing', 'audience'],
+      'logistics': ['transportation', 'shipping', 'warehouse', 'distribution', 'freight'],
+      'energy': ['grid', 'transmission', 'renewable', 'utility', 'power generation'],
+      'construction': ['building', 'engineering', 'infrastructure', 'contractor', 'project'],
+      'generic': ['process', 'workflow', 'automation', 'efficiency', 'optimization']
+    };
+    
+    const relevantTerms = domainTermMaps[domain] || domainTermMaps['generic'];
+    const foundTerms = relevantTerms.filter(term => 
+      description.toLowerCase().includes(term.toLowerCase())
+    );
+    
+    return foundTerms.length > 0 ? foundTerms : relevantTerms.slice(0, 3);
+  }
+
+  /**
+   * Extract workflow steps from opportunity context and domain pattern
+   */
+  private static extractWorkflowSteps(opportunityContext: OpportunityContext, domainPattern: any): string[] {
+    if (domainPattern.agentRoles?.length > 0) {
+      return domainPattern.agentRoles.map((role: { title: string }) => role.title);
+    }
+    
+    // Fallback workflow steps based on opportunity description
+    const description = opportunityContext.description.toLowerCase();
+    
+    if (description.includes('procurement')) {
+      return ['Request Intake', 'Vendor Evaluation', 'Contract Review', 'Purchase Execution'];
+    } else if (description.includes('analysis')) {
+      return ['Data Collection', 'Analysis', 'Insights Generation', 'Reporting'];
+    } else if (description.includes('automation')) {
+      return ['Process Mapping', 'Automation Design', 'Implementation', 'Monitoring'];
+    }
+    
+    return ['Initiation', 'Processing', 'Review', 'Completion'];
+  }
+
+  /**
+   * Extract domain-specific KPIs
+   */
+  private static extractDomainKPIs(domain: BusinessDomain, description: string): string[] {
+    const domainKPIMaps: Record<BusinessDomain, string[]> = {
+      'procurement': ['Procurement cycle time', 'Cost savings', 'Vendor performance', 'Compliance rate'],
+      'financial-services': ['Risk assessment accuracy', 'Portfolio performance', 'Compliance rate', 'Processing time'],
+      'healthcare': ['Patient satisfaction', 'Clinical outcomes', 'Safety indicators', 'Operational efficiency'],
+      'manufacturing': ['Production efficiency', 'Quality metrics', 'Equipment uptime', 'Inventory turnover'],
+      'technology': ['Development velocity', 'Code quality', 'System uptime', 'User satisfaction'],
+      'education': ['Student engagement', 'Learning outcomes', 'Operational efficiency', 'Satisfaction scores'],
+      'retail': ['Sales performance', 'Customer satisfaction', 'Inventory turnover', 'Operational efficiency'],
+      'government': ['Service delivery time', 'Citizen satisfaction', 'Compliance rate', 'Cost efficiency'],
+      'legal': ['Case resolution time', 'Compliance rate', 'Client satisfaction', 'Cost efficiency'],
+      'real-estate': ['Transaction time', 'Client satisfaction', 'Portfolio performance', 'Operational efficiency'],
+      'consulting': ['Project delivery time', 'Client satisfaction', 'Utilization rate', 'Quality scores'],
+      'media': ['Content quality', 'Audience engagement', 'Production efficiency', 'Revenue performance'],
+      'logistics': ['Delivery performance', 'Cost efficiency', 'Customer satisfaction', 'Operational efficiency'],
+      'energy': ['Grid reliability', 'Efficiency metrics', 'Safety indicators', 'Cost optimization'],
+      'construction': ['Project completion time', 'Cost control', 'Safety metrics', 'Quality standards'],
+      'generic': ['Efficiency improvement', 'Cost reduction', 'Quality enhancement', 'Customer satisfaction']
+    };
+    
+    return domainKPIMaps[domain] || domainKPIMaps['generic'];
+  }
+
+  /**
+   * Extract regulatory context based on domain and industry
+   */
+  private static extractRegulatoryContext(domain: BusinessDomain, industry?: string): string[] {
+    const regulatoryMaps: Record<BusinessDomain, string[]> = {
+      'procurement': ['Government procurement regulations', 'Anti-corruption policies', 'Fair competition rules'],
+      'financial-services': ['Banking regulations', 'SEC compliance', 'Anti-money laundering', 'Data protection'],
+      'healthcare': ['HIPAA compliance', 'FDA regulations', 'Patient safety standards', 'Medical device regulations'],
+      'manufacturing': ['Safety regulations', 'Environmental compliance', 'Quality standards', 'Labor regulations'],
+      'technology': ['Data privacy laws', 'Security standards', 'Accessibility requirements', 'Intellectual property'],
+      'education': ['FERPA compliance', 'Accessibility standards', 'Safety regulations', 'Accreditation requirements'],
+      'retail': ['Consumer protection', 'Data privacy', 'Safety standards', 'Employment regulations'],
+      'government': ['Public records laws', 'Transparency requirements', 'Citizen privacy', 'Procurement regulations'],
+      'legal': ['Attorney-client privilege', 'Court procedures', 'Ethics regulations', 'Data protection'],
+      'real-estate': ['Property regulations', 'Fair housing laws', 'Environmental compliance', 'Financial regulations'],
+      'consulting': ['Professional standards', 'Client confidentiality', 'Data protection', 'Industry regulations'],
+      'media': ['Content regulations', 'Copyright laws', 'Privacy standards', 'Broadcasting regulations'],
+      'logistics': ['Transportation regulations', 'Safety standards', 'Environmental compliance', 'International trade'],
+      'energy': ['Grid regulations', 'Safety standards', 'Environmental compliance', 'Utility regulations'],
+      'construction': ['Building codes', 'Safety regulations', 'Environmental compliance', 'Licensing requirements'],
+      'generic': ['Data protection', 'Safety standards', 'Employment regulations', 'Industry compliance']
+    };
+    
+    return regulatoryMaps[domain] || regulatoryMaps['generic'];
   }
 } 

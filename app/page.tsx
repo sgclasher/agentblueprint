@@ -12,6 +12,7 @@ export default function Home() {
   useEffect(() => {
     // Initialize auth on mount
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ← Fixed: Empty dependency array prevents infinite loop
 
   useEffect(() => {

@@ -62,12 +62,15 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
   const [isCached, setIsCached] = useState(false);
   const [preferredProvider, setPreferredProvider] = useState<string>('');
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Auto-load cached opportunities on component mount (fixes UX issue)
   useEffect(() => {
     if (!hasAttemptedLoad && !isLoading) {
       loadCachedOpportunities();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAttemptedLoad, isLoading]); // Only run when hasAttemptedLoad or isLoading changes
 
   // Load cached opportunities from server
@@ -107,8 +110,12 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
   };
 
   const generateAnalysis = async (forceRegenerate = false) => {
-    setIsLoading(true);
+    // Clear any previous errors and set loading states
     setError(null);
+    setIsLoading(true);
+    if (forceRegenerate || (opportunities && !forceRegenerate)) {
+      setIsRefreshing(true);
+    }
 
     try {
       // Validate profile before making API call
@@ -120,6 +127,12 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
         throw new Error('Profile is incomplete. Please ensure your profile has required information (company name, industry, etc.).');
       }
 
+      console.log('🔄 [AI Opportunities] Starting analysis generation...', { 
+        forceRegenerate, 
+        hasExistingOpportunities: !!opportunities,
+        preferredProvider: preferredProvider || 'auto'
+      });
+
       const { supabase } = await import('../../lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -127,39 +140,74 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
         throw new Error('Authentication required. Please sign in.');
       }
 
+      const requestBody = {
+        preferredProvider: preferredProvider || undefined,
+        forceRegenerate
+      };
+
+      console.log('🚀 [AI Opportunities] Making API request:', requestBody);
+
       const response = await fetch('/api/profiles/analyze-opportunities', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          preferredProvider: preferredProvider || undefined,
-          forceRegenerate
-        }),
+        body: JSON.stringify(requestBody),
         credentials: 'same-origin'
       });
 
+      console.log('📡 [AI Opportunities] API response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ [AI Opportunities] API error:', errorData);
         throw new Error(errorData.error || `Request failed: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('✅ [AI Opportunities] API response received:', { 
+        success: result.success, 
+        cached: result.cached,
+        provider: result.provider,
+        opportunityCount: result.opportunities?.opportunities?.length || 0
+      });
 
       if (!result.success) {
         throw new Error(result.error || 'Analysis generation failed');
       }
 
+      // Update state with new data
       setOpportunities(result.opportunities);
       setIsCached(result.cached);
       setHasAttemptedLoad(true);
+      
+      // Track refresh time for user feedback
+      if (forceRegenerate || !result.cached) {
+        setLastRefreshTime(new Date().toLocaleTimeString());
+      }
+
+      console.log('🎉 [AI Opportunities] Analysis updated successfully');
 
     } catch (error: any) {
-      console.error('Analysis generation failed:', error);
+      console.error('💥 [AI Opportunities] Analysis generation failed:', error);
       setError(error.message || 'Failed to generate analysis');
+      
+      // More detailed error messages for better UX
+      if (error.message?.includes('Authentication')) {
+        setError('Authentication expired. Please refresh the page and sign in again.');
+      } else if (error.message?.includes('Profile not found')) {
+        setError('Profile not found. Please complete your profile setup first.');
+      } else if (error.message?.includes('rate limit')) {
+        setError('Too many requests. Please wait a moment and try again.');
+      } else if (error.message?.includes('No AI provider')) {
+        setError('No AI provider configured. Please configure an AI provider in admin settings.');
+      } else {
+        setError(error.message || 'Analysis generation failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -211,7 +259,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
   };
 
   const findRelevantInitiativeIndex = (opportunity: AIOpportunity): number | undefined => {
-    if (!profile.strategicInitiatives || !opportunity.relevantInitiatives.length) {
+    if (!profile.strategicInitiatives || !opportunity.relevantInitiatives || !opportunity.relevantInitiatives.length) {
       return undefined;
     }
 
@@ -266,6 +314,11 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                   <span style={{ color: 'var(--accent-green)' }}>
                     <CheckCircle size={16} style={{ marginRight: '0.25rem', verticalAlign: 'middle' }} />
                     Fresh Analysis
+                    {lastRefreshTime && (
+                      <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', opacity: 0.8 }}>
+                        (Updated at {lastRefreshTime})
+                      </span>
+                    )}
                   </span>
                 )}
               </div>
@@ -287,15 +340,20 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
             )}
             <button 
               className="btn btn-primary"
-              onClick={() => generateAnalysis(false)}
+              onClick={() => generateAnalysis(!!opportunities)}
               disabled={isLoading}
+              style={{ position: 'relative' }}
             >
               {isLoading ? (
                 <RefreshCw size={18} className="animate-spin" style={{ marginRight: '0.5rem' }} />
               ) : (
                 <Brain size={18} style={{ marginRight: '0.5rem' }} />
               )}
-              {isLoading ? 'Analyzing...' : opportunities ? 'Refresh Analysis' : '🤖 Generate Analysis'}
+              {isLoading ? (
+                isRefreshing ? 'Refreshing Analysis...' : 'Analyzing...'
+              ) : (
+                opportunities ? '🔄 Refresh Analysis' : '🤖 Generate Analysis'
+              )}
             </button>
           </div>
         </div>
@@ -317,10 +375,10 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
         {!opportunities && !isLoading && (
           <div style={{ margin: 0, color: 'var(--text-muted)' }}>
             <p style={{ marginBottom: '1rem' }}>
-              Generate an AI-powered analysis of business opportunities tailored to your company's strategic initiatives and technology infrastructure.
+              Generate an AI-powered analysis of business opportunities tailored to your company&apos;s strategic initiatives and technology infrastructure.
             </p>
             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              💡 {hasAttemptedLoad ? 'No cached analysis found. ' : ''}Click "Generate Analysis" to create{hasAttemptedLoad ? ' a' : ' your first'} AI-powered assessment.
+              💡 {hasAttemptedLoad ? 'No cached analysis found. ' : ''}Click &quot;Generate Analysis&quot; to create{hasAttemptedLoad ? ' a' : ' your first'} AI-powered assessment.
             </p>
           </div>
         )}
@@ -360,7 +418,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                         <h4 style={{ margin: 0, fontSize: '1.25rem', flex: 1 }}>
-                          {opportunity.title}
+                          {typeof opportunity.title === 'string' ? opportunity.title : 'Untitled Opportunity'}
                         </h4>
                         {onNavigateToBlueprint && (
                           <button 
@@ -386,15 +444,15 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                           backgroundColor: 'rgba(59, 130, 246, 0.1)',
                           color: 'var(--accent-blue)'
                         }}>
-                          {opportunity.category}
+                          {typeof opportunity.category === 'string' ? opportunity.category : 'Unknown Category'}
                         </span>
-                        <span className={`badge ${getConfidenceBadge(opportunity.businessImpact.confidenceLevel)}`}>
-                          {opportunity.businessImpact.confidenceLevel} Confidence
+                        <span className={`badge ${getConfidenceBadge(typeof opportunity.businessImpact.confidenceLevel === 'string' ? opportunity.businessImpact.confidenceLevel : 'Medium')}`}>
+                          {typeof opportunity.businessImpact.confidenceLevel === 'string' ? opportunity.businessImpact.confidenceLevel : 'Medium'} Confidence
                         </span>
-                        <span className={`badge ${getComplexityBadge(opportunity.implementation.complexity)}`}>
-                          {opportunity.implementation.complexity} Complexity
+                        <span className={`badge ${getComplexityBadge(typeof opportunity.implementation.complexity === 'string' ? opportunity.implementation.complexity : 'Medium')}`}>
+                          {typeof opportunity.implementation.complexity === 'string' ? opportunity.implementation.complexity : 'Medium'} Complexity
                         </span>
-                        {opportunity.relevantInitiatives.length > 0 && (
+                        {opportunity.relevantInitiatives && opportunity.relevantInitiatives.length > 0 && (
                           <span style={{ 
                             padding: '0.25rem 0.75rem', 
                             borderRadius: 'var(--border-radius)', 
@@ -407,7 +465,7 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                         )}
                       </div>
                       <p style={{ margin: '0 0 1rem 0', lineHeight: 'var(--line-height)' }}>
-                        {opportunity.description}
+                        {typeof opportunity.description === 'string' ? opportunity.description : 'Description not available'}
                       </p>
                     </div>
                   </div>
@@ -419,13 +477,17 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                         Business Impact
                       </h5>
                       <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
-                        {opportunity.businessImpact.primaryMetrics.map((metric, i) => (
-                          <li key={i} style={{ marginBottom: '0.25rem' }}>{metric}</li>
-                        ))}
+                        {opportunity.businessImpact.primaryMetrics && Array.isArray(opportunity.businessImpact.primaryMetrics) ? (
+                          opportunity.businessImpact.primaryMetrics.map((metric, i) => (
+                            <li key={i} style={{ marginBottom: '0.25rem' }}>{metric}</li>
+                          ))
+                        ) : (
+                          <li style={{ marginBottom: '0.25rem' }}>Primary metrics not available</li>
+                        )}
                       </ul>
                       <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                        <strong>ROI:</strong> {opportunity.businessImpact.estimatedROI}<br/>
-                        <strong>Time to Value:</strong> {opportunity.businessImpact.timeToValue}
+                        <strong>ROI:</strong> {typeof opportunity.businessImpact.estimatedROI === 'string' ? opportunity.businessImpact.estimatedROI : 'Not available'}<br/>
+                        <strong>Time to Value:</strong> {typeof opportunity.businessImpact.timeToValue === 'string' ? opportunity.businessImpact.timeToValue : 'Not available'}
                       </div>
                     </div>
                     <div>
@@ -434,9 +496,9 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                         Implementation
                       </h5>
                       <div style={{ fontSize: '0.9rem', marginBottom: '0.75rem' }}>
-                        <strong>Timeframe:</strong> {opportunity.implementation.timeframe}
+                        <strong>Timeframe:</strong> {typeof opportunity.implementation.timeframe === 'string' ? opportunity.implementation.timeframe : 'Not specified'}
                       </div>
-                      {opportunity.implementation.prerequisites.length > 0 && (
+                      {opportunity.implementation.prerequisites && opportunity.implementation.prerequisites.length > 0 && (
                         <div style={{ fontSize: '0.9rem' }}>
                           <strong>Prerequisites:</strong>
                           <ul style={{ margin: '0.25rem 0 0 0', paddingLeft: '1.5rem' }}>
@@ -460,16 +522,16 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                           marginBottom: '0.75rem'
                         }}>
                           <div style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                            {opportunity.agenticPattern.recommendedPattern}
+                            {typeof opportunity.agenticPattern.recommendedPattern === 'string' ? opportunity.agenticPattern.recommendedPattern : 'Pattern not available'}
                           </div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {opportunity.agenticPattern.patternRationale}
+                            {typeof opportunity.agenticPattern.patternRationale === 'string' ? opportunity.agenticPattern.patternRationale : 'Rationale not available'}
                           </div>
                         </div>
                         <div style={{ fontSize: '0.9rem' }}>
                           <strong>Complexity:</strong>
-                          <span className={`badge ${getComplexityBadge(opportunity.agenticPattern.patternComplexity)}`} style={{ marginLeft: '0.5rem' }}>
-                            {opportunity.agenticPattern.patternComplexity}
+                          <span className={`badge ${getComplexityBadge(typeof opportunity.agenticPattern.patternComplexity === 'string' ? opportunity.agenticPattern.patternComplexity : 'Medium')}`} style={{ marginLeft: '0.5rem' }}>
+                            {typeof opportunity.agenticPattern.patternComplexity === 'string' ? opportunity.agenticPattern.patternComplexity : 'Medium'}
                           </span>
                         </div>
                       </div>
@@ -516,12 +578,12 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                         fontStyle: 'italic',
                         paddingLeft: '1.5rem'
                       }}>
-                        {opportunity.agenticPattern.implementationApproach}
+                        {typeof opportunity.agenticPattern.implementationApproach === 'string' ? opportunity.agenticPattern.implementationApproach : 'Implementation approach not available'}
                       </p>
                     </div>
                   )}
 
-                  {opportunity.aiTechnologies.length > 0 && (
+                  {opportunity.aiTechnologies && opportunity.aiTechnologies.length > 0 && (
                     <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-primary)' }}>
                       <strong style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>AI Technologies:</strong>
                       <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>

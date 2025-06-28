@@ -19,4 +19,5 @@ export const createClient = jest.fn(() => ({
   single: jest.fn().mockResolvedValue({ data: null, error: null }),
 }));
 
-export default { createClient }; 
+const supabaseModule = { createClient };
+export default supabaseModule; 

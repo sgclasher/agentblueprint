@@ -18,7 +18,7 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { preferredProvider, forceRegenerate = false, selectedInitiativeIndex, specialInstructions } = await request.json();
+    const { preferredProvider, forceRegenerate = false, selectedInitiativeIndex, specialInstructions, opportunityContext } = await request.json();
 
     // Verify authentication and get user
     const user = await getUser(request);
@@ -93,13 +93,17 @@ export async function POST(request: NextRequest) {
 
     // Generate agentic blueprint using service
     console.log('🤖 [AI Blueprint] Generating blueprint...');
+    if (opportunityContext) {
+      console.log('🎯 [AI Blueprint] Using opportunity context:', opportunityContext.title);
+    }
     const blueprint = await AgenticBlueprintService.generateBlueprint(
       profile,
       user.id,
       CredentialsRepository,
       preferredProvider,
       selectedInitiativeIndex,
-      specialInstructions
+      specialInstructions,
+      opportunityContext
     );
 
     console.log('✅ [AI Blueprint] Blueprint generated successfully');

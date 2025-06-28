@@ -94,7 +94,8 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing, blueprint
         }
       }, 1000);
     }
-  }, [blueprintContext, isLoading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blueprintContext, isLoading, onClearContext]);
 
   // Auto-load cached blueprint on component mount (but not if we have opportunity context)
   useEffect(() => {
@@ -102,6 +103,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing, blueprint
       console.log('[AIBlueprint] Auto-loading cached blueprint for profile:', profile.id);
       loadCachedBlueprint();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasAttemptedLoad, isLoading, profile?.id, blueprintContext]);
 
   // Load cached blueprint from server
@@ -174,6 +176,21 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing, blueprint
       
       if (specialInstructions.trim()) {
         requestBody.specialInstructions = specialInstructions.trim();
+      }
+      
+      // 🎯 CRITICAL FIX: Include opportunity context if available
+      if (blueprintContext?.opportunity) {
+        console.log('[AIBlueprint] Including opportunity context:', blueprintContext.opportunity.title);
+        requestBody.opportunityContext = {
+          title: blueprintContext.opportunity.title,
+          description: blueprintContext.opportunity.description,
+          category: blueprintContext.opportunity.category,
+          businessImpact: blueprintContext.opportunity.businessImpact,
+          implementation: blueprintContext.opportunity.implementation,
+          agenticPattern: blueprintContext.opportunity.agenticPattern,
+          relevantInitiatives: blueprintContext.opportunity.relevantInitiatives,
+          aiTechnologies: blueprintContext.opportunity.aiTechnologies
+        };
       }
       
       const response = await fetch('/api/profiles/generate-blueprint', {
@@ -502,7 +519,7 @@ const AIBlueprintTab: FC<AIBlueprintTabProps> = ({ profile, isEditing, blueprint
               Generating Your AI Blueprint
             </p>
             <p style={{ margin: 0, fontSize: '0.9rem' }}>
-              Creating a custom blueprint for "{blueprintContext.opportunity.title}" using {blueprintContext.opportunity.agenticPattern?.recommendedPattern || 'optimized'} patterns...
+              Creating a custom blueprint for &quot;{blueprintContext.opportunity.title}&quot; using {blueprintContext.opportunity.agenticPattern?.recommendedPattern || 'optimized'} patterns...
             </p>
           </div>
         )}

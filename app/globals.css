@@ -1236,6 +1236,15 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+/* Animation classes for loading states */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
 /* Add styling for the login-branding section */
 .login-branding {
   display: flex;

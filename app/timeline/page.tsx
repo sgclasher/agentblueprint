@@ -23,7 +23,7 @@ const NoProfileMessage: React.FC = () => (
             Go to Your Profile
         </Link>
         <p className={styles.subtleText}>
-            Your profile is where you'll manage all your business information.
+            Your profile is where you&apos;ll manage all your business information.
         </p>
     </div>
 );

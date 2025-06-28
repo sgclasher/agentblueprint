@@ -267,6 +267,91 @@ export interface KPIImprovement {
     timeframe: string;                  // "Within 6 months", "By Q4 2025"
 }
 
+// 🆕 ENHANCED BLUEPRINT INTELLIGENCE: Domain-Specific Agent Generation
+export interface DomainContext {
+    domain: BusinessDomain;
+    domainTerms: string[];
+    workflowSteps: string[];
+    commonTools: string[];
+    keyMetrics: string[];
+    regulatoryRequirements: string[];
+    typicalRoles: string[];
+}
+
+export type BusinessDomain = 
+    | 'procurement'
+    | 'financial-services' 
+    | 'healthcare'
+    | 'manufacturing'
+    | 'technology'
+    | 'education'
+    | 'retail'
+    | 'government'
+    | 'legal'
+    | 'real-estate'
+    | 'consulting'
+    | 'media'
+    | 'logistics'
+    | 'energy'
+    | 'construction'
+    | 'generic';
+
+export interface DomainAgentPattern {
+    domain: BusinessDomain;
+    agentRoles: DomainAgentRole[];
+    workflowStory: string;
+    coordinationPattern: AgenticPattern;
+    toolCategories: string[];
+}
+
+export interface DomainAgentRole {
+    role: string;                       // "RFP Management Agent", "Vendor Evaluation Agent"
+    title: string;                      // "RFP Specialist", "Vendor Analyst"
+    domainSpecificJob: string;          // Domain-specific description
+    responsibilities: string[];         // Detailed domain responsibilities
+    workflowPosition: number;           // Position in workflow (1, 2, 3, etc.)
+    interactionPattern: string;         // How this agent interacts with others
+    domainKPIs: string[];              // Domain-specific KPIs this agent impacts
+}
+
+export interface OpportunityContext {
+    title: string;
+    category: string;
+    description: string;
+    businessProblems: string[];
+    recommendedPattern: AgenticPattern;
+    patternRationale: string;
+    implementationApproach: string;
+    estimatedROI: string;
+    timeToValue: string;
+    confidenceLevel: string;
+    timeframe: string;
+    prerequisites: string[];
+    aiTechnologies: string[];
+    domain?: BusinessDomain;           // Derived from category/description
+    workflowType?: 'linear' | 'parallel' | 'branching' | 'cyclical';
+}
+
+// Enhanced interface for workflow story generation
+export interface WorkflowStory {
+    triggerEvent: string;              // "RFP request submitted"
+    workflowSteps: WorkflowStep[];
+    coordinationMechanism: string;     // How agents coordinate
+    humanCheckpoints: string[];
+    successOutcome: string;
+    errorHandling: string[];
+}
+
+export interface WorkflowStep {
+    stepNumber: number;
+    agent: string;                     // Which agent handles this step
+    action: string;                    // What the agent does
+    inputs: string[];                  // What data/context it needs
+    outputs: string[];                 // What it produces
+    nextSteps: string[];               // What happens next
+    riskPoints: string[];              // Potential failure points
+}
+
 // Archive complex interfaces for future use - these can be added back based on user feedback
 /*
 ARCHIVED FOR FUTURE ENTERPRISE FEATURES:

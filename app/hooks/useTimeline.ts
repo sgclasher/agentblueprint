@@ -94,6 +94,7 @@ export function useTimeline() {
         alreadyLoading: isLoadingTimeline
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProfile, isAuthLoading, timelineData]); // Removed isLoadingTimeline from dependencies
 
   const loadCachedTimeline = async () => {

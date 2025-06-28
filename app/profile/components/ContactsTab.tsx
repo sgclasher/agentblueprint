@@ -25,7 +25,7 @@ interface ContactWithInitiatives {
 }
 
 const ContactsTab: FC<ContactsTabProps> = ({ profile, isEditing }) => {
-  const initiatives = profile.strategicInitiatives || [];
+  const initiatives = useMemo(() => profile.strategicInitiatives || [], [profile.strategicInitiatives]);
 
   // Extract and deduplicate contacts by email/name
   const contactsWithInitiatives = useMemo(() => {
