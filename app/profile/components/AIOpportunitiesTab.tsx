@@ -4,6 +4,8 @@ import React, { useState, useEffect, FC } from 'react';
 import { Profile } from '../../services/types';
 import { Brain, Zap, RefreshCw, Clock, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Settings, Network, Users, Share2, GitBranch, Target, Workflow } from 'lucide-react';
 import styles from '../../profiles/[id]/ProfileDetail.module.css';
+import InlineBlueprintCard from './InlineBlueprintCard';
+import InlineBlueprintComparison from './InlineBlueprintComparison';
 
 interface AIOpportunitiesTabProps {
   profile: Profile;
@@ -55,7 +57,25 @@ interface AIOpportunitiesAnalysis {
   };
 }
 
+// 🆕 PHASE 1.2: Inline Blueprint State Interface
+interface InlineBlueprintState {
+  opportunityKey: string;          // `${opportunity.title}-${index}`
+  opportunity: AIOpportunity;
+  blueprint: any | null;           // AgenticBlueprint from types.ts
+  isGenerating: boolean;
+  generationProgress: number;      // 0-100
+  error: string | null;
+  generatedAt: string | null;
+  isExpanded: boolean;
+  metadata: {
+    promptVersion: string;
+    aiProvider: string;
+    generationDuration?: number;
+  };
+}
+
 const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, onNavigateToBlueprint }) => {
+  // Existing state management
   const [opportunities, setOpportunities] = useState<AIOpportunitiesAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +84,10 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
   const [hasAttemptedLoad, setHasAttemptedLoad] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 🆕 PHASE 1.2: Inline Blueprint State Management (builds on existing patterns)
+  const [inlineBlueprints, setInlineBlueprints] = useState<Map<string, InlineBlueprintState>>(new Map());
+  const [comparisonSelection, setComparisonSelection] = useState<Set<string>>(new Set());
 
   // Auto-load cached opportunities on component mount (fixes UX issue)
   useEffect(() => {
@@ -258,6 +282,134 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
     return icons[pattern] || <Brain size={16} className="text-gray-500" />;
   };
 
+  // 🆕 PHASE 2.2: Inline Blueprint Generation Logic (builds on existing patterns)
+  const generateInlineBlueprint = async (opportunity: AIOpportunity, opportunityIndex: number) => {
+    const opportunityKey = `${opportunity.title}-${opportunityIndex}`;
+    const startTime = Date.now();
+    
+    // Import AgenticBlueprintService for logging
+    const { AgenticBlueprintService } = await import('../../services/agenticBlueprintService');
+    
+    // Use existing logging pattern from the service
+    AgenticBlueprintService.logInlineGeneration('GENERATION_START', opportunity, { opportunityIndex });
+    
+    // Initialize inline state
+    setInlineBlueprints(prev => new Map(prev).set(opportunityKey, {
+      opportunityKey,
+      opportunity,
+      blueprint: null,
+      isGenerating: true,
+      generationProgress: 0,
+      error: null,
+      generatedAt: null,
+      isExpanded: false,
+      metadata: {
+        promptVersion: '3.1',
+        aiProvider: 'auto'
+      }
+    }));
+    
+    try {
+      // Progress simulation (future: real WebSocket/SSE)
+      const progressSteps = [
+        { progress: 20, phase: 'Analyzing opportunity context' },
+        { progress: 40, phase: 'Selecting agentic pattern' },
+        { progress: 60, phase: 'Generating specialized agents' },
+        { progress: 80, phase: 'Calculating ROI projections' },
+        { progress: 100, phase: 'Finalizing blueprint' }
+      ];
+      
+      for (const step of progressSteps) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        setInlineBlueprints(prev => {
+          const current = prev.get(opportunityKey);
+          return current ? new Map(prev).set(opportunityKey, {
+            ...current,
+            generationProgress: step.progress
+          }) : prev;
+        });
+        
+        AgenticBlueprintService.logInlineBlueprintProgress('PROGRESS_UPDATE', step);
+      }
+      
+      // Get authentication
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Authentication required. Please sign in.');
+      }
+      
+      // Call existing API with inline mode
+      const response = await fetch('/api/profiles/generate-blueprint', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          opportunityContext: {
+            ...opportunity,
+            opportunityIndex
+          },
+          inlineMode: true,
+          forceRegenerate: true,
+          specialInstructions: `Focus exclusively on implementing the "${opportunity.title}" opportunity using the ${opportunity.agenticPattern?.recommendedPattern} pattern.`
+        }),
+        credentials: 'same-origin'
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Blueprint generation failed');
+      }
+      
+      // Update state with generated blueprint
+      setInlineBlueprints(prev => new Map(prev).set(opportunityKey, {
+        opportunityKey,
+        opportunity,
+        blueprint: result.blueprint,
+        isGenerating: false,
+        generationProgress: 100,
+        error: null,
+        generatedAt: new Date().toISOString(),
+        isExpanded: true, // Auto-expand on success
+        metadata: {
+          promptVersion: result.blueprint.promptVersion || '3.1',
+          aiProvider: result.provider,
+          generationDuration: Date.now() - startTime
+        }
+      }));
+      
+      AgenticBlueprintService.logInlineGeneration('GENERATION_SUCCESS', opportunity, {
+        blueprintId: result.blueprint.id,
+        provider: result.provider
+      });
+      
+    } catch (error: any) {
+      AgenticBlueprintService.logInlineBlueprintError('GENERATION_ERROR', error, opportunity, { 
+        opportunityIndex,
+        duration: Date.now() - startTime
+      });
+      
+      setInlineBlueprints(prev => new Map(prev).set(opportunityKey, {
+        opportunityKey,
+        opportunity,
+        blueprint: null,
+        isGenerating: false,
+        generationProgress: 0,
+        error: error.message,
+        generatedAt: null,
+        isExpanded: false,
+        metadata: {
+          promptVersion: '3.1',
+          aiProvider: 'error'
+        }
+      }));
+    }
+  };
+
   const findRelevantInitiativeIndex = (opportunity: AIOpportunity): number | undefined => {
     if (!profile.strategicInitiatives || !opportunity.relevantInitiatives || !opportunity.relevantInitiatives.length) {
       return undefined;
@@ -273,6 +425,35 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
 
     return initiativeIndex >= 0 ? initiativeIndex : undefined;
   };
+
+  // 🆕 PHASE 3.3: Inline Blueprint Management Functions
+  const handleToggleComparison = (opportunityKey: string) => {
+    setComparisonSelection(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(opportunityKey)) {
+        newSet.delete(opportunityKey);
+      } else {
+        newSet.add(opportunityKey);
+      }
+      return newSet;
+    });
+  };
+
+  const handleToggleExpansion = (opportunityKey: string) => {
+    setInlineBlueprints(prev => {
+      const current = prev.get(opportunityKey);
+      if (!current) return prev;
+      
+      return new Map(prev).set(opportunityKey, {
+        ...current,
+        isExpanded: !current.isExpanded
+      });
+    });
+  };
+
+  const selectedBlueprintsForComparison = Array.from(comparisonSelection)
+    .map(key => inlineBlueprints.get(key))
+    .filter(state => state?.blueprint) as InlineBlueprintState[];
 
   const handleGenerateBlueprint = (opportunity: AIOpportunity) => {
     if (!onNavigateToBlueprint) return;
@@ -384,6 +565,12 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
         )}
       </div>
 
+      {/* 🆕 PHASE 3.3: Blueprint Comparison Panel - Sticky Position */}
+      <InlineBlueprintComparison 
+        selectedBlueprints={selectedBlueprintsForComparison}
+        onClearSelection={() => setComparisonSelection(new Set())}
+      />
+
       {/* Analysis Results */}
       {opportunities && (
         <>
@@ -407,12 +594,25 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
             </div>
           </div>
 
-          {/* Opportunities Grid */}
+          {/* Opportunities Grid with Inline Blueprints */}
           <div className={styles.analysisCard} style={{ marginBottom: '2rem' }}>
-            <h3>AI Opportunities ({opportunities.opportunities.length})</h3>
-            <div style={{ display: 'grid', gap: '1.5rem' }}>
-              {opportunities.opportunities.map((opportunity, index) => (
-                <div key={index} className={styles.opportunityCard}>
+            <h3>AI Opportunities with Inline Blueprints ({opportunities.opportunities.length})</h3>
+            <div style={{ display: 'grid', gap: '2rem' }}>
+              {opportunities.opportunities.map((opportunity, index) => {
+                const opportunityKey = `${opportunity.title}-${index}`;
+                const blueprintState = inlineBlueprints.get(opportunityKey);
+                
+                return (
+                <div key={index} style={{ 
+                  display: 'grid', 
+                  gap: '1rem',
+                  padding: '1.5rem',
+                  backgroundColor: 'var(--bg-primary)',
+                  borderRadius: 'var(--border-radius)',
+                  border: '1px solid var(--border-primary)'
+                }}>
+                  {/* Original Opportunity Card */}
+                  <div className={styles.opportunityCard}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem' }}>
                     {getCategoryIcon(opportunity.category)}
                     <div style={{ flex: 1 }}>
@@ -602,7 +802,54 @@ const AIOpportunitiesTab: FC<AIOpportunitiesTabProps> = ({ profile, isEditing, o
                     </div>
                   )}
                 </div>
-              ))}
+                
+                {/* 🆕 PHASE 3.3: Inline Blueprint Section */}
+                <div style={{ 
+                  borderTop: '2px solid var(--border-primary)',
+                  paddingTop: '1rem'
+                }}>
+                  {!blueprintState ? (
+                    <div style={{ textAlign: 'center', padding: '1.5rem' }}>
+                      <button 
+                        className="btn btn-primary"
+                        onClick={() => generateInlineBlueprint(opportunity, index)}
+                        style={{ 
+                          fontSize: '1rem',
+                          padding: '1rem 1.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          margin: '0 auto',
+                          flexDirection: 'column'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Zap size={20} />
+                          Generate AI Digital Team Blueprint
+                        </div>
+                        {opportunity.agenticPattern?.recommendedPattern && (
+                          <span style={{ 
+                            fontSize: '0.85rem',
+                            opacity: 0.9,
+                            fontStyle: 'italic'
+                          }}>
+                            Using {opportunity.agenticPattern.recommendedPattern} pattern
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <InlineBlueprintCard 
+                      blueprintState={blueprintState}
+                      onToggleExpansion={() => handleToggleExpansion(opportunityKey)}
+                      onToggleComparison={() => handleToggleComparison(opportunityKey)}
+                      isSelectedForComparison={comparisonSelection.has(opportunityKey)}
+                    />
+                  )}
+                </div>
+              </div>
+                );
+              })}
             </div>
           </div>
 

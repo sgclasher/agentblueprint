@@ -190,6 +190,13 @@ export interface AgenticBlueprint {
     patternRationale?: string;          // Explanation of why this pattern was selected
     specialInstructions?: string;       // User-provided customization instructions
     
+    // 🆕 PHASE 1.3: Inline Generation Metadata
+    inlineGeneration?: {
+        sourceOpportunity: any;         // AIOpportunity that generated this blueprint (avoiding circular import)
+        generatedInline: boolean;       // Flag to distinguish from traditional blueprints
+        parentOpportunityIndex: number; // Index in the opportunities array
+    };
+    
     // Generation metadata
     aiModel?: string;
     promptVersion?: string;

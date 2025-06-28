@@ -1762,4 +1762,52 @@ ENFORCE: Count your KPI improvements before finishing: 1, 2, 3... minimum!
     
     return regulatoryMaps[domain] || regulatoryMaps['generic'];
   }
+
+  // 🆕 PHASE 1.1: Inline Blueprint Generation Logging Methods
+  /**
+   * Enhanced logging for inline blueprint generation workflow
+   * Extends existing logging patterns with inline-specific context
+   */
+  static logInlineGeneration(action: string, opportunity: any, metadata?: any) {
+    console.group(`🎯 [Inline Blueprint: ${opportunity?.title || 'Unknown'}]`);
+    console.log(`📊 Action: ${action}`);
+    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+    console.log(`📋 Opportunity Category: ${opportunity?.category || 'Unknown'}`);
+    console.log(`🤖 Recommended Pattern: ${opportunity?.agenticPattern?.recommendedPattern || 'Not specified'}`);
+    if (metadata) console.log(`🔍 Metadata:`, metadata);
+    console.groupEnd();
+  }
+
+  /**
+   * Log inline blueprint generation progress phases
+   */
+  static logInlineBlueprintProgress(phase: string, data?: any) {
+    console.group(`🤖 [Inline Blueprint Progress: ${phase}]`);
+    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+    if (data) console.log(`📊 Progress Data:`, data);
+    console.groupEnd();
+  }
+
+  /**
+   * Log inline blueprint generation errors with context
+   */
+  static logInlineBlueprintError(context: string, error: any, opportunity?: any, additionalData?: any) {
+    console.group(`❌ [Inline Blueprint Error: ${context}]`);
+    console.error(`💥 Error:`, error);
+    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+    if (opportunity) console.log(`🎯 Opportunity:`, { title: opportunity.title, category: opportunity.category });
+    if (additionalData) console.log(`🔍 Additional Context:`, additionalData);
+    console.groupEnd();
+  }
+
+  /**
+   * Log blueprint comparison operations
+   */
+  static logBlueprintComparison(action: string, blueprintCount: number, metadata?: any) {
+    console.group(`🔀 [Blueprint Comparison: ${action}]`);
+    console.log(`📊 Blueprints: ${blueprintCount}`);
+    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
+    if (metadata) console.log(`🔍 Comparison Data:`, metadata);
+    console.groupEnd();
+  }
 } 

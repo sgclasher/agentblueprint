@@ -18,7 +18,14 @@ const supabase = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const { preferredProvider, forceRegenerate = false, selectedInitiativeIndex, specialInstructions, opportunityContext } = await request.json();
+    const { 
+      preferredProvider, 
+      forceRegenerate = false, 
+      selectedInitiativeIndex, 
+      specialInstructions, 
+      opportunityContext,
+      inlineMode = false          // 🆕 PHASE 2.1: New parameter for inline blueprint generation
+    } = await request.json();
 
     // Verify authentication and get user
     const user = await getUser(request);
@@ -69,6 +76,67 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // 🆕 PHASE 2.1: Handle inline mode generation with specialized logging and metadata
+    if (inlineMode) {
+      console.log('🎯 [API] Inline blueprint generation mode activated');
+      
+      // Log inline generation start using new service method
+      if (opportunityContext) {
+        AgenticBlueprintService.logInlineGeneration('INLINE_GENERATION_START', opportunityContext, {
+          preferredProvider: preferredProvider || 'auto',
+          hasSpecialInstructions: !!specialInstructions,
+          userId: user.id
+        });
+      }
+      
+      // Generate agentic blueprint with inline context
+      console.log('🤖 [Inline Blueprint] Generating specialized blueprint for opportunity...');
+      if (opportunityContext) {
+        console.log('🎯 [Inline Blueprint] Opportunity:', opportunityContext.title);
+        console.log('🤖 [Inline Blueprint] Pattern:', opportunityContext.agenticPattern?.recommendedPattern);
+      }
+      
+      const blueprint = await AgenticBlueprintService.generateBlueprint(
+        profile,
+        user.id,
+        CredentialsRepository,
+        preferredProvider,
+        selectedInitiativeIndex,
+        specialInstructions,
+        {
+          ...opportunityContext,
+          inlineMode: true,
+          sourceTab: 'ai-opportunities'
+        }
+      );
+
+      // Add inline generation metadata
+      blueprint.inlineGeneration = {
+        sourceOpportunity: opportunityContext,
+        generatedInline: true,
+        parentOpportunityIndex: opportunityContext?.opportunityIndex || -1
+      };
+
+      console.log('✅ [Inline Blueprint] Generated successfully');
+      
+      // Log successful generation
+      if (opportunityContext) {
+        AgenticBlueprintService.logInlineGeneration('INLINE_GENERATION_SUCCESS', opportunityContext, {
+          blueprintId: blueprint.id,
+          provider: blueprint.aiModel,
+          pattern: blueprint.selectedPattern
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        blueprint: blueprint,
+        cached: false,
+        inline: true,
+        provider: blueprint.aiModel || 'unknown'
+      });
     }
 
     // Check for cached blueprint (unless forcing regeneration)
@@ -126,6 +194,16 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('[AI Blueprint] Generation failed:', error);
+
+    // 🆕 PHASE 2.1: Enhanced error logging for inline mode
+    const { inlineMode = false, opportunityContext } = await request.json().catch(() => ({ inlineMode: false, opportunityContext: null }));
+    
+    if (inlineMode && opportunityContext) {
+      AgenticBlueprintService.logInlineBlueprintError('API_GENERATION_FAILED', error, opportunityContext, {
+        errorType: error.constructor.name,
+        timestamp: new Date().toISOString()
+      });
+    }
 
     let errorMessage = 'Failed to generate AI blueprint';
     let statusCode = 500;
