@@ -202,6 +202,22 @@ Encrypted Credentials → AI Provider → Structured Response → Database Cache
 
 ## 📁 Key Files for Development
 
+### **🚀 Developer Quick Start (New Session Context)**
+When starting a fresh development session, these files provide complete context:
+
+**Essential Context Files**:
+1. **`instructions.md`** - Current project plan and implementation phases
+2. **`app/services/types.ts`** - Core data structures and interfaces
+3. **`app/services/agenticBlueprintService.ts`** - Current blueprint service patterns
+4. **`app/profile/components/AIOpportunitiesTab.tsx`** - Main UI component being transformed
+
+**Architecture Reference**:
+5. **`app/api/profiles/generate-blueprint/route.ts`** - Current API patterns
+6. **`app/database/agentic-blueprint-schema.sql`** - Database structure
+7. **`README.md`** (this file) - Complete platform overview
+
+**Include these 7 files in your context for maximum development efficiency.**
+
 ### **Core Application Structure**
 - **`app/profile/page.tsx`**: Main profile interface with 6-tab business intelligence dashboard
 - **`app/profile/components/AIBlueprintTab.tsx`**: AI Blueprint interface with integrated ROI visualization
@@ -291,6 +307,26 @@ Comprehensive Cursor Rules system automatically provides agentic AI context and 
 - ✅ **AI Opportunities Refresh Button** - RESOLVED (User verified working)
 - ✅ **Blueprint Service Error Handling** - RESOLVED (Tests passing)
 - ✅ **End-to-End Integration** - VERIFIED (Complete flow working)
+
+### **🔄 Current Development Focus (January 2025)**
+
+**Active Project**: **Unified AI Opportunities + Blueprints Architecture**
+
+**Current Limitation**: The platform currently stores only **one blueprint per profile**, meaning users lose previous blueprints when generating new ones for different opportunities.
+
+**Solution in Progress**: Implementing opportunity-centric blueprint storage where each AI opportunity can have its own associated blueprint, creating a unified interface that:
+- ✅ Preserves multiple blueprints (no data loss)
+- ✅ Direct opportunity → blueprint workflow
+- ✅ Blueprint comparison capabilities  
+- ✅ Simplified user experience
+
+**Implementation Details**: See `instructions.md` for complete project plan and progress tracking.
+
+**Key Files Being Modified**:
+- `app/services/types.ts` - New `OpportunityBlueprint` interface
+- `app/services/agenticBlueprintService.ts` - Multi-blueprint service methods
+- `app/profile/components/AIOpportunitiesTab.tsx` - Unified interface
+- `app/api/opportunities/` - New API endpoints for opportunity-specific blueprints
 
 ### **Future Enhancement Opportunities**
 - 🔄 Quick Assessment (5-minute version)

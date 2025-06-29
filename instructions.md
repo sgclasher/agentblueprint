@@ -1,686 +1,325 @@
-# AI Business Advisory Platform - Development Instructions
+# 🚀 Unified AI Opportunities + Blueprints Architecture Project
 
-## 🎯 **Current Task: Inline Blueprint Generation System** (January 2025)
+## 📋 **Current Status Summary**
 
-**Objective**: Transform the AI Opportunities → Blueprint workflow from a confusing dual-path system into a seamless inline experience with robust testing, logging, and modular prompt architecture.
+**Phase 1 COMPLETED** ✅ - Foundation architecture is fully implemented and deployed:
+- All data structures, database schema, repository methods, and services are ready
+- Database migration successfully deployed (2025-06-29 01:09:43 UTC)  
+- 23/23 tests passing with comprehensive coverage
+- **Ready for Phase 2**: Service Layer Enhancement to improve opportunity-to-blueprint context flow
 
-**Problem Statement**: Users are confused by competing workflows (Initiative selector vs. Opportunity-based blueprints). Need single-path, inline blueprint generation with comprehensive comparison capabilities.
+## 🎯 **Current Task - Phase 1: Foundation (Database Migration & Type Definitions)**
 
-**Target Outcome**: AI Opportunities tab becomes the primary blueprint interface with inline generation, progressive disclosure, and side-by-side comparison capabilities.
+### Implementation Plan - In Progress
 
----
+- [x] **Step 1: Create OpportunityBlueprint Interface** ✅ COMPLETED
+  - Files: `app/services/types.ts`, `app/services/aiOpportunitiesService.ts`
+  - ✅ Added `OpportunityBlueprint` interface that links opportunities to blueprints
+  - ✅ Added `generateOpportunityId()` and `validateOpportunityBlueprint()` utility functions
+  - ✅ Moved `AIOpportunity` interface to types.ts for centralization
+  - ✅ Maintained backward compatibility with existing `AgenticBlueprint`
+  - ✅ **Tests**: 10/10 tests passing with detailed logging
 
-## 🚀 **Implementation Game Plan: 5-Phase Approach**
+- [x] **Step 2: Database Migration Script** ✅ COMPLETED
+  - Files: `app/database/opportunity-blueprints-schema.sql` (new), `app/__tests__/features/database-migration.test.ts` (new)
+  - ✅ Added `opportunity_blueprints JSONB[]` column to profiles table
+  - ✅ Created GIN indexes for efficient JSONB querying
+  - ✅ Added PostgreSQL functions: add_opportunity_blueprint(), get_opportunity_blueprint(), list_opportunity_blueprints(), remove_opportunity_blueprint()
+  - ✅ Added legacy migration function: migrate_legacy_blueprint_to_opportunity()
+  - ✅ Added validation constraints and migration status tracking
+  - ✅ Preserved existing `agentic_blueprint_cache` for backward compatibility
+  - ✅ **Tests**: 13/13 tests passing with comprehensive schema validation
+  - ✅ **DATABASE MIGRATION COMPLETED**: Successfully deployed on 2025-06-29 01:09:43 UTC
 
-### **Phase 1: Foundation & Infrastructure** (Days 1-2)
-**Goal**: Set up robust foundation for inline functionality
+- [x] **Step 3: Repository Method Enhancements** ✅ COMPLETED
+  - Files: `app/repositories/profileRepository.ts`
+  - ✅ Added CRUD methods for opportunity-blueprint pairs:
+    - `getOpportunityBlueprints()` - Get all blueprints for user
+    - `getOpportunityBlueprint()` - Get blueprint by opportunity ID  
+    - `saveOpportunityBlueprint()` - Add/update blueprint
+    - `removeOpportunityBlueprint()` - Remove blueprint by ID
+    - `clearOpportunityBlueprints()` - Clear all blueprints
+  - ✅ Added migration utility: `migrateLegacyBlueprint()` for converting existing single blueprints
+  - ✅ Implemented opportunity ID generation: `generateOpportunityId()` (hash-based)
+  - ✅ Added query methods: `hasOpportunityBlueprints()` for checking existence
+  - ✅ **Extensive logging** for troubleshooting and debugging
+  - ✅ **Error handling** with graceful fallbacks and user-friendly messages
 
-#### **1.1 Enhanced Logging System**
-```typescript
-// New logging utility: app/utils/inlineLogger.ts
-export class InlineLogger {
-  static logOpportunityAction(action: string, opportunity: AIOpportunity, metadata?: any) {
-    console.group(`🎯 [Opportunity: ${opportunity.title}]`);
-    console.log(`📊 Action: ${action}`);
-    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
-    console.log(`📋 Opportunity:`, opportunity);
-    if (metadata) console.log(`🔍 Metadata:`, metadata);
-    console.groupEnd();
-  }
-  
-  static logBlueprintGeneration(phase: string, data?: any) {
-    console.group(`🤖 [Blueprint Generation: ${phase}]`);
-    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
-    if (data) console.log(`📊 Data:`, data);
-    console.groupEnd();
-  }
-  
-  static logError(context: string, error: any, additionalData?: any) {
-    console.group(`❌ [Error: ${context}]`);
-    console.error(`💥 Error:`, error);
-    console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
-    if (additionalData) console.log(`🔍 Context:`, additionalData);
-    console.groupEnd();
-  }
-}
-```
+- [x] **Step 4: Service Layer Foundation** ✅ COMPLETED
+  - Files: `app/services/opportunityBlueprintService.ts` (new), `app/services/agenticBlueprintService.ts`
+  - ✅ Created comprehensive bridge service: `OpportunityBlueprintService`
+  - ✅ Added methods for generating blueprints per opportunity:
+    - `generateBlueprintForOpportunity()` - Generate blueprint for specific opportunity
+    - `generateAndSaveBlueprint()` - Generate and save in one operation
+    - `saveOpportunityBlueprint()` - Save generated blueprint
+  - ✅ Added CRUD operations for opportunity blueprints:
+    - `getOpportunityBlueprints()` - Get all blueprints for user
+    - `getOpportunityBlueprint()` - Get specific blueprint by ID
+    - `removeOpportunityBlueprint()` - Remove blueprint by ID
+  - ✅ Added legacy migration support: `migrateLegacyBlueprint()` & `getMigrationStatus()`
+  - ✅ Added utility methods: ID generation, validation, existence checks
+  - ✅ **Comprehensive error handling** with detailed logging
+  - ✅ **Validation** with `validateOpportunityBlueprint()` integration
+  - ✅ **Seamless integration** with existing `AgenticBlueprintService`
 
-#### **1.2 Modular Prompt System Architecture**
-```typescript
-// New file: app/lib/llm/prompts/inlineBlueprintPrompts.ts
-export interface InlineBlueprintPromptConfig {
-  opportunity: AIOpportunity;
-  profile: Profile;
-  provider: 'openai' | 'claude' | 'gemini';
-  version: string;
-  customInstructions?: string;
-  focusMode: 'opportunity-only' | 'initiative-related' | 'comprehensive';
-}
+- [x] **Step 5: Type Safety & Validation** ✅ COMPLETED
+  - Files: `app/services/types.ts`, `app/utils/validation.ts` (enhanced)
+  - ✅ Enhanced TypeScript validation for OpportunityBlueprint interface
+  - ✅ Added opportunity context validation with comprehensive error handling
+  - ✅ Created migration validation utilities for data integrity
+  - ✅ Ensured type safety across opportunity-blueprint relationships
+  - ✅ Added validation for sanitized opportunity context to prevent runtime errors
+  - ✅ **Tests**: Comprehensive validation with graceful error handling
 
-export class InlineBlueprintPromptBuilder {
-  private static promptVersions = {
-    'v1.0': 'Base inline prompt',
-    'v1.1': 'Enhanced domain intelligence',
-    'v1.2': 'Cross-provider optimization'
-  };
-  
-  static buildSystemPrompt(config: InlineBlueprintPromptConfig): string {
-    // Provider-specific optimizations
-    const providerOptimizations = this.getProviderOptimizations(config.provider);
-    const domainContext = this.extractDomainContext(config.opportunity, config.profile);
-    const focusInstructions = this.getFocusInstructions(config.focusMode);
-    
-    return this.combinePromptSections([
-      providerOptimizations,
-      domainContext,
-      focusInstructions,
-      config.customInstructions
-    ]);
-  }
-}
-```
-
-#### **1.3 State Management Setup**
-```typescript
-// Extended state for AIOpportunitiesTab.tsx
-interface OpportunityBlueprintState {
-  opportunity: AIOpportunity;
-  blueprint: AgenticBlueprint | null;
-  isGenerating: boolean;
-  generationProgress: number; // 0-100
-  error: string | null;
-  generatedAt: string | null;
-  isExpanded: boolean;
-  promptVersion: string;
-  aiProvider: string;
-}
-
-const [opportunityBlueprints, setOpportunityBlueprints] = useState<Map<string, OpportunityBlueprintState>>(new Map());
-const [selectedBlueprintsForComparison, setSelectedBlueprintsForComparison] = useState<Set<string>>(new Set());
-```
-
-**Testing Checkpoint 1**: Verify logging works, prompt system loads, state initializes correctly
+- [x] **Step 6: Testing Foundation** ✅ COMPLETED
+  - Files: `app/__tests__/features/opportunity-blueprint-migration.test.ts`, `app/__tests__/features/database-migration.test.ts`
+  - ✅ **23/23 tests passing** with comprehensive coverage
+  - ✅ **Interface Tests**: OpportunityBlueprint validation, generateOpportunityId(), validateOpportunityBlueprint()
+  - ✅ **Database Tests**: Schema validation, GIN indexes, JSONB array operations
+  - ✅ **Repository Tests**: CRUD operations, PostgreSQL functions (add, get, list, remove)
+  - ✅ **Migration Tests**: Legacy blueprint migration, gradual transition support
+  - ✅ **Compatibility Tests**: Backward compatibility with existing single blueprints
+  - ✅ **Performance Tests**: Index effectiveness simulation with large datasets
+  - ✅ **Edge Case Handling**: Comprehensive error validation and graceful degradation
 
 ---
 
-### **Phase 2: Core Inline Functionality** (Days 3-4)
-**Goal**: Implement basic inline blueprint generation with robust error handling
+## 📋 **Project Overview**
 
-#### **2.1 API Enhancement**
+**Goal**: Transform the current "one blueprint per profile" limitation into a unified experience where each AI opportunity can have its own associated blueprint, eliminating data loss and creating a more intuitive user workflow.
+
+**Core Value Proposition**: 
+- ✅ Multiple blueprints preserved (no more lost work)
+- ✅ Direct opportunity → blueprint flow (better UX)
+- ✅ Easy comparison between approaches
+- ✅ Simplified interface (potentially eliminate Blueprint tab)
+- ✅ Future-proof for rapid AI evolution
+
+## 🏗️ **Architecture Principles**
+
+### **1. Modularity First**
+- **Service Layer Separation**: Each AI feature (Opportunities, Blueprints) remains independently modifiable
+- **Provider Agnostic**: Maintain abstraction over OpenAI/Claude/Gemini for easy model updates
+- **Prompt Versioning**: Clear separation of prompts for easy updates as AI tech evolves
+
+### **2. Data Preservation**
+- **Backward Compatible**: Existing blueprints and opportunities preserved during migration
+- **Non-Destructive**: New architecture alongside existing until proven
+- **Rollback Ready**: Clear migration path back if needed
+
+### **3. Scalability & Maintenance**
+- **Caching Strategy**: Efficient storage and retrieval of opportunity-blueprint pairs
+- **Database Flexibility**: JSONB structure accommodates future AI output evolution
+- **API Consistency**: RESTful patterns for predictable integration
+
+## 🎯 **Implementation Phases**
+
+### **Phase 1: Foundation (Week 1)**
+**Goal**: Create the new data structures and storage without breaking existing functionality
+
+**Tasks**:
+- [ ] **Database Migration**: Add `opportunity_blueprints JSONB[]` column to profiles
+- [ ] **Type Definitions**: Create `OpportunityBlueprint` interface in `types.ts`
+- [ ] **Repository Methods**: Add CRUD operations for opportunity-blueprint pairs
+- [ ] **Backward Compatibility**: Ensure existing single blueprint still works
+
+**Deliverable**: New storage ready, existing functionality untouched
+
+### **Phase 2: Service Layer Enhancement (Week 1-2)**
+**Goal**: Modify services to handle multiple blueprints per opportunity
+
+**Tasks**:
+- [ ] **Enhanced BlueprintService**: Add `generateBlueprintForOpportunity()` method
+- [ ] **Opportunity Identification**: Create unique ID system for opportunities (hash-based)
+- [ ] **Cache Management**: Implement opportunity-specific caching logic
+- [ ] **Migration Service**: Tool to convert existing single blueprint to opportunity-based
+
+**Deliverable**: Backend can generate and store multiple blueprints
+
+### **Phase 3: API Evolution (Week 2)**
+**Goal**: Create new API endpoints for opportunity-centric blueprint management
+
+**Tasks**:
+- [ ] **New Endpoints**: 
+  - `POST /api/opportunities/generate-blueprint`
+  - `GET /api/opportunities/blueprints`
+  - `GET /api/opportunities/blueprints/:opportunityId`
+- [ ] **Context Preservation**: Ensure full opportunity context flows to blueprint generation
+- [ ] **Error Handling**: Robust error handling with clear user feedback
+
+**Deliverable**: APIs support opportunity-specific blueprint operations
+
+### **Phase 4: UI Transformation (Week 2-3)**
+**Goal**: Replace current tabs with unified opportunity-blueprint interface
+
+**Tasks**:
+- [ ] **Unified Component**: Create new `UnifiedOpportunitiesTab.tsx`
+- [ ] **Opportunity Selector**: Dropdown/list interface for selecting opportunities
+- [ ] **Conditional Blueprint Display**: Show blueprint if exists, generation button if not
+- [ ] **Blueprint Management**: Regenerate, view, compare functionality
+- [ ] **Migration UX**: Handle existing single blueprints gracefully
+
+**Deliverable**: New user interface with full functionality
+
+### **Phase 5: Polish & Optimization (Week 3)**
+**Goal**: Performance optimization and user experience refinement
+
+**Tasks**:
+- [ ] **Performance**: Optimize loading and caching strategies
+- [ ] **Comparison View**: Side-by-side blueprint comparison feature
+- [ ] **Export Enhancement**: Include multiple blueprints in exports
+- [ ] **Error States**: Improved error handling and user feedback
+- [ ] **Cleanup**: Remove old Blueprint tab if fully replaced
+
+**Deliverable**: Production-ready unified experience
+
+## 🔧 **Technical Implementation Details**
+
+### **Database Schema Evolution**
+```sql
+-- New column for multiple blueprints
+ALTER TABLE profiles 
+ADD COLUMN opportunity_blueprints JSONB DEFAULT '[]'::jsonb;
+
+-- Index for efficient queries
+CREATE INDEX idx_profiles_opportunity_blueprints 
+ON profiles USING gin (opportunity_blueprints);
+```
+
+### **Key Data Structures**
 ```typescript
-// Extended API: app/api/profiles/generate-inline-blueprint/route.ts
-export async function POST(request: Request) {
-  const startTime = Date.now();
-  
-  try {
-    console.log('🚀 [API] Inline blueprint generation started');
-    
-    const { opportunity, profile, customInstructions, focusMode } = await request.json();
-    
-    // Progress tracking simulation
-    const progressCallback = (progress: number, phase: string) => {
-      console.log(`📊 [API] Progress: ${progress}% - ${phase}`);
-      // Future: WebSocket or SSE for real-time progress
-    };
-    
-    const blueprint = await AgenticBlueprintService.generateInlineBlueprint(
-      opportunity,
-      profile,
-      userId,
-      credentialsRepo,
-      { customInstructions, focusMode, progressCallback }
-    );
-    
-    const duration = Date.now() - startTime;
-    console.log(`✅ [API] Blueprint generated in ${duration}ms`);
-    
-    return NextResponse.json({
-      success: true,
-      blueprint,
-      metadata: { duration, promptVersion: '1.0', provider: 'auto' }
-    });
-    
-  } catch (error) {
-    console.error('❌ [API] Blueprint generation failed:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  }
+interface OpportunityBlueprint {
+  opportunityId: string;           // Unique hash of opportunity
+  opportunity: AIOpportunity;      // Full opportunity context
+  blueprint: AgenticBlueprint;     // Generated blueprint
+  generatedAt: string;
+  aiModel: string;
+  specialInstructions?: string;
+}
+
+interface UnifiedOpportunitiesData {
+  opportunities: AIOpportunity[];
+  blueprints: Map<string, AgenticBlueprint>;
+  hasLoaded: boolean;
 }
 ```
 
-#### **2.2 Inline Generation Logic**
+### **Service Architecture**
 ```typescript
-// Enhanced AIOpportunitiesTab.tsx
-const generateInlineBlueprint = async (opportunity: AIOpportunity, opportunityIndex: number) => {
-  const opportunityKey = `${opportunity.title}-${opportunityIndex}`;
-  
-  InlineLogger.logOpportunityAction('BLUEPRINT_GENERATION_START', opportunity, { opportunityIndex });
-  
-  // Update state to show loading
-  setOpportunityBlueprints(prev => new Map(prev).set(opportunityKey, {
-    opportunity,
-    blueprint: null,
-    isGenerating: true,
-    generationProgress: 0,
-    error: null,
-    generatedAt: null,
-    isExpanded: false,
-    promptVersion: '1.0',
-    aiProvider: 'auto'
-  }));
-  
-  try {
-    // Simulate progress updates (future: real WebSocket updates)
-    const progressUpdates = [
-      { progress: 20, phase: 'Analyzing opportunity requirements' },
-      { progress: 40, phase: 'Selecting optimal agentic pattern' },
-      { progress: 60, phase: 'Generating agent roles and responsibilities' },
-      { progress: 80, phase: 'Calculating ROI projections' },
-      { progress: 100, phase: 'Finalizing blueprint' }
-    ];
-    
-    for (const update of progressUpdates) {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate processing time
-      setOpportunityBlueprints(prev => {
-        const current = prev.get(opportunityKey);
-        if (current) {
-          return new Map(prev).set(opportunityKey, {
-            ...current,
-            generationProgress: update.progress
-          });
-        }
-        return prev;
-      });
-      
-      InlineLogger.logBlueprintGeneration('PROGRESS_UPDATE', update);
-    }
-    
-    // Actual API call
-    const response = await fetch('/api/profiles/generate-inline-blueprint', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        opportunity,
-        profile,
-        customInstructions: '',
-        focusMode: 'opportunity-only'
-      })
-    });
-    
-    const result = await response.json();
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Blueprint generation failed');
-    }
-    
-    // Update state with generated blueprint
-    setOpportunityBlueprints(prev => new Map(prev).set(opportunityKey, {
-      opportunity,
-      blueprint: result.blueprint,
-      isGenerating: false,
-      generationProgress: 100,
-      error: null,
-      generatedAt: new Date().toISOString(),
-      isExpanded: true, // Auto-expand on success
-      promptVersion: result.metadata.promptVersion,
-      aiProvider: result.metadata.provider
-    }));
-    
-    InlineLogger.logBlueprintGeneration('GENERATION_SUCCESS', {
-      blueprintId: result.blueprint.id,
-      duration: result.metadata.duration,
-      provider: result.metadata.provider
-    });
-    
-  } catch (error) {
-    InlineLogger.logError('BLUEPRINT_GENERATION', error, { opportunity, opportunityIndex });
-    
-    setOpportunityBlueprints(prev => new Map(prev).set(opportunityKey, {
-      opportunity,
-      blueprint: null,
-      isGenerating: false,
-      generationProgress: 0,
-      error: error.message,
-      generatedAt: null,
-      isExpanded: false,
-      promptVersion: '1.0',
-      aiProvider: 'auto'
-    }));
-  }
-};
-```
-
-**Testing Checkpoint 2**: Generate single inline blueprint, verify state management, check error handling
-
----
-
-### **Phase 3: Enhanced UX & Multiple Blueprints** (Days 5-6)
-**Goal**: Polish user experience and enable multiple blueprint comparison
-
-#### **3.1 Progressive Loading UI**
-```typescript
-// New component: app/profile/components/InlineBlueprintGenerator.tsx
-const InlineBlueprintGenerator: FC<{
-  opportunity: AIOpportunity;
-  blueprintState: OpportunityBlueprintState;
-  onGenerate: () => void;
-  onToggleExpansion: () => void;
-}> = ({ opportunity, blueprintState, onGenerate, onToggleExpansion }) => {
-  
-  if (!blueprintState.blueprint && !blueprintState.isGenerating) {
-    return (
-      <div className="blueprint-generator">
-        <button 
-          className="btn-primary generate-blueprint-btn"
-          onClick={onGenerate}
-        >
-          🤖 Generate AI Digital Team Blueprint
-          <span className="btn-subtitle">
-            Specialized agents for this opportunity using {opportunity.agenticPattern?.recommendedPattern} pattern
-          </span>
-        </button>
-      </div>
-    );
-  }
-  
-  if (blueprintState.isGenerating) {
-    return (
-      <div className="blueprint-generating">
-        <div className="generation-header">
-          <RefreshCw className="animate-spin" />
-          <span>Generating specialized AI team for this opportunity...</span>
-        </div>
-        
-        <div className="progress-container">
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${blueprintState.generationProgress}%` }}
-            />
-          </div>
-          <span className="progress-text">{blueprintState.generationProgress}%</span>
-        </div>
-        
-        <div className="generation-steps">
-          <div className={blueprintState.generationProgress >= 20 ? 'step completed' : 'step pending'}>
-            ✓ Analyzing business requirements
-          </div>
-          <div className={blueprintState.generationProgress >= 40 ? 'step completed' : 'step pending'}>
-            {blueprintState.generationProgress >= 40 ? '✓' : '⟳'} Selecting optimal agentic pattern
-          </div>
-          <div className={blueprintState.generationProgress >= 60 ? 'step completed' : 'step pending'}>
-            {blueprintState.generationProgress >= 60 ? '✓' : '⧖'} Designing agent roles and interactions
-          </div>
-          <div className={blueprintState.generationProgress >= 80 ? 'step completed' : 'step pending'}>
-            {blueprintState.generationProgress >= 80 ? '✓' : '⧖'} Calculating ROI projections
-          </div>
-        </div>
-        
-        <div className="estimated-time">
-          Estimated time remaining: {Math.max(0, 3 - Math.floor(blueprintState.generationProgress / 33))} minutes
-        </div>
-      </div>
-    );
-  }
-  
-  // Blueprint generated - show summary
-  return (
-    <div className="blueprint-generated">
-      <BlueprintInlineSummary 
-        blueprint={blueprintState.blueprint!}
-        isExpanded={blueprintState.isExpanded}
-        onToggleExpansion={onToggleExpansion}
-        metadata={{
-          generatedAt: blueprintState.generatedAt!,
-          promptVersion: blueprintState.promptVersion,
-          aiProvider: blueprintState.aiProvider
-        }}
-      />
-    </div>
-  );
-};
-```
-
-#### **3.2 Blueprint Comparison System**
-```typescript
-// New component: app/profile/components/BlueprintComparison.tsx
-const BlueprintComparison: FC<{
-  blueprints: Map<string, OpportunityBlueprintState>;
-  selectedForComparison: Set<string>;
-  onToggleSelection: (key: string) => void;
-}> = ({ blueprints, selectedForComparison, onToggleSelection }) => {
-  
-  const selectedBlueprints = Array.from(selectedForComparison)
-    .map(key => blueprints.get(key))
-    .filter(bp => bp?.blueprint);
-  
-  if (selectedBlueprints.length === 0) return null;
-  
-  return (
-    <div className="blueprint-comparison">
-      <div className="comparison-header">
-        <h4>🔀 Blueprint Comparison ({selectedBlueprints.length})</h4>
-        <button onClick={() => selectedForComparison.clear()}>
-          Clear All
-        </button>
-      </div>
-      
-      <div className="comparison-grid">
-        {selectedBlueprints.map((blueprintState, index) => (
-          <div key={index} className="comparison-card">
-            <BlueprintComparisonCard 
-              blueprint={blueprintState!.blueprint!}
-              opportunity={blueprintState!.opportunity}
-              metadata={{
-                aiProvider: blueprintState!.aiProvider,
-                promptVersion: blueprintState!.promptVersion
-              }}
-            />
-          </div>
-        ))}
-      </div>
-      
-      <div className="comparison-actions">
-        <button className="btn-primary">
-          📊 Export Comparison Report
-        </button>
-        <button className="btn-secondary">
-          📋 Create Implementation Roadmap
-        </button>
-      </div>
-    </div>
-  );
-};
-```
-
-**Testing Checkpoint 3**: Generate multiple blueprints, test comparison UI, verify responsive design
-
----
-
-### **Phase 4: Advanced Features & Polish** (Days 7-8)
-**Goal**: Add sophisticated features and optimize performance
-
-#### **4.1 Blueprint Regeneration with Options**
-```typescript
-// Advanced generation options
-const regenerateBlueprintWithOptions = async (
-  opportunity: AIOpportunity, 
-  options: {
-    focusMode: 'opportunity-only' | 'initiative-related' | 'comprehensive';
-    customInstructions?: string;
-    aiProvider?: string;
-    agenticPattern?: string; // Override recommended pattern
-  }
-) => {
-  InlineLogger.logOpportunityAction('BLUEPRINT_REGENERATION', opportunity, options);
-  
-  // Show regeneration modal with options
-  setRegenerationModal({
-    visible: true,
-    opportunity,
-    options: {
-      focusMode: options.focusMode || 'opportunity-only',
-      availablePatterns: ['Manager-Workers', 'ReAct', 'Plan-Act-Reflect', 'Tool-Use'],
-      availableProviders: ['openai', 'claude', 'gemini'],
-      customInstructions: options.customInstructions || ''
-    }
-  });
-};
-```
-
-#### **4.2 Performance Optimization**
-```typescript
-// Memoization for expensive operations
-const memoizedBlueprintSummary = useMemo(() => {
-  return Array.from(opportunityBlueprints.entries())
-    .filter(([, state]) => state.blueprint)
-    .map(([key, state]) => ({
-      key,
-      opportunity: state.opportunity,
-      blueprint: state.blueprint!,
-      roi: state.blueprint!.roiProjection?.roiPercentage || 0,
-      agents: state.blueprint!.digitalTeam.length,
-      pattern: state.blueprint!.selectedPattern
-    }));
-}, [opportunityBlueprints]);
-
-// Virtual scrolling for large numbers of opportunities
-const virtualizationConfig = {
-  itemHeight: 400, // Average opportunity card height
-  overscan: 2,     // Render 2 extra items for smooth scrolling
-  threshold: 10    // Enable virtualization after 10 opportunities
-};
-```
-
-**Testing Checkpoint 4**: Test advanced options, verify performance with multiple blueprints, check mobile responsiveness
-
----
-
-### **Phase 5: Integration & Production Readiness** (Days 9-10)
-**Goal**: Integrate with existing systems and prepare for production
-
-#### **5.1 Blueprint Tab Transformation**
-```typescript
-// Redesigned AIBlueprintTab.tsx as "Blueprint Library"
-const BlueprintLibrary: FC = () => {
-  const [blueprintHistory, setBlueprintHistory] = useState<AgenticBlueprint[]>([]);
-  const [filterCriteria, setFilterCriteria] = useState({
-    pattern: 'all',
-    roiRange: [0, 1000],
-    dateRange: 'all'
-  });
-  
-  return (
-    <div className="blueprint-library">
-      <div className="library-header">
-        <h3>📚 Generated Blueprint Library</h3>
-        <p>Archive and comparison view of all your generated AI blueprints</p>
-      </div>
-      
-      <div className="library-filters">
-        <BlueprintFilter 
-          criteria={filterCriteria}
-          onChange={setFilterCriteria}
-        />
-      </div>
-      
-      <div className="library-grid">
-        <BlueprintHistoryView 
-          blueprints={blueprintHistory}
-          onExport={exportBlueprint}
-          onDuplicate={duplicateBlueprint}
-          onArchive={archiveBlueprint}
-        />
-      </div>
-    </div>
-  );
-};
-```
-
-#### **5.2 Analytics & Usage Tracking**
-```typescript
-// New service: app/services/blueprintAnalyticsService.ts
-export class BlueprintAnalyticsService {
-  static trackBlueprintGeneration(
+// Enhanced blueprint service methods
+class AgenticBlueprintService {
+  static async generateBlueprintForOpportunity(
+    profile: Profile,
     opportunity: AIOpportunity,
-    blueprint: AgenticBlueprint,
-    metadata: {
-      duration: number;
-      provider: string;
-      promptVersion: string;
-    }
-  ) {
-    const analyticsEvent = {
-      event: 'blueprint_generated',
-      timestamp: new Date().toISOString(),
-      opportunity_category: opportunity.category,
-      agentic_pattern: blueprint.selectedPattern,
-      roi_percentage: blueprint.roiProjection?.roiPercentage,
-      generation_duration: metadata.duration,
-      ai_provider: metadata.provider,
-      prompt_version: metadata.promptVersion
-    };
-    
-    console.log('📊 [Analytics]', analyticsEvent);
-    
-    // Future: Send to analytics service
-    // await sendAnalytics(analyticsEvent);
-  }
-  
-  static trackBlueprintComparison(blueprints: AgenticBlueprint[]) {
-    console.log('📊 [Analytics] Blueprint comparison:', {
-      comparison_count: blueprints.length,
-      patterns_compared: blueprints.map(bp => bp.selectedPattern),
-      roi_range: {
-        min: Math.min(...blueprints.map(bp => bp.roiProjection?.roiPercentage || 0)),
-        max: Math.max(...blueprints.map(bp => bp.roiProjection?.roiPercentage || 0))
-      }
-    });
-  }
+    userId: string,
+    options?: BlueprintOptions
+  ): Promise<AgenticBlueprint>
+
+  static async getAllOpportunityBlueprints(
+    userId: string
+  ): Promise<OpportunityBlueprint[]>
+
+  static async getBlueprintForOpportunity(
+    userId: string, 
+    opportunityId: string
+  ): Promise<AgenticBlueprint | null>
 }
 ```
 
-**Testing Checkpoint 5**: End-to-end user journey testing, performance validation, analytics verification
-
----
-
-## 🧪 **Testing Strategy**
-
-### **Automated Testing**
+### **Modular Prompt Management**
 ```typescript
-// New test file: app/__tests__/features/inline-blueprint-generation.test.tsx
-describe('Inline Blueprint Generation', () => {
-  
-  test('should generate blueprint inline without navigation', async () => {
-    // Setup: Mock opportunity and profile
-    // Action: Click generate blueprint
-    // Assert: Blueprint appears inline, no navigation occurs
-  });
-  
-  test('should handle multiple blueprint generation', async () => {
-    // Setup: Multiple opportunities
-    // Action: Generate blueprints for each
-    // Assert: Each blueprint is independent and cached correctly
-  });
-  
-  test('should support blueprint comparison', async () => {
-    // Setup: Multiple generated blueprints
-    // Action: Select for comparison
-    // Assert: Comparison view shows side-by-side analysis
-  });
-});
+// Separate prompt files for easy updates
+- `app/lib/llm/prompts/aiOpportunities.ts`         // Opportunity analysis
+- `app/lib/llm/prompts/agenticBlueprint.ts`        // Blueprint generation
+- `app/lib/llm/prompts/blueprintComparison.ts`     // Future: comparison prompts
+
+// Versioned prompts for A/B testing AI improvements
+interface PromptVersion {
+  version: string;
+  systemPrompt: string;
+  userPromptTemplate: string;
+  validationRules: string[];
+}
 ```
 
-### **Manual Testing Checklist**
-- [ ] Single blueprint generation works end-to-end
-- [ ] Multiple blueprints can be generated simultaneously
-- [ ] Loading states are clear and informative
-- [ ] Error handling gracefully recovers
-- [ ] Mobile experience is responsive
-- [ ] Blueprint comparison functions correctly
-- [ ] Performance remains smooth with 5+ blueprints
-- [ ] Logging provides actionable debugging information
+## 🎯 **Success Criteria**
+
+### **User Experience**
+- [ ] User can select any AI opportunity and see associated blueprint
+- [ ] Generate blueprints for multiple opportunities without losing previous ones
+- [ ] Clear visual indication of which opportunities have blueprints
+- [ ] Fast loading of cached blueprints (<1 second)
+- [ ] Intuitive regeneration and comparison workflows
+
+### **Technical Performance**  
+- [ ] No data loss during migration
+- [ ] Backward compatibility maintained
+- [ ] API response times <2 seconds for blueprint generation
+- [ ] Efficient caching reduces AI API costs by 80%+
+- [ ] Error rates <1% for blueprint operations
+
+### **Business Value**
+- [ ] Increased user engagement with blueprint features
+- [ ] Reduced support requests about "lost blueprints"
+- [ ] Clear path for future AI/prompt improvements
+- [ ] Scalable architecture supports new opportunity types
+
+## 🔄 **Future Considerations**
+
+### **AI Evolution Readiness**
+- **Prompt Versioning**: Easy A/B testing of new prompts as models improve
+- **Model Switching**: Seamless migration when new AI models become available
+- **Output Evolution**: JSONB structure accommodates new blueprint fields
+- **Provider Integration**: Easy addition of new AI providers (Anthropic, Google, etc.)
+
+### **Feature Expansion Opportunities**
+- **Blueprint Templates**: Pre-built blueprints for common opportunity types
+- **Implementation Tracking**: Connect blueprints to actual project progress
+- **ROI Validation**: Track actual vs projected ROI for blueprint recommendations
+- **Industry Benchmarking**: Compare blueprints against industry standards
+
+### **Enterprise Features**
+- **Team Collaboration**: Share and collaborate on blueprints
+- **Approval Workflows**: Enterprise approval process for blueprint implementation
+- **Compliance Integration**: Ensure blueprints meet regulatory requirements
+- **Integration APIs**: Connect to project management and implementation tools
+
+## 📝 **Development Notes**
+
+### **Key Files to Modify**
+- `app/services/types.ts` - Add new interfaces
+- `app/services/agenticBlueprintService.ts` - Enhanced service methods
+- `app/api/opportunities/` - New API routes
+- `app/profile/components/AIOpportunitiesTab.tsx` - Transform to unified interface
+- `app/database/` - Migration scripts
+
+### **Testing Strategy**
+- **Unit Tests**: Service layer methods for blueprint management
+- **Integration Tests**: End-to-end opportunity → blueprint flow
+- **Migration Tests**: Ensure existing data preserved
+- **Performance Tests**: Loading and caching efficiency
+
+### **Risk Mitigation**
+- **Gradual Migration**: New functionality alongside existing until proven
+- **Data Backup**: Full backup before any database changes
+- **Feature Flags**: Ability to toggle between old and new interfaces
+- **Monitoring**: Comprehensive logging for troubleshooting
 
 ---
 
-## 🔧 **Configuration & Modularity**
+## 📊 **Progress Tracking**
 
-### **Prompt Configuration System**
-```typescript
-// app/config/inlineBlueprintConfig.ts
-export const INLINE_BLUEPRINT_CONFIG = {
-  prompts: {
-    versions: ['1.0', '1.1', '1.2'],
-    defaultVersion: '1.2',
-    providers: {
-      openai: {
-        systemPromptTemplate: 'openai_inline_blueprint_v1_2.txt',
-        maxTokens: 4000,
-        temperature: 0.7
-      },
-      claude: {
-        systemPromptTemplate: 'claude_inline_blueprint_v1_2.txt',
-        maxTokens: 4000,
-        temperature: 0.7
-      },
-      gemini: {
-        systemPromptTemplate: 'gemini_inline_blueprint_v1_2.txt',
-        maxTokens: 4000,
-        temperature: 0.7
-      }
-    }
-  },
-  ui: {
-    enableProgressAnimation: true,
-    autoExpandOnGeneration: true,
-    maxConcurrentGenerations: 3,
-    enableComparison: true
-  },
-  performance: {
-    enableVirtualization: true,
-    virtualizationThreshold: 10,
-    cacheSize: 50
-  }
-};
-```
+| Phase | Status | Start Date | Target Completion | Notes |
+|-------|--------|------------|------------------|-------|
+| Phase 1: Foundation | 🔄 Planned | TBD | TBD | Database and types |
+| Phase 2: Services | ⏳ Pending | TBD | TBD | Enhanced service layer |
+| Phase 3: APIs | ⏳ Pending | TBD | TBD | New endpoints |
+| Phase 4: UI | ⏳ Pending | TBD | TBD | Unified interface |
+| Phase 5: Polish | ⏳ Pending | TBD | TBD | Performance & UX |
 
-### **Feature Flags**
-```typescript
-// app/utils/featureFlags.ts
-export const FEATURE_FLAGS = {
-  INLINE_BLUEPRINT_GENERATION: true,
-  BLUEPRINT_COMPARISON: true,
-  ADVANCED_REGENERATION_OPTIONS: true,
-  BLUEPRINT_ANALYTICS: true,
-  VIRTUAL_SCROLLING: false // Enable after performance testing
-};
-```
+**Last Updated**: January 2025
+**Next Review**: After Phase 1 completion
 
 ---
 
-## 🎯 **Success Metrics**
-
-### **User Experience Metrics**
-- **Time to Blueprint**: < 2 minutes from opportunity to generated blueprint
-- **User Confusion**: Zero "Where do I generate blueprints?" support requests
-- **Completion Rate**: >90% of users who start blueprint generation complete it
-- **Comparison Usage**: >40% of users compare multiple blueprints
-
-### **Technical Metrics**
-- **Performance**: Page remains responsive during blueprint generation
-- **Error Rate**: <2% blueprint generation failures
-- **Cache Hit Rate**: >80% for subsequent blueprint views
-- **Mobile Experience**: Full functionality on mobile devices
-
----
-
-## 📝 **Implementation Notes**
-
-### **Prompt Evolution Strategy**
-1. **A/B Testing**: Compare prompt versions with real users
-2. **Provider Optimization**: Custom prompts for each AI provider
-3. **Domain Intelligence**: Specialized prompts for different business domains
-4. **Feedback Loop**: User rating system to improve prompt quality
-
-### **Future Enhancements** (Post-Launch)
-- Real-time collaboration (multiple users comparing blueprints)
-- Blueprint marketplace (share successful patterns)
-- Integration with project management tools
-- Advanced analytics and ROI tracking
-- Custom agentic pattern designer
-
----
-
-**Ready to start Phase 1! 🚀**
-
-**Next Steps Tomorrow:**
-1. Implement Phase 1 logging and prompt system
-2. Test foundation with existing opportunities
-3. Verify state management works correctly
-4. Begin Phase 2 core functionality
-
-**Estimated Timeline**: 10 days with daily testing checkpoints
-**Risk Mitigation**: Each phase builds incrementally, allowing rollback if needed
-**Success Criteria**: Seamless inline experience that eliminates user confusion and increases blueprint generation rate
+*This document serves as the single source of truth for the unified AI Opportunities + Blueprints project. Update as implementation progresses and requirements evolve.*

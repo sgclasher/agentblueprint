@@ -364,3 +364,156 @@ ARCHIVED FOR FUTURE ENTERPRISE FEATURES:
 - AIAssessment
 - Summary
 */ 
+
+// 🆕 PHASE 1: AI Opportunities + Blueprints Unified Architecture
+
+// Move AIOpportunity interface from aiOpportunitiesService.ts for centralization
+export interface AIOpportunity {
+  title: string;
+  description: string;
+  category: 'Process Automation' | 'Decision Support' | 'Customer Experience' | 'Data Analytics' | 'Workforce Augmentation' | 'Risk Management';
+  businessImpact: {
+    primaryMetrics: string[];
+    estimatedROI: string;
+    timeToValue: string;
+    confidenceLevel: 'High' | 'Medium' | 'Low';
+  };
+  implementation: {
+    complexity: 'Low' | 'Medium' | 'High';
+    timeframe: string;
+    prerequisites: string[];
+    riskFactors: string[];
+  };
+  agenticPattern?: {
+    recommendedPattern: string;
+    patternRationale: string;
+    implementationApproach: string;
+    patternComplexity: 'Low' | 'Medium' | 'High';
+  };
+  relevantInitiatives: string[];
+  aiTechnologies: string[];
+}
+
+// 🆕 NEW: OpportunityBlueprint - Links AI Opportunities to Generated Blueprints
+export interface OpportunityBlueprint {
+  opportunityId: string;                    // Unique hash-based ID for the opportunity
+  opportunity: AIOpportunity;               // Full opportunity context 
+  blueprint: AgenticBlueprint;              // Generated blueprint for this specific opportunity
+  generatedAt: string;                      // ISO timestamp when blueprint was generated
+  aiModel: string;                          // AI model used for generation (e.g., 'gpt-4o', 'claude-sonnet')
+  specialInstructions?: string;             // Optional user customization instructions
+}
+
+// 🆕 NEW: Validation result interface for OpportunityBlueprint
+export interface OpportunityBlueprintValidation {
+  isValid: boolean;
+  errors: string[];
+  warnings?: string[];
+}
+
+// 🆕 NEW: Utility function to generate consistent opportunity IDs
+export function generateOpportunityId(opportunity: AIOpportunity): string {
+  console.log('[generateOpportunityId] Generating ID for opportunity:', opportunity.title);
+  
+  // Create a hash based on key opportunity characteristics
+  const hashInput = [
+    opportunity.title.toLowerCase().trim(),
+    opportunity.category,
+    opportunity.description.toLowerCase().trim().substring(0, 100), // First 100 chars for consistency
+  ].join('|');
+  
+  console.log('[generateOpportunityId] Hash input:', hashInput);
+  
+  // Simple hash function (production would use crypto.createHash)
+  let hash = 0;
+  for (let i = 0; i < hashInput.length; i++) {
+    const char = hashInput.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  // Convert to positive hex string and ensure 8 characters
+  const hexHash = Math.abs(hash).toString(16).padStart(8, '0').substring(0, 8);
+  const opportunityId = `opp_${hexHash}`;
+  
+  console.log('[generateOpportunityId] Generated ID:', opportunityId);
+  return opportunityId;
+}
+
+// 🆕 NEW: Validation function for OpportunityBlueprint
+export function validateOpportunityBlueprint(opportunityBlueprint: OpportunityBlueprint): OpportunityBlueprintValidation {
+  console.log('[validateOpportunityBlueprint] Validating opportunity blueprint...');
+  
+  const errors: string[] = [];
+  const warnings: string[] = [];
+  
+  // Required field validation
+  if (!opportunityBlueprint.opportunityId || typeof opportunityBlueprint.opportunityId !== 'string') {
+    errors.push('opportunityId is required');
+  }
+  
+  if (!opportunityBlueprint.opportunity) {
+    errors.push('opportunity is required');
+  } else {
+    // Validate nested opportunity structure
+    if (!opportunityBlueprint.opportunity.title || typeof opportunityBlueprint.opportunity.title !== 'string') {
+      errors.push('opportunity.title is required');
+    }
+    if (!opportunityBlueprint.opportunity.category) {
+      errors.push('opportunity.category is required');
+    }
+  }
+  
+  if (!opportunityBlueprint.blueprint) {
+    errors.push('blueprint is required');
+  } else {
+    // Validate nested blueprint structure
+    if (!opportunityBlueprint.blueprint.businessObjective) {
+      errors.push('blueprint.businessObjective is required');
+    }
+    if (!opportunityBlueprint.blueprint.digitalTeam || !Array.isArray(opportunityBlueprint.blueprint.digitalTeam)) {
+      errors.push('blueprint.digitalTeam must be an array');
+    }
+  }
+  
+  if (!opportunityBlueprint.generatedAt || typeof opportunityBlueprint.generatedAt !== 'string') {
+    errors.push('generatedAt is required');
+  } else {
+    // Validate ISO date format
+    const dateTest = new Date(opportunityBlueprint.generatedAt);
+    if (isNaN(dateTest.getTime())) {
+      errors.push('generatedAt must be valid ISO date string');
+    }
+  }
+  
+  if (!opportunityBlueprint.aiModel || typeof opportunityBlueprint.aiModel !== 'string') {
+    errors.push('aiModel is required');
+  }
+  
+  // Warning validations
+  if (opportunityBlueprint.specialInstructions && opportunityBlueprint.specialInstructions.length > 500) {
+    warnings.push('specialInstructions should be 500 characters or less');
+  }
+  
+  const isValid = errors.length === 0;
+  
+  console.log('[validateOpportunityBlueprint] Validation result:', { 
+    isValid, 
+    errorCount: errors.length,
+    warningCount: warnings.length 
+  });
+  
+  if (!isValid) {
+    console.log('[validateOpportunityBlueprint] Validation errors:', errors);
+  }
+  
+  if (warnings.length > 0) {
+    console.log('[validateOpportunityBlueprint] Validation warnings:', warnings);
+  }
+  
+  return {
+    isValid,
+    errors,
+    warnings
+  };
+} 

@@ -1,30 +1,7 @@
-import { Profile, StrategicInitiative, SystemApplication } from './types';
+import { Profile, StrategicInitiative, SystemApplication, AIOpportunity } from './types';
 
-export interface AIOpportunity {
-  title: string;
-  description: string;
-  category: 'Process Automation' | 'Decision Support' | 'Customer Experience' | 'Data Analytics' | 'Workforce Augmentation' | 'Risk Management';
-  businessImpact: {
-    primaryMetrics: string[];
-    estimatedROI: string;
-    timeToValue: string;
-    confidenceLevel: 'High' | 'Medium' | 'Low';
-  };
-  implementation: {
-    complexity: 'Low' | 'Medium' | 'High';
-    timeframe: string;
-    prerequisites: string[];
-    riskFactors: string[];
-  };
-  agenticPattern: {
-    recommendedPattern: string;
-    patternRationale: string;
-    implementationApproach: string;
-    patternComplexity: 'Low' | 'Medium' | 'High';
-  };
-  relevantInitiatives: string[];
-  aiTechnologies: string[];
-}
+// Re-export for backward compatibility
+export type { AIOpportunity };
 
 export interface AIOpportunitiesAnalysis {
   executiveSummary: string;
