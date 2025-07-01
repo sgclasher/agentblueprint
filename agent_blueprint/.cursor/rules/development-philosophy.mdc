@@ -1,0 +1,12 @@
+# UI Development Philosophy
+
+When working within the `agent_blueprint` directory, adhere strictly to the **Decoupled, UI-First Approach**.
+
+- **Build in Isolation**: The UI must be built and function entirely on static, mock data. Do not make any API calls from these components.
+- **Strict Data Contracts**: All UI components must be built exclusively against the data structures defined in `agent_blueprint/src/lib/types.ts`. This is the single source of truth for the UI.
+- **Use Mock Data**: All data for UI development and display must come from `agent_blueprint/src/lib/mock-data.ts`.
+- **Three-Layer Architecture**: Remember the core philosophy:
+    1.  **The UI (this project)**: Is clean, isolated, and knows nothing about AI or backend logic.
+    2.  **The Backend API**: Is a future "clean-up" layer that will format data for the UI.
+    3.  **The AI Engine**: Is the "messy" layer and is completely hidden from the UI.
+- **Reference**: For the full project plan and philosophy, always refer to the `agent_blueprint/ui_shell_plan.md` file.
