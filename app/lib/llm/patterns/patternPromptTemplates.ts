@@ -293,96 +293,430 @@ export function buildPatternSpecificUserPrompt(
     throw new Error(`Unknown pattern: ${selectedPattern}`);
   }
 
-  let prompt = `Please generate an AI digital team blueprint using the ${selectedPattern} agentic pattern for the following business profile:
+  // 🆕 ENHANCED: Rich special instructions processing (matching legacy system sophistication)
+  let specialInstructionsSection = '';
+  if (config.specialInstructions) {
+    specialInstructionsSection = `
+
+🚨 CRITICAL OVERRIDE INSTRUCTIONS 🚨
+The user has provided MANDATORY customization requirements that MUST take precedence over the general profile context:
+
+"${config.specialInstructions}"
+
+IMPORTANT: These instructions should COMPLETELY RESHAPE the blueprint focus:
+- ALL agent roles MUST be redesigned around these specific requirements using the ${selectedPattern} pattern
+- The business objective MUST reflect this focused scope, NOT generic company operations
+- ALL tools and systems MUST align with this specific workflow/opportunity
+- ALL KPI improvements MUST be relevant to this specific context
+- The implementation timeline MUST be tailored to this specific challenge
+- Agent coordination MUST follow ${pattern.coordinationMechanism} principles for this specific use case
+
+⚠️ DO NOT generate a generic company-wide blueprint. Focus EXCLUSIVELY on the specific opportunity/workflow described in these instructions while strictly adhering to the ${selectedPattern} agentic pattern requirements.`;
+  }
+
+  // 🆕 ENHANCED: Rich opportunity context processing (matching legacy system)
+  let focusContextSection = '';
+  if (config.blueprintFocusContext) {
+    focusContextSection = `
+
+🎯 OPPORTUNITY-SPECIFIC BLUEPRINT GENERATION:
+${config.blueprintFocusContext}
+
+CRITICAL PATTERN INTEGRATION:
+The ${selectedPattern} pattern has been pre-selected for this opportunity based on AI analysis. You MUST:
+1. Design exactly ${pattern.agentCount} agents following ${pattern.coordinationMechanism} coordination
+2. Specialize each agent role for the specific opportunity workflow described above
+3. Ensure agent interactions follow ${pattern.patternType} principles
+4. Tailor tools and systems to the opportunity's specific AI technologies and prerequisites
+5. Map KPI improvements directly to the opportunity's primary metrics
+6. Create a business objective that references the specific opportunity, not generic transformation
+
+This is a FOCUSED implementation plan for the specific AI opportunity - not a general company blueprint.`;
+  }
+
+  // 🆕 ENHANCED: Calculate timeline based on pattern complexity
+  const timelineWeeks = (() => {
+    const baseWeeks = 24; // Default 6 months
+    const patternComplexityMultiplier: Record<string, number> = {
+      'Tool-Use': 0.5,
+      'ReAct': 0.6,
+      'Self-Reflection': 0.7,
+      'Plan-and-Execute': 0.8,
+      'Plan-Act-Reflect': 0.9,
+      'Hierarchical-Planning': 1.2,
+      'Manager-Workers': 1.0,
+      'Hierarchical-Hub-Spoke': 1.3,
+      'Blackboard-Shared-Memory': 1.1,
+      'Market-Based-Auction': 1.4,
+      'Decentralized-Swarm': 1.5
+    };
+    
+    const multiplier = patternComplexityMultiplier[selectedPattern] || 1.0;
+    return Math.ceil(baseWeeks * multiplier);
+  })();
+
+  // 🆕 ENHANCED: Strategic initiatives processing with opportunity filtering
+  const strategicInitiativesList = (profile.strategicInitiatives || []).map((initiative: any, index: number) => {
+    // Include process metrics and investment context if available
+    let processMetricsSection = '';
+    if (initiative.processMetrics) {
+      const pm = initiative.processMetrics;
+      processMetricsSection = `
+   - Process Metrics:
+     • Current Cycle Time: ${pm.currentCycleTime || 'Not specified'}
+     • Current Volume: ${pm.currentVolume || 'Not specified'}
+     • Current Error Rate: ${pm.currentErrorRate || 'Not specified'}
+     • Current Cost Level: ${pm.currentCost || 'Not specified'}
+     • Labor Intensity: ${pm.laborIntensity || 'Not specified'}
+     • Process Complexity: ${pm.processComplexity || 'Not specified'}`;
+    }
+    
+    let investmentContextSection = '';
+    if (initiative.investmentContext) {
+      const ic = initiative.investmentContext;
+      investmentContextSection = `
+   - Investment Context:
+     • Budget Range: ${ic.budgetRange || 'Not specified'}
+     • Timeframe: ${ic.timeframePreference || 'Not specified'}
+     • Implementation Readiness: ${ic.implementationReadiness || 'Not specified'}
+     • Risk Tolerance: ${ic.riskTolerance || 'Not specified'}
+     • Success Definition: ${ic.successDefinition || 'Not specified'}
+     • Stakeholder Buy-in: ${ic.stakeholderBuyIn || 'Not specified'}`;
+    }
+    
+    return `${index + 1}. ${initiative.initiative}
+   - Contact: ${initiative.contact?.name || 'Not specified'} (${initiative.contact?.title || 'Not specified'})
+   - Priority: ${initiative.priority || 'Not specified'}
+   - Status: ${initiative.status || 'Not specified'}
+   - Business Problems: ${(initiative.businessProblems || []).length > 0 ? initiative.businessProblems.join('; ') : 'None specified'}
+   - Expected Outcomes: ${(initiative.expectedOutcomes && initiative.expectedOutcomes.length > 0) ? initiative.expectedOutcomes.join('; ') : 'None specified'}${processMetricsSection}${investmentContextSection}`;
+  }).join('\n');
+
+  // 🆕 ENHANCED: Systems list with criticality assessment
+  const systemsList = (profile.systemsAndApplications || []).map((system: any, index: number) => 
+    `${index + 1}. ${system.name} (${system.category})
+   - Vendor: ${system.vendor || 'Not specified'}
+   - Criticality: ${system.criticality || 'Not specified'}
+   - Description: ${system.description || 'Not specified'}`
+  ).join('\n');
+
+  // 🆕 ENHANCED: Pattern-specific agent count and role requirements
+  let patternAgentRequirements = '';
+  if (selectedPattern === 'Manager-Workers') {
+    patternAgentRequirements = `
+🔧 MANAGER-WORKERS PATTERN REQUIREMENTS (CRITICAL):
+- Generate EXACTLY 5 specialized agents (not 4, not 6 - exactly 5)
+- Agent 1: Orchestration Coordinator (manages workflow and coordinates other agents)
+- Agent 2: Research/Intelligence Specialist (data gathering and analysis)
+- Agent 3: Evaluation/Analysis Specialist (assessment and scoring)
+- Agent 4: Implementation/Execution Specialist (action execution and monitoring)
+- Agent 5: Communication/Stakeholder Specialist (cross-departmental coordination and stakeholder management)
+
+AGENT SPECIALIZATION REQUIREMENTS:
+- Each agent must have a domain-specific title (not generic "Project Manager" or "Analyst")
+- Tools must be domain-appropriate and specific to the agent's role
+- Each agent must have clear, non-overlapping responsibilities
+- Coordination mechanism: Central orchestrator delegates to 4 specialist workers
+`;
+  } else if (selectedPattern === 'ReAct') {
+    patternAgentRequirements = `
+🔧 REACT PATTERN REQUIREMENTS:
+- Generate 1 primary ReAct agent with Think→Act→Observe cycles
+- Include specific reasoning steps and tool interaction protocols
+- Focus on iterative problem-solving and self-correction capabilities
+`;
+  } else if (selectedPattern === 'Plan-Act-Reflect') {
+    patternAgentRequirements = `
+🔧 PLAN-ACT-REFLECT PATTERN REQUIREMENTS:
+- Generate 3 coordinated agents: Strategic Planner, Tactical Executor, Reflective Assessor
+- Include clear feedback loops and adaptation mechanisms
+- Focus on iterative improvement and goal adjustment
+`;
+  } else if (selectedPattern === 'Hierarchical-Planning') {
+    patternAgentRequirements = `
+🔧 HIERARCHICAL PLANNING PATTERN REQUIREMENTS:
+- Generate 4-6 agents in clear hierarchical structure
+- Include strategic, tactical, and operational layers
+- Define clear escalation and delegation protocols
+`;
+  } else {
+    // Default fallback for other patterns
+    patternAgentRequirements = `
+🔧 ${selectedPattern.toUpperCase()} PATTERN REQUIREMENTS:
+- Follow the specific coordination mechanisms for ${selectedPattern}
+- Ensure agent count and roles align with pattern best practices
+- Include appropriate oversight and collaboration protocols
+`;
+  }
+
+  // 🆕 ENHANCED: Constitutional AI and advanced governance requirements
+  const governanceRequirements = `
+🛡️ ENHANCED GOVERNANCE & RISK MANAGEMENT (CRITICAL):
+
+CONSTITUTIONAL AI INTEGRATION:
+- Each agent must include ethical guardrails and decision validation
+- High-stakes actions require constitutional review against company values
+- Include explicit bias detection and mitigation protocols
+
+ADVANCED HUMAN OVERSIGHT FRAMEWORK:
+- POLICY-CHECKED: Standard operational decisions with AI guardrails
+- CONSTITUTIONAL-AI: Ethical decision validation for sensitive actions
+- HUMAN-APPROVAL: Manual review required for high-risk/high-value actions
+- DUAL-APPROVAL: Two-person authorization for critical business impacts
+
+OVERSIGHT ESCALATION MATRIX:
+- Low risk operations: Policy-checked with automated guardrails
+- Medium risk decisions: Constitutional-AI review + senior staff notification
+- High risk actions: Human approval + legal/compliance review where applicable
+- Critical business impact: Dual approval + executive oversight
+
+CHAIN-OF-THOUGHT MONITORING:
+- All agent reasoning must be transparent and auditable
+- Include decision rationale in all agent outputs
+- Enable real-time reasoning validation for high-stakes decisions
+`;
+
+  // 🆕 ENHANCED: Implementation timeline with crawl-walk-run methodology
+  const implementationTimeline = `
+📅 IMPLEMENTATION TIMELINE REQUIREMENTS (CRAWL-WALK-RUN):
+
+Include a detailed 3-phase implementation timeline that aligns with the opportunity timeframe:
+
+PHASE 1 - CRAWL (Proof of Concept):
+- Duration: ${Math.ceil((timelineWeeks || 24) * 0.33)} weeks
+- Scope: Limited pilot with high human oversight
+- Success criteria: Basic workflow automation with 100% human validation
+- Risk level: High human involvement, minimal autonomous decisions
+
+PHASE 2 - WALK (Controlled Deployment):
+- Duration: ${Math.ceil((timelineWeeks || 24) * 0.42)} weeks  
+- Scope: Expanded deployment with selective autonomy
+- Success criteria: Achieving target efficiency gains with reduced oversight
+- Risk level: Medium autonomy with exception-based human intervention
+
+PHASE 3 - RUN (Full Autonomy):
+- Duration: ${Math.ceil((timelineWeeks || 24) * 0.25)} weeks
+- Scope: Full autonomous operation with strategic oversight
+- Success criteria: Meeting all KPI targets with minimal human intervention
+- Risk level: High autonomy with periodic human review
+
+PROGRESSIVE TRUST METHODOLOGY:
+- Week 1-8: Trust level 20-40% (High oversight, agent suggestions require approval)
+- Week 9-18: Trust level 50-75% (Medium oversight, agents handle routine decisions)
+- Week 19-24: Trust level 80-95% (Low oversight, agents operate autonomously)
+`;
+
+  // 🆕 ENHANCED: Model-specific optimization guidance
+  const modelOptimization = `
+🤖 AI MODEL OPTIMIZATION STRATEGY:
+
+Based on the latest 2025 model capabilities, optimize agent-model pairing:
+
+ORCHESTRATION/COORDINATION AGENTS:
+- Recommended: GPT-4o or Claude Sonnet 4
+- Rationale: Structured decision-making and workflow coordination
+- Features: Function calling, JSON mode, reliable tool use
+
+ANALYSIS/RESEARCH AGENTS:
+- Recommended: Claude Opus 4 with Extended Thinking
+- Rationale: Deep analysis and complex reasoning requirements
+- Features: 200k context, extended thinking mode, comprehensive analysis
+
+EVALUATION/SCORING AGENTS:
+- Recommended: Gemini 2.5 Pro with Adaptive Thinking
+- Rationale: Dynamic evaluation criteria and real-time adaptation
+- Features: 1M context, adaptive thinking, mathematical reasoning
+
+COMMUNICATION/STAKEHOLDER AGENTS:
+- Recommended: Gemini 2.5 Flash
+- Rationale: Fast response times for real-time communication
+- Features: Low latency, natural language generation, multi-turn conversations
+
+IMPLEMENTATION/EXECUTION AGENTS:
+- Recommended: GPT-4o
+- Rationale: Precise action execution and document processing
+- Features: Multimodal capabilities, tool use, structured outputs
+
+Include specific model recommendations for each agent in the blueprint.
+`;
+
+  // 🆕 ENHANCED: Quality validation requirements
+  const qualityRequirements = `
+✅ BLUEPRINT QUALITY VALIDATION CHECKLIST:
+
+PATTERN COMPLIANCE:
+□ Agent count matches ${selectedPattern} pattern requirements exactly
+□ Coordination mechanism aligns with pattern definition
+□ Agent roles are properly specialized and non-overlapping
+
+GOVERNANCE COMPLIANCE:
+□ All agents include appropriate oversight levels
+□ Constitutional AI guardrails are specified
+□ Escalation protocols are clearly defined
+□ Risk management is proportional to business impact
+
+IMPLEMENTATION READINESS:
+□ Crawl-walk-run timeline is included and realistic
+□ Progressive trust levels are defined
+□ Success criteria are measurable and specific
+□ Risk mitigation strategies are comprehensive
+
+BUSINESS ALIGNMENT:
+□ All opportunity metrics are preserved and addressed
+□ KPIs directly relate to business objectives
+□ Tools and systems align with existing infrastructure
+□ ROI projections are realistic and well-justified
+`;
+
+  let prompt = `Create a comprehensive AI Digital Team Blueprint using the ${selectedPattern} agentic pattern for the following business profile. This blueprint must implement the ${selectedPattern} coordination mechanism with exactly ${pattern.agentCount} specialized agents.${specialInstructionsSection}${focusContextSection}
 
 **BUSINESS PROFILE:**
 Company: ${profile.companyName}
 Industry: ${profile.industry}
-Size: ${profile.employeeCount || 'Not specified'}
+Size: ${profile.employeeCount || 'Not specified'} employees
 Revenue: ${profile.annualRevenue || 'Not specified'}
+Location: ${profile.primaryLocation || 'Not specified'}
 
 **STRATEGIC INITIATIVES:**
-${(profile.strategicInitiatives || []).map((init: any, index: number) => `
-${index + 1}. ${init.initiative}
-   Priority: ${init.priority || 'Medium'}
-   Business Problems: ${(init.businessProblems || []).join(', ') || 'Not specified'}
-   Expected Outcomes: ${(init.expectedOutcomes || []).join(', ') || 'Not specified'}
-   Contact: ${init.contact?.name || 'Not specified'} (${init.contact?.title || 'Not specified'})
-`).join('')}
+${strategicInitiativesList}
 
 **SYSTEMS & APPLICATIONS:**
-${(profile.systemsAndApplications || []).map((sys: any) => `• ${sys.name} (${sys.category})`).join('\n') || 'None specified'}
+${systemsList}
 
-${config.blueprintFocusContext || ''}
+**SELECTED AGENTIC PATTERN: ${selectedPattern}**
+- **Agent Count Required**: Exactly ${pattern.agentCount} agents (non-negotiable)
+- **Coordination Mechanism**: ${pattern.coordinationMechanism}
+- **Pattern Type**: ${pattern.patternType}
+- **Best For**: ${pattern.bestFor.join(', ')}
+- **Risk Profile**: ${pattern.riskProfile}
 
-**PATTERN-SPECIFIC REQUIREMENTS:**
-- Use the ${selectedPattern} pattern with exactly ${pattern.agentCount} agents
-- Follow the ${pattern.coordinationMechanism} coordination model
-- Implement ${pattern.patternType} interaction patterns
-- Design for: ${pattern.bestFor.join(', ')}
+**PATTERN-SPECIFIC AGENT STRUCTURE:**
+${pattern.agents.map((agent, index) => `
+${index + 1}. **${agent.title}** (Role: ${agent.role})
+   Primary Responsibility: ${agent.coreJob}
+   Key Capabilities: ${agent.responsibilities.join(', ')}
+   Oversight Requirements: ${agent.oversightLevel}
+   Interaction Style: ${agent.interactionPatterns.join(', ')}
+`).join('')}
 
-${config.roiContext || ''}
-
-${config.specialInstructions ? `
-**SPECIAL INSTRUCTIONS:**
-${config.specialInstructions}
+${config.roiContext ? `
+**ROI ANALYSIS REQUIREMENTS:**
+${config.roiContext}
+Base calculations on the process metrics and investment context provided in the strategic initiatives.
 ` : ''}
 
-**DELIVERABLE:**
-Generate a comprehensive AI digital team blueprint that implements the ${selectedPattern} pattern specifically for this business context. Ensure the agent structure, coordination mechanisms, and implementation approach all align with the chosen agentic design pattern.
+**BLUEPRINT GENERATION REQUIREMENTS:**
 
-Remember: This blueprint must use exactly ${pattern.agentCount} agents as defined by the ${selectedPattern} pattern - this is not negotiable.
+1. **BUSINESS OBJECTIVE** (Single focused statement)
+   - Must be derived from the specific opportunity/workflow being addressed
+   - Should be quantifiable and time-bound
+   - Must align with the ${selectedPattern} pattern's strengths
+   - Examples: "Automate invoice processing using ${selectedPattern} coordination to reduce cycle time by 40%"
+
+2. **DIGITAL TEAM** (Exactly ${pattern.agentCount} agents following ${selectedPattern} pattern):
+   For each agent provide:
+   - **Role**: Must match the ${selectedPattern} pattern roles (${pattern.agents.map(a => a.role).join(', ')})
+   - **Title**: Business-friendly job title appropriate for the specific opportunity
+   - **Core Job**: Specialized responsibility for the opportunity workflow
+   - **Responsibilities**: Detailed list of agent capabilities (from pattern definition)
+   - **Tools Used**: 3-4 specific tools/systems this agent will use for the opportunity
+   - **Oversight Level**: ${pattern.agents.map(a => a.oversightLevel).join(', ')} (as defined by pattern)
+   - **Oversight Description**: How humans control this agent for the opportunity
+   - **Linked KPIs**: 2-3 specific KPIs this agent impacts for the opportunity
+   - **Interaction Patterns**: How this agent coordinates with others (${pattern.coordinationMechanism})
+
+3. **HUMAN CHECKPOINTS** (4 control points with pattern-specific adaptations):
+   - **Kick-off Workshop**: Pattern-specific setup and coordination design
+   - **Review Gates**: Progress evaluation appropriate for ${pattern.coordinationMechanism}
+   - **Exception Escalations**: Error handling suited to ${pattern.riskProfile} risk profile
+   - **Quarterly Tune-Up**: Pattern optimization and performance tuning
+
+4. **IMPLEMENTATION TIMELINE** (3 phases adapted for ${selectedPattern}):
+   For each phase, consider:
+   - ${pattern.coordinationMechanism} implementation complexity
+   - Agent-to-agent interaction establishment
+   - Pattern-specific risk mitigations
+   - Appropriate oversight levels for ${pattern.riskProfile} risk profile
+
+5. **KPI IMPROVEMENTS** (MANDATORY: Exactly 3, 4, or 5 metrics - NO FEWER THAN 3):
+   ⚠️ **CRITICAL REQUIREMENT**: You MUST provide at least 3 KPI improvements linked to the specific opportunity.
+   
+   Each KPI must:
+   - Relate directly to the opportunity being addressed
+   - Show how the ${selectedPattern} pattern will achieve the improvement
+   - Map to specific agent roles and their coordination
+   - Demonstrate measurable business value
+
+${config.roiContext ? `
+6. **ROI PROJECTION** (Pattern-Enhanced Business Case):
+   Provide financial analysis that includes:
+   - How the ${selectedPattern} pattern specifically enables cost savings
+   - Agent coordination efficiency benefits
+   - Risk mitigation value from the pattern's design
+   - Implementation costs considering pattern complexity
+   - Realistic timelines based on ${pattern.coordinationMechanism} requirements
+` : ''}
+
+**CRITICAL SUCCESS FACTORS:**
+- Agents must work together using ${pattern.coordinationMechanism} principles
+- Each agent role must be distinct and non-overlapping per pattern requirements
+- Tools and systems must enable the specific coordination mechanism
+- Timeline must account for ${pattern.implementationComplexity} complexity
+- Risk mitigations must address ${pattern.riskProfile} profile considerations
 
 **🚨 CRITICAL OUTPUT REQUIREMENTS - NO EXCEPTIONS:**
 1. You MUST respond with ONLY a valid JSON object
 2. You MUST include ALL required sections - no partial responses
 3. No markdown formatting, no explanations, no additional text
 4. Start with { and end with } - pure JSON only
+5. digitalTeam MUST have exactly ${pattern.agentCount} agents
+6. selectedPattern MUST be "${selectedPattern}"
+7. patternRationale MUST explain why ${selectedPattern} fits this specific opportunity
 
 **⚠️ VALIDATION WARNING:** 
 Partial responses will be rejected. You MUST generate all sections below or the response will fail validation.
 
 **REQUIRED JSON STRUCTURE (ALL SECTIONS MANDATORY):**
 {
-  "businessObjective": "Single, measurable goal derived from strategic initiatives (e.g., 'Cut invoice processing time by 40%')",
+  "businessObjective": "Single, measurable goal specific to the opportunity using ${selectedPattern} pattern coordination",
   "selectedPattern": "${selectedPattern}",
-  "patternRationale": "2-3 sentence explanation of why ${selectedPattern} pattern fits this business context",
+  "patternRationale": "2-3 sentence explanation of why ${selectedPattern} pattern specifically fits this opportunity context and business problems",
   "digitalTeam": [
     ${pattern.agents.map((agent, index) => `{
       "role": "${agent.role}",
-      "title": "${agent.title}",
-      "coreJob": "${agent.coreJob}",
+      "title": "Opportunity-specific ${agent.title}",
+      "coreJob": "Specialized for the opportunity: ${agent.coreJob}",
       "responsibilities": ${JSON.stringify(agent.responsibilities)},
-      "toolsUsed": ["Business-specific tool 1", "Business-specific tool 2", "Business-specific tool 3"],
+      "toolsUsed": ["Opportunity-specific tool 1", "Opportunity-specific tool 2", "Opportunity-specific tool 3"],
       "oversightLevel": "${agent.oversightLevel}",
-      "oversightDescription": "How humans control this agent",
-      "linkedKPIs": ["KPI 1", "KPI 2"],
+      "oversightDescription": "How humans control this agent for the opportunity",
+      "linkedKPIs": ["Opportunity KPI 1", "Opportunity KPI 2"],
       "interactionPatterns": ${JSON.stringify(agent.interactionPatterns)}
     }${index < pattern.agents.length - 1 ? ',' : ''}`).join('\n    ')}
   ],
   "humanCheckpoints": [
     {
       "checkpoint": "Kick-off Workshop",
-      "description": "Initial setup and goal alignment",
-      "importance": "Ensures proper foundation",
+      "description": "${selectedPattern} pattern setup and coordination design",
+      "importance": "Ensures proper ${pattern.coordinationMechanism} implementation",
       "frequency": "one-time"
     },
     {
       "checkpoint": "Review Gates",
-      "description": "Progress evaluation checkpoints",
-      "importance": "Quality assurance and course correction",
+      "description": "Pattern-specific progress evaluation and coordination tuning",
+      "importance": "Validates ${selectedPattern} effectiveness and agent interactions",
       "frequency": "periodic"
     },
     {
       "checkpoint": "Exception Escalations",
-      "description": "Handling of edge cases and errors",
-      "importance": "Risk mitigation and human oversight",
+      "description": "Handling edge cases and ${pattern.coordinationMechanism} failures",
+      "importance": "Risk mitigation for ${pattern.riskProfile} profile",
       "frequency": "as-needed"
     },
     {
       "checkpoint": "Quarterly Tune-Up",
-      "description": "Performance optimization and learning integration",
-      "importance": "Continuous improvement",
+      "description": "Pattern optimization and agent coordination refinement",
+      "importance": "Continuous improvement of ${selectedPattern} implementation",
       "frequency": "periodic"
     }
   ],
@@ -391,100 +725,104 @@ Partial responses will be rejected. You MUST generate all sections below or the 
     "phases": [
       {
         "phase": "crawl",
-        "name": "Proof of Concept",
+        "name": "${selectedPattern} Pattern Proof of Concept",
         "durationWeeks": 8,
-        "description": "Initial implementation with high oversight",
-        "milestones": ["Agent deployment", "Initial testing", "Feedback collection"],
-        "riskMitigations": ["Human validation", "Limited scope", "Rollback procedures"],
+        "description": "Initial ${pattern.coordinationMechanism} implementation with high oversight",
+        "milestones": ["Agent deployment", "${selectedPattern} coordination testing", "Pattern validation"],
+        "riskMitigations": ["Human validation", "Limited scope", "${pattern.coordinationMechanism} monitoring"],
         "oversightLevel": "high",
-        "humanInvolvement": "Continuous monitoring and approval"
+        "humanInvolvement": "Continuous monitoring of ${selectedPattern} pattern effectiveness"
       },
       {
         "phase": "walk",
-        "name": "Controlled Rollout",
+        "name": "${selectedPattern} Controlled Rollout",
         "durationWeeks": 10,
-        "description": "Gradual expansion with reduced oversight",
-        "milestones": ["Expanded scope", "Process optimization", "Team training"],
-        "riskMitigations": ["Performance monitoring", "Exception handling", "Regular reviews"],
+        "description": "Gradual expansion of ${pattern.coordinationMechanism} with reduced oversight",
+        "milestones": ["Expanded scope", "Pattern optimization", "Coordination tuning"],
+        "riskMitigations": ["Performance monitoring", "Pattern validation", "Agent interaction reviews"],
         "oversightLevel": "medium",
-        "humanInvolvement": "Periodic review and adjustment"
+        "humanInvolvement": "Periodic review of ${selectedPattern} coordination effectiveness"
       },
       {
         "phase": "run",
-        "name": "Full Automation",
+        "name": "${selectedPattern} Full Automation",
         "durationWeeks": 6,
-        "description": "Autonomous operation with minimal oversight",
-        "milestones": ["Full deployment", "Performance targets met", "Integration complete"],
-        "riskMitigations": ["Automated monitoring", "Exception escalation", "Continuous learning"],
+        "description": "Autonomous ${pattern.coordinationMechanism} operation with minimal oversight",
+        "milestones": ["Full deployment", "Pattern mastery", "Integration complete"],
+        "riskMitigations": ["Automated monitoring", "Exception escalation", "Pattern learning"],
         "oversightLevel": "low",
-        "humanInvolvement": "Strategic oversight and optimization"
+        "humanInvolvement": "Strategic oversight of ${selectedPattern} pattern optimization"
       }
     ]
   },
   "kpiImprovements": [
     {
-      "kpi": "Process efficiency metric",
+      "kpi": "Opportunity-specific efficiency metric",
       "currentValue": "Current baseline",
-      "targetValue": "Improvement target",
+      "targetValue": "Improvement target enabled by ${selectedPattern}",
       "improvementPercent": 40,
       "linkedAgents": ["${pattern.agents[0].role}", "${pattern.agents[1].role}"],
-      "measurementMethod": "How success will be measured",
-      "timeframe": "When results expected"
+      "measurementMethod": "How success will be measured for this opportunity",
+      "timeframe": "When results expected with ${selectedPattern} pattern"
     },
     {
-      "kpi": "Quality improvement metric",
+      "kpi": "Opportunity-specific quality metric",
       "currentValue": "Current baseline",
-      "targetValue": "Improvement target",
+      "targetValue": "Quality improvement via ${pattern.coordinationMechanism}",
       "improvementPercent": 25,
       "linkedAgents": ["${pattern.agents[1].role}", "${pattern.agents[2] ? pattern.agents[2].role : pattern.agents[0].role}"],
-      "measurementMethod": "How success will be measured",
-      "timeframe": "When results expected"
+      "measurementMethod": "Quality measurement specific to the opportunity",
+      "timeframe": "Quality improvement timeline"
     },
     {
-      "kpi": "Speed enhancement metric",
+      "kpi": "Opportunity-specific speed metric",
       "currentValue": "Current baseline",
-      "targetValue": "Improvement target",
+      "targetValue": "Speed enhancement via ${selectedPattern} coordination",
       "improvementPercent": 60,
       "linkedAgents": ["${pattern.agents[0].role}", "${pattern.agents[3] ? pattern.agents[3].role : pattern.agents[1].role}"],
-      "measurementMethod": "How success will be measured",
-      "timeframe": "When results expected"
+      "measurementMethod": "Speed measurement for the specific opportunity",
+      "timeframe": "Speed improvement timeline"
     }
   ]${config.roiContext ? `,
   "roiProjection": {
-    "processCostSavings": "$XXXk annual efficiency gains",
-    "laborReallocation": "$XXXk FTE capacity redeployment",
-    "riskAvoidance": "$XXXk compliance risk reduction",
-    "totalInvestment": "$XXXk implementation cost",
-    "ongoingCosts": "$XXk annual maintenance",
-    "annualValue": "$XXXk total annual value",
+    "processCostSavings": "$XXXk annual efficiency gains via ${selectedPattern} coordination",
+    "laborReallocation": "$XXXk FTE capacity redeployment through pattern efficiency",
+    "riskAvoidance": "$XXXk risk reduction from ${pattern.coordinationMechanism} reliability",
+    "totalInvestment": "$XXXk implementation cost including ${selectedPattern} pattern setup",
+    "ongoingCosts": "$XXk annual maintenance for pattern operations",
+    "annualValue": "$XXXk total annual value from ${selectedPattern} implementation",
     "roiPercentage": XXX,
     "paybackMonths": XX,
     "keyAssumptions": [
-      "Assumption 1",
-      "Assumption 2",
-      "Assumption 3"
+      "${selectedPattern} pattern assumption 1",
+      "Coordination mechanism assumption 2", 
+      "Agent interaction assumption 3"
     ],
     "confidenceLevel": "High",
     "confidenceFactors": [
-      "Factor 1",
-      "Factor 2"
+      "${selectedPattern} pattern proven effectiveness",
+      "Strong coordination mechanism design"
     ],
-    "executiveSummary": "Executive business case summary",
-    "recommendedAction": "Next steps recommendation"
+    "executiveSummary": "Executive business case for ${selectedPattern} pattern implementation",
+    "recommendedAction": "Next steps for ${selectedPattern} pattern deployment"
   }` : ''}
 }
 
 🚨 **CRITICAL VALIDATION REQUIREMENTS - FAILURE WILL REJECT RESPONSE:**
-- businessObjective: Must be non-empty string (20+ characters) ✅ REQUIRED
-- digitalTeam: Must have exactly ${pattern.agentCount} agents ✅ REQUIRED  
-- humanCheckpoints: Must have exactly 4 checkpoints ✅ REQUIRED
-- agenticTimeline.phases: Must have exactly 3 phases (crawl, walk, run) ✅ REQUIRED
-- kpiImprovements: Must have at least 3 KPI improvements ✅ REQUIRED
-- All agents must have unique roles and non-overlapping responsibilities
+- businessObjective: Must reference the specific opportunity, not generic company operations ✅ REQUIRED
+- selectedPattern: Must be exactly "${selectedPattern}" ✅ REQUIRED
+- digitalTeam: Must have exactly ${pattern.agentCount} agents with pattern-compliant roles ✅ REQUIRED  
+- humanCheckpoints: Must have exactly 4 checkpoints adapted for ${selectedPattern} ✅ REQUIRED
+- agenticTimeline.phases: Must have exactly 3 phases with pattern-specific considerations ✅ REQUIRED
+- kpiImprovements: Must have at least 3 KPI improvements related to the specific opportunity ✅ REQUIRED
+- All agents must follow ${pattern.coordinationMechanism} interaction principles
 - Response must be valid JSON starting with { and ending with }
 
 🔥 **ABSOLUTE FINAL REQUIREMENT:** 
-Generate the COMPLETE JSON structure with ALL sections above. Partial responses (missing businessObjective, humanCheckpoints, agenticTimeline, or kpiImprovements) will be automatically rejected and cause validation failure.
+Generate the COMPLETE JSON structure with ALL sections above. Focus on the SPECIFIC OPPORTUNITY, not generic company transformation. The blueprint must demonstrate how the ${selectedPattern} pattern specifically enables success for this opportunity.
+
+${config.specialInstructions ? `
+🚨 FINAL REMINDER: You have received CRITICAL OVERRIDE INSTRUCTIONS above. The blueprint you generate MUST focus exclusively on the specific opportunity/workflow described in those instructions using the ${selectedPattern} pattern, NOT on general company operations.` : ''}
 
 Your response must be pure JSON only. No markdown, no explanations, no additional text. Start with { and end with }.`;
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import useBusinessProfileStore from '../../store/useBusinessProfileStore';
+import useAuthStore from '../../store/useAuthStore';
 import { Profile } from '../../services/types';
 
 const industries: string[] = [
@@ -50,8 +50,15 @@ interface BusinessProfileFormProps {
 }
 
 export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormProps) {
-  const { businessProfile, updateBusinessProfile } = useBusinessProfileStore();
+  const { profile, updateUserAndProfile } = useAuthStore();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  
+  // Create a compatible update function
+  const updateBusinessProfile = (updates: Partial<Profile>) => {
+    if (profile) {
+      updateUserAndProfile({}, { ...profile, ...updates });
+    }
+  };
   
   const handleInputChange = (field: keyof Profile, value: string) => {
     updateBusinessProfile({ [field]: value });
@@ -61,7 +68,8 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
   };
   
   const handleArrayToggle = (field: keyof Profile, value: string) => {
-    const currentArray = (businessProfile[field] as string[]) || [];
+    if (!profile) return;
+    const currentArray = (profile[field] as string[]) || [];
     const newArray = currentArray.includes(value)
       ? currentArray.filter(item => item !== value)
       : [...currentArray, value];
@@ -70,21 +78,22 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
   };
   
   const validateForm = (): boolean => {
+    if (!profile) return false;
     const newErrors: { [key: string]: string } = {};
     
-    if (!businessProfile.companyName?.trim()) {
+    if (!profile.companyName?.trim()) {
       newErrors.companyName = 'Company name is required';
     }
-    if (!businessProfile.industry) {
+    if (!profile.industry) {
       newErrors.industry = 'Please select an industry';
     }
-    if (!businessProfile.companySize) {
+    if (!profile.companySize) {
       newErrors.companySize = 'Please select company size';
     }
-    if (!businessProfile.aiMaturityLevel) {
+    if (!profile.aiMaturityLevel) {
       newErrors.aiMaturityLevel = 'Please select AI maturity level';
     }
-    if (!businessProfile.primaryGoals?.length) {
+    if (!profile.primaryGoals?.length) {
       newErrors.primaryGoals = 'Please select at least one goal';
     }
     
@@ -99,6 +108,10 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
     }
   };
   
+  if (!profile) {
+    return <div>Loading profile...</div>;
+  };
+  
   return (
     <form className="business-profile-form" onSubmit={handleSubmit}>
       <div className="form-section">
@@ -109,7 +122,7 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
           <input
             type="text"
             id="companyName"
-            value={businessProfile.companyName || ''}
+            value={profile.companyName || ''}
             onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('companyName', e.target.value)}
             placeholder="Enter your company name"
             className={errors.companyName ? 'error' : ''}
@@ -121,7 +134,7 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
           <label htmlFor="industry">Industry *</label>
           <select
             id="industry"
-            value={businessProfile.industry || ''}
+            value={profile.industry || ''}
             onChange={(e: ChangeEvent<HTMLSelectElement>) => handleInputChange('industry', e.target.value)}
             className={errors.industry ? 'error' : ''}
           >
@@ -142,7 +155,7 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
                   type="radio"
                   name="companySize"
                   value={size.value}
-                  checked={businessProfile.companySize === size.value}
+                  checked={profile.companySize === size.value}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('companySize', e.target.value)}
                 />
                 <span>{size.label}</span>
@@ -162,13 +175,13 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
             {maturityLevels.map(level => (
               <label 
                 key={level.value} 
-                className={`maturity-option ${businessProfile.aiMaturityLevel === level.value ? 'selected' : ''}`}
+                className={`maturity-option ${profile.aiMaturityLevel === level.value ? 'selected' : ''}`}
               >
                 <input
                   type="radio"
                   name="aiMaturityLevel"
                   value={level.value}
-                  checked={businessProfile.aiMaturityLevel === level.value}
+                  checked={profile.aiMaturityLevel === level.value}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange('aiMaturityLevel', e.target.value)}
                 />
                 <div className="maturity-content">
@@ -188,7 +201,7 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
               <label key={tech} className="checkbox-label">
                 <input
                   type="checkbox"
-                  checked={(businessProfile.currentTechStack as string[])?.includes(tech) || false}
+                  checked={(profile.currentTechStack as string[])?.includes(tech) || false}
                   onChange={() => handleArrayToggle('currentTechStack', tech)}
                 />
                 <span>{tech}</span>
@@ -207,11 +220,11 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
             {goalOptions.map(goal => (
               <label 
                 key={goal} 
-                className={`goal-option ${(businessProfile.primaryGoals as string[])?.includes(goal) ? 'selected' : ''}`}
+                className={`goal-option ${(profile.primaryGoals as string[])?.includes(goal) ? 'selected' : ''}`}
               >
                 <input
                   type="checkbox"
-                  checked={(businessProfile.primaryGoals as string[])?.includes(goal) || false}
+                  checked={(profile.primaryGoals as string[])?.includes(goal) || false}
                   onChange={() => handleArrayToggle('primaryGoals', goal)}
                 />
                 <span>{goal}</span>
@@ -226,7 +239,7 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
             <label htmlFor="budget">Estimated Budget Range</label>
             <select
               id="budget"
-              value={businessProfile.budget || ''}
+              value={profile.budget || ''}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => handleInputChange('budget', e.target.value)}
             >
               <option value="">Select budget range</option>
@@ -241,7 +254,7 @@ export default function BusinessProfileForm({ onSubmit }: BusinessProfileFormPro
             <label htmlFor="timeframe">Implementation Timeframe</label>
             <select
               id="timeframe"
-              value={businessProfile.timeframe || ''}
+              value={profile.timeframe || ''}
               onChange={(e: ChangeEvent<HTMLSelectElement>) => handleInputChange('timeframe', e.target.value)}
             >
               <option value="">Select timeframe</option>

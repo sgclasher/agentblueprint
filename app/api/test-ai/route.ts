@@ -4,7 +4,7 @@ import { markdownService } from '../../services/markdownService';
 import { Profile, Timeline } from '../../services/types';
 
 interface TestAiPostBody {
-    profileId?: string;
+    // profileId is no longer needed, we'll use the current user's profile
     useMarkdown?: boolean;
 }
 
@@ -31,19 +31,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { profileId, useMarkdown = true } = body;
+    const { useMarkdown = true } = body;
 
-    if (!profileId) {
-      return NextResponse.json(
-        { error: 'Profile ID is required' },
-        { status: 400 }
-      );
-    }
-
-    const profile: Profile | null = await ProfileService.getProfile(profileId);
+    // The profileId is no longer needed from the body.
+    // We will get the profile for the currently authenticated user.
+    const profile: Profile | null = await ProfileService.getCurrentUserProfile();
     if (!profile) {
       return NextResponse.json(
-        { error: 'Profile not found' },
+        { error: 'Profile not found for current user' },
         { status: 404 }
       );
     }
@@ -53,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      profileId,
+      profileId: profile.id, // Return the ID of the profile we used
       profileName: profile.companyName,
       timeline: timelineData,
       markdown: useMarkdown ? profileMarkdown : '[Hidden - set useMarkdown:true to view]',
@@ -75,6 +70,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/*
 export async function GET() {
   try {
     const profiles: Profile[] = await ProfileService.getProfiles();
@@ -107,3 +103,4 @@ export async function GET() {
     );
   }
 } 
+*/ 

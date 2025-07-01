@@ -436,7 +436,7 @@ function calculateTimelineCompletenessScore(summary: ProfileDataSummary): number
 /**
  * Converts timeline data back to a format suitable for prompts
  */
-function formatTimelineDataForPrompt(timelineData: TimelineProfileData): string {
+export function formatTimelineDataForPrompt(timelineData: TimelineProfileData): string {
   const { companyProfile, strategicContext, technicalContext, businessContext } = timelineData;
   
   const sections: string[] = [];

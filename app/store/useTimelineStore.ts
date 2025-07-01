@@ -36,7 +36,7 @@ interface TimelineActions {
 
 type TimelineStore = TimelineState & TimelineActions;
 
-const useBusinessProfileStore = create<TimelineStore>()(
+const useTimelineStore = create<TimelineStore>()(
   persist(
     (set, get) => ({
       // State related to the timeline generation and UI, not the profile itself
@@ -126,4 +126,4 @@ const useBusinessProfileStore = create<TimelineStore>()(
   )
 );
 
-export default useBusinessProfileStore; 
+export default useTimelineStore; 

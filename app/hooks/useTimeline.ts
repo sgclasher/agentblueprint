@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useLayoutEffect, useCallback, useMemo } from 'react';
-import useBusinessProfileStore, { ScenarioType } from '../store/useBusinessProfileStore';
+import useTimelineStore, { ScenarioType } from '../store/useTimelineStore';
 import useAuthStore from '../store/useAuthStore';
 import { Timeline } from '../services/types';
 
@@ -59,7 +59,7 @@ export function useTimeline() {
     timelineCached,
     timelineGeneratedAt,
     timelineScenarioType,
-  } = useBusinessProfileStore();
+  } = useTimelineStore();
   
   const { profile: currentProfile, isLoading: isAuthLoading } = useAuthStore();
 
@@ -127,7 +127,7 @@ export function useTimeline() {
       if (!response.ok) {
         console.log('❌ [loadCachedTimeline] Failed to load cached timeline:', response.status);
         // Clear loading state so UI doesn't hang
-        useBusinessProfileStore.setState({
+        useTimelineStore.setState({
           timelineData: null,
           timelineCached: false,
           timelineGeneratedAt: null,
@@ -144,7 +144,7 @@ export function useTimeline() {
       if (result.success && result.timeline) {
         // Load cached timeline into store
         console.log('✅ [loadCachedTimeline] Timeline found, loading into store');
-        useBusinessProfileStore.setState({
+        useTimelineStore.setState({
           timelineData: result.timeline,
           timelineCached: true,
           timelineGeneratedAt: result.generatedAt,
@@ -157,7 +157,7 @@ export function useTimeline() {
       } else {
         // No timeline found - clear loading state so UI shows generate button
         console.log('💾 [loadCachedTimeline] No timeline found, clearing state');
-        useBusinessProfileStore.setState({
+        useTimelineStore.setState({
           timelineData: null,
           timelineCached: false,
           timelineGeneratedAt: null,
@@ -171,7 +171,7 @@ export function useTimeline() {
     } catch (error) {
       console.error('❌ [loadCachedTimeline] Error loading cached timeline:', error);
       // Clear loading state on any error
-      useBusinessProfileStore.setState({
+      useTimelineStore.setState({
         timelineData: null,
         timelineCached: false,
         timelineGeneratedAt: null,
@@ -256,7 +256,7 @@ export function useTimeline() {
     console.log('🔄 User confirmed timeline regeneration');
     
     // Clear existing data to show generating state
-    useBusinessProfileStore.setState({
+    useTimelineStore.setState({
       timelineData: null,
       timelineCached: false,
       timelineGeneratedAt: null,
@@ -270,7 +270,7 @@ export function useTimeline() {
     } catch (error) {
       console.error('Timeline regeneration failed:', error);
       // Reset generating state on error
-      useBusinessProfileStore.setState({
+      useTimelineStore.setState({
         isGenerating: false
       });
       throw error;
@@ -313,7 +313,7 @@ export function useTimeline() {
       
       if (result.success && result.timeline) {
         // Timeline exists for this scenario
-        useBusinessProfileStore.setState({
+        useTimelineStore.setState({
           timelineData: result.timeline,
           timelineCached: true,
           timelineGeneratedAt: result.generatedAt,

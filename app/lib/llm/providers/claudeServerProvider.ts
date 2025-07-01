@@ -30,8 +30,8 @@ export class ClaudeServerProvider {
   async generateJson(systemPrompt: string, userPrompt: string, options: { temperature?: number, max_tokens?: number } = {}) {
     // Anthropic API requires the prompt to explicitly ask for JSON and start with an opening brace.
     const finalUserPrompt = `${userPrompt}
-    
-Please provide the output in a single, valid JSON object, starting with { and ending with }. Do not include any other text or explanation.`;
+
+CRITICAL: Respond with ONLY a valid JSON object. Do not use <thinking> tags or any other text. Start your response immediately with { and end with }. No explanations, no markdown, no thinking - just pure JSON.`;
 
     try {
       const response = await fetch(`${this.baseUrl}/messages`, {
@@ -68,49 +68,101 @@ Please provide the output in a single, valid JSON object, starting with { and en
       console.log('[Claude Debug] Raw response length:', cleanedContent.length);
       console.log('[Claude Debug] First 200 chars:', cleanedContent.substring(0, 200));
       
-      // 🆕 Remove any XML-like tags (including thinking, anythingl, etc.)
-      // This is more aggressive - remove anything that looks like XML tags
+      // 🆕 ENHANCED: Multi-strategy JSON extraction with fallbacks
+      let extractedJson = '';
+      
+      // Strategy 1: Handle Claude's thinking mode specifically
+      if (cleanedContent.includes('<thinking>') || cleanedContent.includes('</thinking>')) {
+        console.log('[Claude Debug] Thinking mode detected, extracting JSON after thinking tags');
+        
+        // Find the end of the thinking section
+        const thinkingEndIndex = cleanedContent.lastIndexOf('</thinking>');
+        if (thinkingEndIndex !== -1) {
+          // Extract content after thinking tags
+          cleanedContent = cleanedContent.substring(thinkingEndIndex + '</thinking>'.length).trim();
+          console.log('[Claude Debug] Content after thinking tags:', cleanedContent.substring(0, 200));
+        }
+      }
+      
+      // Strategy 2: Remove any remaining XML-like tags
       cleanedContent = cleanedContent.replace(/<[^>]*>/g, '');
       
-      // Remove markdown code block markers if present
+      // Strategy 3: Remove markdown code block markers if present
       if (cleanedContent.includes('```json')) {
         cleanedContent = cleanedContent.replace(/```json/g, '').replace(/```/g, '');
       } else if (cleanedContent.includes('```')) {
         cleanedContent = cleanedContent.replace(/```/g, '');
       }
       
-      // 🆕 Aggressively find JSON object - look for { and matching }
+      // Clean up any extra whitespace and newlines
+      cleanedContent = cleanedContent.trim();
+      
+      // Strategy 4: Extract JSON object by brace matching
       const jsonStart = cleanedContent.indexOf('{');
       if (jsonStart === -1) {
-        throw new Error('No JSON object found in response');
-      }
-      
-      // Find the matching closing brace by counting braces
-      let braceCount = 0;
-      let jsonEnd = -1;
-      
-      for (let i = jsonStart; i < cleanedContent.length; i++) {
-        if (cleanedContent[i] === '{') {
-          braceCount++;
-        } else if (cleanedContent[i] === '}') {
-          braceCount--;
-          if (braceCount === 0) {
-            jsonEnd = i;
-            break;
+        console.error('[Claude Debug] No JSON object found with Strategy 4');
+        console.error('[Claude Debug] Cleaned content (first 1000 chars):', cleanedContent.substring(0, 1000));
+        
+        // Fallback Strategy 5: Try to find JSON anywhere in the original content
+        console.log('[Claude Debug] Attempting fallback extraction from original content');
+        const originalJsonStart = content.indexOf('{');
+        if (originalJsonStart !== -1) {
+          console.log('[Claude Debug] Found JSON start in original content at position:', originalJsonStart);
+          
+          let braceCount = 0;
+          let jsonEnd = -1;
+          
+          for (let i = originalJsonStart; i < content.length; i++) {
+            if (content[i] === '{') {
+              braceCount++;
+            } else if (content[i] === '}') {
+              braceCount--;
+              if (braceCount === 0) {
+                jsonEnd = i;
+                break;
+              }
+            }
+          }
+          
+          if (jsonEnd !== -1) {
+            extractedJson = content.substring(originalJsonStart, jsonEnd + 1);
+            console.log('[Claude Debug] Fallback extraction successful:', extractedJson.substring(0, 200));
+          } else {
+            throw new Error('No valid JSON object found in response using any extraction strategy');
+          }
+        } else {
+          throw new Error('No JSON object found in response');
+        }
+      } else {
+        // Strategy 4 succeeded - find the matching closing brace
+        let braceCount = 0;
+        let jsonEnd = -1;
+        
+        for (let i = jsonStart; i < cleanedContent.length; i++) {
+          if (cleanedContent[i] === '{') {
+            braceCount++;
+          } else if (cleanedContent[i] === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              jsonEnd = i;
+              break;
+            }
           }
         }
+        
+        if (jsonEnd === -1) {
+          console.error('[Claude Debug] Could not find matching closing brace with Strategy 4');
+          console.error('[Claude Debug] Content from JSON start (first 1000 chars):', cleanedContent.substring(jsonStart, jsonStart + 1000));
+          throw new Error('Could not find matching closing brace for JSON object');
+        }
+        
+        extractedJson = cleanedContent.substring(jsonStart, jsonEnd + 1);
       }
       
-      if (jsonEnd === -1) {
-        throw new Error('Could not find matching closing brace for JSON object');
-      }
-      
-      cleanedContent = cleanedContent.substring(jsonStart, jsonEnd + 1);
-      
-      console.log('[Claude Debug] Extracted JSON length:', cleanedContent.length);
-      console.log('[Claude Debug] First 200 chars of JSON:', cleanedContent.substring(0, 200));
+      console.log('[Claude Debug] Final extracted JSON length:', extractedJson.length);
+      console.log('[Claude Debug] First 200 chars of final JSON:', extractedJson.substring(0, 200));
 
-      return JSON.parse(cleanedContent);
+      return JSON.parse(extractedJson);
 
     } catch (error: any) {
       console.error('Claude Server Provider Error:', error);

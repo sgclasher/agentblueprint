@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import useBusinessProfileStore from '../../store/useBusinessProfileStore';
+import useTimelineStore from '../../store/useTimelineStore';
 
 type EventType = 'milestone' | 'implementation' | 'expansion' | 'transformation';
 
@@ -28,7 +28,7 @@ interface TimelineVisualizationProps {
 }
 
 export default function TimelineVisualization({ events, recommendations }: TimelineVisualizationProps) {
-  const { expandedSections, toggleSection, expandAllSections, collapseAllSections } = useBusinessProfileStore();
+  const { expandedSections, toggleSection, expandAllSections, collapseAllSections } = useTimelineStore();
   const [hoveredEvent, setHoveredEvent] = useState<string | null>(null);
   
   const getEventIcon = (type: EventType): string => {

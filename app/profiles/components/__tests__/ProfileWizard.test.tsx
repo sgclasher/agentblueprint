@@ -4,9 +4,21 @@ import userEvent from '@testing-library/user-event';
 import ProfileWizard from '../ProfileWizard';
 
 // Mock the child components to isolate the wizard's functionality
-jest.mock('../steps/CompanyOverviewStep', () => () => <div>CompanyOverviewStep</div>);
-jest.mock('../steps/SummaryStep', () => () => <div>SummaryStep</div>);
-jest.mock('../MarkdownImportModal', () => () => <div>MarkdownImportModal</div>);
+jest.mock('../steps/CompanyOverviewStep', () => {
+  const CompanyOverviewStep = () => <div>CompanyOverviewStep</div>;
+  CompanyOverviewStep.displayName = 'CompanyOverviewStep';
+  return CompanyOverviewStep;
+});
+jest.mock('../steps/SummaryStep', () => {
+  const SummaryStep = () => <div>SummaryStep</div>;
+  SummaryStep.displayName = 'SummaryStep';
+  return SummaryStep;
+});
+jest.mock('../MarkdownImportModal', () => {
+  const MarkdownImportModal = () => <div>MarkdownImportModal</div>;
+  MarkdownImportModal.displayName = 'MarkdownImportModal';
+  return MarkdownImportModal;
+});
 
 describe('ProfileWizard', () => {
   const mockOnComplete = jest.fn();

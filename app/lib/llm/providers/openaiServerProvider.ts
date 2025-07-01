@@ -38,10 +38,17 @@ export class OpenAIServerProvider {
     }
 
     try {
+      // OpenAI requires the word "json" to be mentioned when using json_object response format
+      // Ensure the system prompt contains "json" for structured output
+      let enhancedSystemPrompt = systemPrompt;
+      if (!systemPrompt.toLowerCase().includes('json') && !userPrompt.toLowerCase().includes('json')) {
+        enhancedSystemPrompt = systemPrompt + '\n\nIMPORTANT: Respond with valid JSON format only.';
+      }
+
       const requestBody = {
         model: this.model,
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: enhancedSystemPrompt },
           { role: 'user', content: userPrompt }
         ],
         temperature: options.temperature || 0.7,

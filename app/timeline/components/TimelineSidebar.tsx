@@ -4,7 +4,7 @@ import React, { useLayoutEffect, useRef, useState, FC } from 'react';
 import styles from './TimelineSidebar.module.css';
 import ProviderSelector from './ProviderSelector';
 import TimelineWidgetContainer from './TimelineWidgetContainer';
-import useBusinessProfileStore, { ScenarioType } from '../../store/useBusinessProfileStore';
+import useTimelineStore, { ScenarioType } from '../../store/useTimelineStore';
 import { Profile, Timeline } from '../../services/types';
 import { supabase } from '../../lib/supabase';
 
@@ -46,7 +46,7 @@ const TimelineSidebar: FC<TimelineSidebarProps> = ({
 }) => {
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-  const { selectedProvider, setSelectedProvider } = useBusinessProfileStore();
+  const { selectedProvider, setSelectedProvider } = useTimelineStore();
   const [isExporting, setIsExporting] = useState(false);
   
   const [trackContainerTop, setTrackContainerTop] = useState('0px');

@@ -19,10 +19,11 @@ export default function EditProfilePage() {
   const loadProfile = useCallback(async () => {
     try {
       setIsLoading(true);
-      const profileData = await ProfileService.getProfile(profileId);
+      // Get the current user's profile instead of trying to get by ID
+      const profileData = await ProfileService.getCurrentUserProfile();
       
       if (!profileData) {
-        setError('Profile not found');
+        setError('Profile not found for current user');
         return;
       }
       
@@ -33,13 +34,11 @@ export default function EditProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [profileId]);
+  }, []);
 
   useEffect(() => {
-    if (profileId) {
-      loadProfile();
-    }
-  }, [profileId, loadProfile]);
+    loadProfile();
+  }, [loadProfile]);
 
   const handleComplete = (updatedProfile: Profile) => {
     router.push(`/profiles/${updatedProfile.id}`);
